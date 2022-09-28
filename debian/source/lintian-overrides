@@ -1,0 +1,4 @@
+# test file
+ark source: source-is-missing autotests/kerfuffle/data/hello-1.0-x86_64.AppImage
+# test file
+ark source: source-contains-prebuilt-binary autotests/kerfuffle/data/hello-1.0-x86_64.AppImage

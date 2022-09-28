@@ -1,0 +1,4 @@
+add_subdirectory(clizipplugin)
+add_subdirectory(cli7zplugin)
+add_subdirectory(clirarplugin)
+add_subdirectory(cliunarchiverplugin)
