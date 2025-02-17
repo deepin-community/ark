@@ -10,12 +10,23 @@ target_sources(arkpart PRIVATE
     archiveview.cpp
     jobtracker.cpp
     overwritedialog.cpp
+
+    factory.h
+    part.h
+    infopanel.h
+    arkviewer.h
+    archivemodel.h
+    archivesortfiltermodel.h
+    archiveview.h
+    jobtracker.h
+    overwritedialog.h
+
     arkpart.qrc
     )
 
 ecm_qt_declare_logging_category(arkpart
                                 HEADER ark_debug.h
-                                IDENTIFIER ARK
+                                IDENTIFIER ARK_LOG
                                 CATEGORY_NAME ark.part DESCRIPTION "Ark KPart" EXPORT ARK)
 set(ark_adaptor_SRCS)
 qt_add_dbus_adaptor(ark_adaptor_SRCS dnddbusinterface.xml part.h Ark::Part)
@@ -26,17 +37,14 @@ ki18n_wrap_ui(arkpart
     jobtracker.ui)
 
 
-target_link_libraries(arkpart kerfuffle KF5::Parts KF5::KIOFileWidgets KF5::ItemModels)
+target_link_libraries(arkpart kerfuffle KF6::Parts KF6::KIOFileWidgets Qt6::DBus)
+
+list(POP_BACK SUPPORTED_ARK_MIMETYPES)
+list(JOIN SUPPORTED_ARK_MIMETYPES "\", \"" SUPPORTED_ARK_MIMETYPES_JSON)
 
 configure_file(
-            ${CMAKE_CURRENT_SOURCE_DIR}/ark_part.desktop.cmake
-            ${CMAKE_CURRENT_BINARY_DIR}/ark_part.desktop
+            ${CMAKE_CURRENT_SOURCE_DIR}/ark_part.json.cmake
+            ${CMAKE_CURRENT_BINARY_DIR}/ark_part.json
 )
 
-kcoreaddons_desktop_to_json(arkpart ${CMAKE_CURRENT_BINARY_DIR}/ark_part.desktop SERVICE_TYPES kpart.desktop browserview.desktop)
-
-install(TARGETS arkpart DESTINATION ${KDE_INSTALL_PLUGINDIR}/kf5/parts)
-
-########### install files ###############
-
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ark_part.desktop DESTINATION ${KDE_INSTALL_KSERVICES5DIR})
+install(TARGETS arkpart DESTINATION ${KDE_INSTALL_PLUGINDIR}/kf6/parts)

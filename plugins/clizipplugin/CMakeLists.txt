@@ -1,27 +1,21 @@
 ########### next target ###############
 
-set(SUPPORTED_CLIZIP_MIMETYPES "application/x-java-archive;application/zip;")
-
-set(kerfuffle_clizip_SRCS cliplugin.cpp)
+set(kerfuffle_clizip_SRCS cliplugin.cpp cliplugin.h)
 
 ecm_qt_declare_logging_category(kerfuffle_clizip_SRCS
                                 HEADER ark_debug.h
-                                IDENTIFIER ARK
+                                IDENTIFIER ARK_LOG
                                 CATEGORY_NAME ark.clizip DESCRIPTION "Ark Infozip plugin" EXPORT ARK)
-
-# NOTE: the first double-quotes of the first mime and the last
-# double-quotes of the last mime must NOT be escaped.
-set(SUPPORTED_MIMETYPES
-    "application/x-java-archive\",
-    \"application/zip")
 
 configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/kerfuffle_clizip.json.cmake
     ${CMAKE_CURRENT_BINARY_DIR}/kerfuffle_clizip.json)
 
+kerfuffle_parse_json_mimetypes(${CMAKE_CURRENT_BINARY_DIR}/kerfuffle_clizip.json)
+set(SUPPORTED_ARK_MIMETYPES "${SUPPORTED_ARK_MIMETYPES}${PLUGIN_SUPPORTED_MIMETYPES}" PARENT_SCOPE)
+
 kerfuffle_add_plugin(kerfuffle_clizip ${kerfuffle_clizip_SRCS})
 
-set(SUPPORTED_ARK_MIMETYPES "${SUPPORTED_ARK_MIMETYPES}${SUPPORTED_CLIZIP_MIMETYPES}" PARENT_SCOPE)
 set(INSTALLED_KERFUFFLE_PLUGINS "${INSTALLED_KERFUFFLE_PLUGINS}kerfuffle_clizip;" PARENT_SCOPE)
 
 find_program(UNZIP unzip)

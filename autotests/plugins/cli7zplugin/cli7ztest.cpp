@@ -1,31 +1,12 @@
 /*
-  * Copyright (c) 2016 Ragnar Thomsen <rthomsen6@gmail.com>
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES ( INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION ) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * ( INCLUDING NEGLIGENCE OR OTHERWISE ) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+    SPDX-FileCopyrightText: 2016 Ragnar Thomsen <rthomsen6@gmail.com>
+
+    SPDX-License-Identifier: BSD-2-Clause
+*/
 
 #include "cli7ztest.h"
-#include "cliplugin.h"
 #include "archive_kerfuffle.h"
+#include "cliplugin.h"
 #include "jobs.h"
 #include "testhelper.h"
 
@@ -40,36 +21,32 @@ using namespace Kerfuffle;
 
 void Cli7zTest::initTestCase()
 {
-    m_plugin = new Plugin(this);
-    const auto plugins = m_pluginManger.availablePlugins();
-    for (Plugin *plugin : plugins) {
-        if (plugin->metaData().pluginId() == QLatin1String("kerfuffle_cli7z")) {
-            m_plugin = plugin;
-            return;
-        }
-    }
+    m_plugin = m_pluginManger.pluginById(QLatin1String("kerfuffle_cli7z"));
 }
 
 void Cli7zTest::testArchive_data()
 {
     QTest::addColumn<QString>("archivePath");
-    QTest::addColumn<QString>("expectedFileName");
+    QTest::addColumn<QString>("expectedBaseName");
     QTest::addColumn<bool>("isReadOnly");
     QTest::addColumn<bool>("isSingleFolder");
+    QTest::addColumn<bool>("isMultiVolume");
+    QTest::addColumn<int>("numberOfVolumes");
     QTest::addColumn<Archive::EncryptionType>("expectedEncryptionType");
     QTest::addColumn<QString>("expectedSubfolderName");
 
     QString archivePath = QFINDTESTDATA("data/one_toplevel_folder.7z");
     QTest::newRow("archive with one top-level folder")
-            << archivePath
-            << QFileInfo(archivePath).fileName()
-            << false << true << Archive::Unencrypted
-            << QStringLiteral("A");
+        << archivePath << QStringLiteral("one_toplevel_folder") << false << true << false << 0 << Archive::Unencrypted << QStringLiteral("A");
+
+    archivePath = QFINDTESTDATA("data/archive-multivolume.7z.001");
+    QTest::newRow("7z multivolume") << archivePath << QStringLiteral("archive-multivolume") << true << false << true << 3 << Archive::Unencrypted
+                                    << QStringLiteral("archive-multivolume");
 }
 
 void Cli7zTest::testArchive()
 {
-    if (!m_plugin->isValid()) {
+    if (!m_plugin || !m_plugin->isValid()) {
         QSKIP("cli7z plugin not available. Skipping test.", SkipSingle);
     }
 
@@ -85,14 +62,20 @@ void Cli7zTest::testArchive()
         QSKIP("Could not load the cli7z plugin. Skipping test.", SkipSingle);
     }
 
-    QFETCH(QString, expectedFileName);
-    QCOMPARE(QFileInfo(archive->fileName()).fileName(), expectedFileName);
+    QFETCH(QString, expectedBaseName);
+    QCOMPARE(archive->completeBaseName(), expectedBaseName);
 
     QFETCH(bool, isReadOnly);
     QCOMPARE(archive->isReadOnly(), isReadOnly);
 
     QFETCH(bool, isSingleFolder);
     QCOMPARE(archive->isSingleFolder(), isSingleFolder);
+
+    QFETCH(bool, isMultiVolume);
+    QCOMPARE(archive->isMultiVolume(), isMultiVolume);
+
+    QFETCH(int, numberOfVolumes);
+    QCOMPARE(archive->numberOfVolumes(), numberOfVolumes);
 
     QFETCH(Archive::EncryptionType, expectedEncryptionType);
     QCOMPARE(archive->encryptionType(), expectedEncryptionType);
@@ -121,60 +104,60 @@ void Cli7zTest::testList_data()
 
     // p7zip version 16.02 tests
 
-    QTest::newRow("normal-file-1602")
-            << QFINDTESTDATA("data/archive-with-symlink-1602.txt") << 10 << false << 0 << QStringList{QStringLiteral("LZMA2")} << QString()
-            << 4 << QStringLiteral("testarchive/dir2/file2.txt") << false << false << (qulonglong) 32 << QStringLiteral("2015-05-17T20:41:48");
+    QTest::newRow("normal-file-1602") << QFINDTESTDATA("data/archive-with-symlink-1602.txt") << 10 << false << 0 << QStringList{QStringLiteral("LZMA2")}
+                                      << QString() << 4 << QStringLiteral("testarchive/dir2/file2.txt") << false << false << (qulonglong)32
+                                      << QStringLiteral("2015-05-17T20:41:48");
 
-    QTest::newRow("encrypted-1602")
-            << QFINDTESTDATA("data/archive-encrypted-1602.txt") << 4 << false << 0 << QStringList{QStringLiteral("LZMA2")} << QStringLiteral("7zAES")
-            << 1 << QStringLiteral("file2.txt") << false << true << (qulonglong) 14 << QStringLiteral("2016-03-02T22:37:55");
+    QTest::newRow("encrypted-1602") << QFINDTESTDATA("data/archive-encrypted-1602.txt") << 4 << false << 0 << QStringList{QStringLiteral("LZMA2")}
+                                    << QStringLiteral("7zAES") << 1 << QStringLiteral("file2.txt") << false << true << (qulonglong)14
+                                    << QStringLiteral("2016-03-02T22:37:55");
 
-    QTest::newRow("multi-volume-1602")
-            << QFINDTESTDATA("data/archive-multivol-1602.txt") << 2 << true << 5 << QStringList{QStringLiteral("LZMA2")} << QString()
-            << 1 << QStringLiteral("largefile2") << false << false << (qulonglong) 2097152 << QStringLiteral("2016-07-17T11:26:19");
+    QTest::newRow("multi-volume-1602") << QFINDTESTDATA("data/archive-multivol-1602.txt") << 2 << true << 5 << QStringList{QStringLiteral("LZMA2")} << QString()
+                                       << 1 << QStringLiteral("largefile2") << false << false << (qulonglong)2097152 << QStringLiteral("2016-07-17T11:26:19");
 
     QTest::newRow("zip-with-AES256-encryption")
-            << QFINDTESTDATA("data/archive-zip-AES256-1602.txt") << 4 << false << 0
-            << QStringList{QStringLiteral("Store"), QStringLiteral("Store"), QStringLiteral("Deflate"), QStringLiteral("Deflate")}
-            << QStringLiteral("AES256")
-            << 3 << QStringLiteral("testarchive/file2.txt") << false << true << (qulonglong) 33 << QStringLiteral("2016-11-06T21:17:02");
+        << QFINDTESTDATA("data/archive-zip-AES256-1602.txt") << 4 << false << 0
+        << QStringList{QStringLiteral("Store"), QStringLiteral("Store"), QStringLiteral("Deflate"), QStringLiteral("Deflate")} << QStringLiteral("AES256") << 3
+        << QStringLiteral("testarchive/file2.txt") << false << true << (qulonglong)33 << QStringLiteral("2016-11-06T21:17:02");
 
     // p7zip version 15.14 tests
 
-    QTest::newRow("normal-file-1514")
-            << QFINDTESTDATA("data/archive-with-symlink-1514.txt") << 10 << false << 0 << QStringList{QStringLiteral("LZMA2")} << QString()
-            << 4 << QStringLiteral("testarchive/dir2/file2.txt") << false << false << (qulonglong) 32 << QStringLiteral("2015-05-17T19:41:48");
+    QTest::newRow("normal-file-1514") << QFINDTESTDATA("data/archive-with-symlink-1514.txt") << 10 << false << 0 << QStringList{QStringLiteral("LZMA2")}
+                                      << QString() << 4 << QStringLiteral("testarchive/dir2/file2.txt") << false << false << (qulonglong)32
+                                      << QStringLiteral("2015-05-17T19:41:48");
 
-    QTest::newRow("encrypted-1514")
-            << QFINDTESTDATA("data/archive-encrypted-1514.txt") << 9 << false << 0 << QStringList{QStringLiteral("LZMA2")} << QStringLiteral("7zAES")
-            << 3 << QStringLiteral("testarchive/dir1/file1.txt") << false << true << (qulonglong) 32 << QStringLiteral("2015-05-17T19:41:48");
+    QTest::newRow("encrypted-1514") << QFINDTESTDATA("data/archive-encrypted-1514.txt") << 9 << false << 0 << QStringList{QStringLiteral("LZMA2")}
+                                    << QStringLiteral("7zAES") << 3 << QStringLiteral("testarchive/dir1/file1.txt") << false << true << (qulonglong)32
+                                    << QStringLiteral("2015-05-17T19:41:48");
 
     // p7zip version 15.09 tests
 
-    QTest::newRow("normal-file-1509")
-            << QFINDTESTDATA("data/archive-with-symlink-1509.txt") << 10 << false << 0 << QStringList{QStringLiteral("LZMA2")} << QString()
-            << 4 << QStringLiteral("testarchive/dir2/file2.txt") << false << false << (qulonglong) 32 << QStringLiteral("2015-05-17T19:41:48");
+    QTest::newRow("normal-file-1509") << QFINDTESTDATA("data/archive-with-symlink-1509.txt") << 10 << false << 0 << QStringList{QStringLiteral("LZMA2")}
+                                      << QString() << 4 << QStringLiteral("testarchive/dir2/file2.txt") << false << false << (qulonglong)32
+                                      << QStringLiteral("2015-05-17T19:41:48");
 
-    QTest::newRow("encrypted-1509")
-            << QFINDTESTDATA("data/archive-encrypted-1509.txt") << 9 << false << 0 << QStringList{QStringLiteral("LZMA2")} << QStringLiteral("7zAES")
-            << 3 << QStringLiteral("testarchive/dir1/file1.txt") << false << true << (qulonglong) 32 << QStringLiteral("2015-05-17T19:41:48");
+    QTest::newRow("encrypted-1509") << QFINDTESTDATA("data/archive-encrypted-1509.txt") << 9 << false << 0 << QStringList{QStringLiteral("LZMA2")}
+                                    << QStringLiteral("7zAES") << 3 << QStringLiteral("testarchive/dir1/file1.txt") << false << true << (qulonglong)32
+                                    << QStringLiteral("2015-05-17T19:41:48");
 
     // p7zip version 9.38.1 tests
 
-    QTest::newRow("normal-file-9381")
-            << QFINDTESTDATA("data/archive-with-symlink-9381.txt") << 10 << false << 0 << QStringList{QStringLiteral("LZMA2")} << QString()
-            << 4 << QStringLiteral("testarchive/dir2/file2.txt") << false << false << (qulonglong) 32 << QStringLiteral("2015-05-17T19:41:48");
+    QTest::newRow("normal-file-9381") << QFINDTESTDATA("data/archive-with-symlink-9381.txt") << 10 << false << 0 << QStringList{QStringLiteral("LZMA2")}
+                                      << QString() << 4 << QStringLiteral("testarchive/dir2/file2.txt") << false << false << (qulonglong)32
+                                      << QStringLiteral("2015-05-17T19:41:48");
 
-    QTest::newRow("encrypted-9381")
-            << QFINDTESTDATA("data/archive-encrypted-9381.txt") << 9 << false << 0 << QStringList{QStringLiteral("LZMA2")} << QStringLiteral("7zAES")
-            << 3 << QStringLiteral("testarchive/dir1/file1.txt") << false << true << (qulonglong) 32 << QStringLiteral("2015-05-17T19:41:48");
+    QTest::newRow("encrypted-9381") << QFINDTESTDATA("data/archive-encrypted-9381.txt") << 9 << false << 0 << QStringList{QStringLiteral("LZMA2")}
+                                    << QStringLiteral("7zAES") << 3 << QStringLiteral("testarchive/dir1/file1.txt") << false << true << (qulonglong)32
+                                    << QStringLiteral("2015-05-17T19:41:48");
 }
 
 void Cli7zTest::testList()
 {
-    qRegisterMetaType<Archive::Entry*>("Archive::Entry*");
-    CliPlugin *plugin = new CliPlugin(this, {QStringLiteral("dummy.7z"),
-                                             QVariant::fromValue(m_plugin->metaData())});
+    if (!m_plugin || !m_plugin->isValid()) {
+        QSKIP("cli7z plugin not available. Skipping test.", SkipSingle);
+    }
+    qRegisterMetaType<Archive::Entry *>("Archive::Entry*");
+    CliPlugin *plugin = new CliPlugin(this, {QStringLiteral("dummy.7z"), QVariant::fromValue(m_plugin->metaData())});
     QSignalSpy signalSpyEntry(plugin, &CliPlugin::entry);
     QSignalSpy signalSpyCompMethod(plugin, &CliPlugin::compressionMethodFound);
     QSignalSpy signalSpyEncMethod(plugin, &CliPlugin::encryptionMethodFound);
@@ -217,7 +200,7 @@ void Cli7zTest::testList()
 
     QFETCH(int, someEntryIndex);
     QVERIFY(someEntryIndex < signalSpyEntry.count());
-    Archive::Entry *entry = signalSpyEntry.at(someEntryIndex).at(0).value<Archive::Entry*>();
+    Archive::Entry *entry = signalSpyEntry.at(someEntryIndex).at(0).value<Archive::Entry *>();
 
     QFETCH(QString, expectedName);
     QCOMPARE(entry->fullPath(), expectedName);
@@ -244,35 +227,30 @@ void Cli7zTest::testListArgs_data()
     QTest::addColumn<QString>("password");
     QTest::addColumn<QStringList>("expectedArgs");
 
-    QTest::newRow("unencrypted")
-            << QStringLiteral("/tmp/foo.7z")
-            << QString()
-            << QStringList {
-                   QStringLiteral("l"),
-                   QStringLiteral("-slt"),
-                   QStringLiteral("/tmp/foo.7z")
-               };
+    QTest::newRow("unencrypted") << QStringLiteral("/tmp/foo.7z") << QString()
+                                 << QStringList{
+                                        QStringLiteral("l"),
+                                        QStringLiteral("-slt"),
+                                        QStringLiteral("/tmp/foo.7z"),
+                                    };
 
-    QTest::newRow("header-encrypted")
-            << QStringLiteral("/tmp/foo.7z")
-            << QStringLiteral("1234")
-            << QStringList {
-                   QStringLiteral("l"),
-                   QStringLiteral("-slt"),
-                   QStringLiteral("-p1234"),
-                   QStringLiteral("/tmp/foo.7z")
-               };
+    QTest::newRow("header-encrypted") << QStringLiteral("/tmp/foo.7z") << QStringLiteral("1234")
+                                      << QStringList{
+                                             QStringLiteral("l"),
+                                             QStringLiteral("-slt"),
+                                             QStringLiteral("-p1234"),
+                                             QStringLiteral("/tmp/foo.7z"),
+                                         };
 }
 
 void Cli7zTest::testListArgs()
 {
-    if (!m_plugin->isValid()) {
+    if (!m_plugin || !m_plugin->isValid()) {
         QSKIP("cli7z plugin not available. Skipping test.", SkipSingle);
     }
 
     QFETCH(QString, archiveName);
-    CliPlugin *plugin = new CliPlugin(this, {QVariant(archiveName),
-                                             QVariant::fromValue(m_plugin->metaData())});
+    CliPlugin *plugin = new CliPlugin(this, {QVariant(archiveName), QVariant::fromValue(m_plugin->metaData())});
     QVERIFY(plugin);
 
     QFETCH(QString, password);
@@ -295,75 +273,54 @@ void Cli7zTest::testAddArgs_data()
     QTest::addColumn<ulong>("volumeSize");
     QTest::addColumn<QStringList>("expectedArgs");
 
-    QTest::newRow("unencrypted")
-            << QStringLiteral("/tmp/foo.7z")
-            << QString() << false << 5 << QStringLiteral("LZMA2") << 0UL
-            << QStringList {
-                   QStringLiteral("a"),
-                   QStringLiteral("-l"),
-                   QStringLiteral("-mx=5"),
-                   QStringLiteral("-m0=LZMA2"),
-                   QStringLiteral("/tmp/foo.7z")
-               };
+    QTest::newRow("unencrypted") << QStringLiteral("/tmp/foo.7z") << QString() << false << 5 << QStringLiteral("LZMA2") << 0UL
+                                 << QStringList{
+                                        QStringLiteral("a"),
+                                        QStringLiteral("-mx=5"),
+                                        QStringLiteral("-m0=LZMA2"),
+                                        QStringLiteral("/tmp/foo.7z"),
+                                    };
 
     QTest::newRow("encrypted")
-            << QStringLiteral("/tmp/foo.7z")
-            << QStringLiteral("1234") << false << 5 << QStringLiteral("LZMA2") << 0UL
-            << QStringList {
-                   QStringLiteral("a"),
-                   QStringLiteral("-l"),
-                   QStringLiteral("-p1234"),
-                   QStringLiteral("-mx=5"),
-                   QStringLiteral("-m0=LZMA2"),
-                   QStringLiteral("/tmp/foo.7z")
-               };
+        << QStringLiteral("/tmp/foo.7z") << QStringLiteral("1234") << false << 5 << QStringLiteral("LZMA2") << 0UL
+        << QStringList{QStringLiteral("a"), QStringLiteral("-p1234"), QStringLiteral("-mx=5"), QStringLiteral("-m0=LZMA2"), QStringLiteral("/tmp/foo.7z")};
 
-    QTest::newRow("header-encrypted")
-            << QStringLiteral("/tmp/foo.7z")
-            << QStringLiteral("1234") << true << 5 << QStringLiteral("LZMA2") << 0UL
-            << QStringList {
-                   QStringLiteral("a"),
-                   QStringLiteral("-l"),
-                   QStringLiteral("-p1234"),
-                   QStringLiteral("-mhe=on"),
-                   QStringLiteral("-mx=5"),
-                   QStringLiteral("-m0=LZMA2"),
-                   QStringLiteral("/tmp/foo.7z")
-               };
+    QTest::newRow("header-encrypted") << QStringLiteral("/tmp/foo.7z") << QStringLiteral("1234") << true << 5 << QStringLiteral("LZMA2") << 0UL
+                                      << QStringList{
+                                             QStringLiteral("a"),
+                                             QStringLiteral("-p1234"),
+                                             QStringLiteral("-mhe=on"),
+                                             QStringLiteral("-mx=5"),
+                                             QStringLiteral("-m0=LZMA2"),
+                                             QStringLiteral("/tmp/foo.7z"),
+                                         };
 
-    QTest::newRow("multi-volume")
-            << QStringLiteral("/tmp/foo.7z")
-            << QString() << false << 5 << QStringLiteral("LZMA2") << 2500UL
-            << QStringList {
-                   QStringLiteral("a"),
-                   QStringLiteral("-l"),
-                   QStringLiteral("-mx=5"),
-                   QStringLiteral("-m0=LZMA2"),
-                   QStringLiteral("-v2500k"),
-                   QStringLiteral("/tmp/foo.7z")
-               };
+    QTest::newRow("multi-volume") << QStringLiteral("/tmp/foo.7z") << QString() << false << 5 << QStringLiteral("LZMA2") << 2500UL
+                                  << QStringList{
+                                         QStringLiteral("a"),
+                                         QStringLiteral("-mx=5"),
+                                         QStringLiteral("-m0=LZMA2"),
+                                         QStringLiteral("-v2500k"),
+                                         QStringLiteral("/tmp/foo.7z"),
+                                     };
 
-    QTest::newRow("comp-method-bzip2")
-            << QStringLiteral("/tmp/foo.7z")
-            << QString() << false << 5 << QStringLiteral("BZip2") << 0UL
-            << QStringList {
-                   QStringLiteral("a"),
-                   QStringLiteral("-l"),
-                   QStringLiteral("-mx=5"),
-                   QStringLiteral("-m0=BZip2"),
-                   QStringLiteral("/tmp/foo.7z")
-               };
+    QTest::newRow("comp-method-bzip2") << QStringLiteral("/tmp/foo.7z") << QString() << false << 5 << QStringLiteral("BZip2") << 0UL
+                                       << QStringList{
+                                              QStringLiteral("a"),
+                                              QStringLiteral("-mx=5"),
+                                              QStringLiteral("-m0=BZip2"),
+                                              QStringLiteral("/tmp/foo.7z"),
+                                          };
 }
 
 void Cli7zTest::testAddArgs()
 {
-    if (!m_plugin->isValid()) {
+    if (!m_plugin || !m_plugin->isValid()) {
         QSKIP("cli7z plugin not available. Skipping test.", SkipSingle);
     }
 
     QFETCH(QString, archiveName);
-    CliPlugin *plugin = new CliPlugin(this, {QVariant(archiveName),
-                                             QVariant::fromValue(m_plugin->metaData())});
+    CliPlugin *plugin = new CliPlugin(this, {QVariant(archiveName), QVariant::fromValue(m_plugin->metaData())});
     QVERIFY(plugin);
 
     QFETCH(QString, password);
@@ -372,7 +329,11 @@ void Cli7zTest::testAddArgs()
     QFETCH(ulong, volumeSize);
     QFETCH(QString, compressionMethod);
 
-    const auto replacedArgs = plugin->cliProperties()->addArgs(archiveName, {}, password, encryptHeader, compressionLevel, compressionMethod, QString(), volumeSize);
+    auto replacedArgs = plugin->cliProperties()->addArgs(archiveName, {}, password, encryptHeader, compressionLevel, compressionMethod, QString(), volumeSize);
+    // The -l switch is added only for the p7zip variant, we just ignore it for simplicity.
+    if (replacedArgs.contains(QLatin1String("-l"))) {
+        replacedArgs.removeAll(QStringLiteral("-l"));
+    }
 
     QFETCH(QStringList, expectedArgs);
     QCOMPARE(replacedArgs, expectedArgs);
@@ -383,84 +344,79 @@ void Cli7zTest::testAddArgs()
 void Cli7zTest::testExtractArgs_data()
 {
     QTest::addColumn<QString>("archiveName");
-    QTest::addColumn<QVector<Archive::Entry*>>("files");
+    QTest::addColumn<QList<Archive::Entry *>>("files");
     QTest::addColumn<bool>("preservePaths");
     QTest::addColumn<QString>("password");
     QTest::addColumn<QStringList>("expectedArgs");
 
-    QTest::newRow("preserve paths, encrypted")
-            << QStringLiteral("/tmp/foo.7z")
-            << QVector<Archive::Entry*> {
-                   new Archive::Entry(this, QStringLiteral("aDir/textfile2.txt"), QStringLiteral("aDir")),
-                   new Archive::Entry(this, QStringLiteral("c.txt"), QString())
-               }
-            << true << QStringLiteral("1234")
-            << QStringList {
-                   QStringLiteral("x"),
-                   QStringLiteral("-p1234"),
-                   QStringLiteral("/tmp/foo.7z"),
-                   QStringLiteral("aDir/textfile2.txt"),
-                   QStringLiteral("c.txt"),
-               };
+    QTest::newRow("preserve paths, encrypted") << QStringLiteral("/tmp/foo.7z")
+                                               << (QList<Archive::Entry *>{
+                                                      new Archive::Entry(this, QStringLiteral("aDir/textfile2.txt"), QStringLiteral("aDir")),
+                                                      new Archive::Entry(this, QStringLiteral("c.txt"), QString()),
+                                                  })
+                                               << true << QStringLiteral("1234")
+                                               << QStringList{
+                                                      QStringLiteral("x"),
+                                                      QStringLiteral("-p1234"),
+                                                      QStringLiteral("/tmp/foo.7z"),
+                                                      QStringLiteral("aDir/textfile2.txt"),
+                                                      QStringLiteral("c.txt"),
+                                                  };
 
-    QTest::newRow("preserve paths, unencrypted")
-            << QStringLiteral("/tmp/foo.7z")
-            << QVector<Archive::Entry*> {
-                   new Archive::Entry(this, QStringLiteral("aDir/textfile2.txt"), QStringLiteral("aDir")),
-                   new Archive::Entry(this, QStringLiteral("c.txt"), QString())
-               }
-            << true << QString()
-            << QStringList {
-                   QStringLiteral("x"),
-                   QStringLiteral("/tmp/foo.7z"),
-                   QStringLiteral("aDir/textfile2.txt"),
-                   QStringLiteral("c.txt"),
-               };
+    QTest::newRow("preserve paths, unencrypted") << QStringLiteral("/tmp/foo.7z")
+                                                 << (QList<Archive::Entry *>{
+                                                        new Archive::Entry(this, QStringLiteral("aDir/textfile2.txt"), QStringLiteral("aDir")),
+                                                        new Archive::Entry(this, QStringLiteral("c.txt"), QString()),
+                                                    })
+                                                 << true << QString()
+                                                 << QStringList{
+                                                        QStringLiteral("x"),
+                                                        QStringLiteral("/tmp/foo.7z"),
+                                                        QStringLiteral("aDir/textfile2.txt"),
+                                                        QStringLiteral("c.txt"),
+                                                    };
 
-    QTest::newRow("without paths, encrypted")
-            << QStringLiteral("/tmp/foo.7z")
-            << QVector<Archive::Entry*> {
-                   new Archive::Entry(this, QStringLiteral("aDir/textfile2.txt"), QStringLiteral("aDir")),
-                   new Archive::Entry(this, QStringLiteral("c.txt"), QString())
-               }
-            << false << QStringLiteral("1234")
-            << QStringList {
-                   QStringLiteral("e"),
-                   QStringLiteral("-p1234"),
-                   QStringLiteral("/tmp/foo.7z"),
-                   QStringLiteral("aDir/textfile2.txt"),
-                   QStringLiteral("c.txt"),
-               };
+    QTest::newRow("without paths, encrypted") << QStringLiteral("/tmp/foo.7z")
+                                              << (QList<Archive::Entry *>{
+                                                     new Archive::Entry(this, QStringLiteral("aDir/textfile2.txt"), QStringLiteral("aDir")),
+                                                     new Archive::Entry(this, QStringLiteral("c.txt"), QString()),
+                                                 })
+                                              << false << QStringLiteral("1234")
+                                              << QStringList{
+                                                     QStringLiteral("e"),
+                                                     QStringLiteral("-p1234"),
+                                                     QStringLiteral("/tmp/foo.7z"),
+                                                     QStringLiteral("aDir/textfile2.txt"),
+                                                     QStringLiteral("c.txt"),
+                                                 };
 
-    QTest::newRow("without paths, unencrypted")
-            << QStringLiteral("/tmp/foo.7z")
-            << QVector<Archive::Entry*> {
-                   new Archive::Entry(this, QStringLiteral("aDir/textfile2.txt"), QStringLiteral("aDir")),
-                   new Archive::Entry(this, QStringLiteral("c.txt"), QString())
-               }
-            << false << QString()
-            << QStringList {
-                   QStringLiteral("e"),
-                   QStringLiteral("/tmp/foo.7z"),
-                   QStringLiteral("aDir/textfile2.txt"),
-                   QStringLiteral("c.txt"),
-               };
+    QTest::newRow("without paths, unencrypted") << QStringLiteral("/tmp/foo.7z")
+                                                << (QList<Archive::Entry *>{
+                                                       new Archive::Entry(this, QStringLiteral("aDir/textfile2.txt"), QStringLiteral("aDir")),
+                                                       new Archive::Entry(this, QStringLiteral("c.txt"), QString()),
+                                                   })
+                                                << false << QString()
+                                                << QStringList{
+                                                       QStringLiteral("e"),
+                                                       QStringLiteral("/tmp/foo.7z"),
+                                                       QStringLiteral("aDir/textfile2.txt"),
+                                                       QStringLiteral("c.txt"),
+                                                   };
 }
 
 void Cli7zTest::testExtractArgs()
 {
-    if (!m_plugin->isValid()) {
+    if (!m_plugin || !m_plugin->isValid()) {
         QSKIP("cli7z plugin not available. Skipping test.", SkipSingle);
     }
 
     QFETCH(QString, archiveName);
-    CliPlugin *plugin = new CliPlugin(this, {QVariant(archiveName),
-                                             QVariant::fromValue(m_plugin->metaData())});
+    CliPlugin *plugin = new CliPlugin(this, {QVariant(archiveName), QVariant::fromValue(m_plugin->metaData())});
     QVERIFY(plugin);
 
-    QFETCH(QVector<Archive::Entry*>, files);
+    QFETCH(QList<Archive::Entry *>, files);
     QStringList filesList;
-    for (const Archive::Entry *e : qAsConst(files)) {
+    for (const Archive::Entry *e : std::as_const(files)) {
         filesList << e->fullPath(NoTrailingSlash);
     }
 
@@ -477,7 +433,7 @@ void Cli7zTest::testExtractArgs()
 
 void Cli7zTest::testRDAAttributes()
 {
-    if (!m_plugin->isValid()) {
+    if (!m_plugin || !m_plugin->isValid()) {
         QSKIP("cli7z plugin not available. Skipping test.", SkipSingle);
     }
 
@@ -495,3 +451,4 @@ void Cli7zTest::testRDAAttributes()
     QCOMPARE(numberOfFolders, 2);
 }
 
+#include "moc_cli7ztest.cpp"

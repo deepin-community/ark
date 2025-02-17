@@ -1,29 +1,8 @@
 /*
- * ark -- archiver for the KDE project
- *
- * Copyright (C) 2016 Ragnar Thomsen <rthomsen6@gmail.com>
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES ( INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION ) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * ( INCLUDING NEGLIGENCE OR OTHERWISE ) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+    SPDX-FileCopyrightText: 2016 Ragnar Thomsen <rthomsen6@gmail.com>
+
+    SPDX-License-Identifier: BSD-2-Clause
+*/
 
 #include "compressionoptionswidget.h"
 #include "ark_debug.h"
@@ -37,8 +16,7 @@
 
 namespace Kerfuffle
 {
-CompressionOptionsWidget::CompressionOptionsWidget(QWidget *parent,
-                                                   const CompressionOptions &opts)
+CompressionOptionsWidget::CompressionOptionsWidget(QWidget *parent, const CompressionOptions &opts)
     : QWidget(parent)
     , m_opts(opts)
 {
@@ -48,7 +26,11 @@ CompressionOptionsWidget::CompressionOptionsWidget(QWidget *parent,
     pwdWidget->setBackgroundWarningColor(colorScheme.background(KColorScheme::NegativeBackground).color());
     pwdWidget->setPasswordStrengthMeterVisible(false);
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 7, 0)
     connect(multiVolumeCheckbox, &QCheckBox::stateChanged, this, &CompressionOptionsWidget::slotMultiVolumeChecked);
+#else
+    connect(multiVolumeCheckbox, &QCheckBox::checkStateChanged, this, &CompressionOptionsWidget::slotMultiVolumeChecked);
+#endif
     connect(compMethodComboBox, &QComboBox::currentTextChanged, this, &CompressionOptionsWidget::slotCompMethodChanged);
     connect(encMethodComboBox, &QComboBox::currentTextChanged, this, &CompressionOptionsWidget::slotEncryptionMethodChanged);
 
@@ -93,7 +75,7 @@ ulong CompressionOptionsWidget::volumeSize() const
 {
     if (collapsibleMultiVolume->isEnabled() && multiVolumeCheckbox->isChecked()) {
         // Convert to kilobytes.
-        return static_cast<ulong>(volumeSizeSpinbox->value()) * 1024;
+        return static_cast<ulong>(volumeSizeSpinbox->value() * 1024);
     } else {
         return 0;
     }
@@ -121,15 +103,13 @@ void CompressionOptionsWidget::updateWidgets()
     Q_ASSERT(archiveFormat.isValid());
 
     if (archiveFormat.encryptionType() != Archive::Unencrypted) {
-
         collapsibleEncryption->setEnabled(true);
         collapsibleEncryption->setToolTip(QString());
 
         encMethodComboBox->clear();
         encMethodComboBox->insertItems(0, archiveFormat.encryptionMethods());
 
-        if (!m_opts.encryptionMethod().isEmpty() &&
-            encMethodComboBox->findText(m_opts.encryptionMethod()) > -1) {
+        if (!m_opts.encryptionMethod().isEmpty() && encMethodComboBox->findText(m_opts.encryptionMethod()) > -1) {
             encMethodComboBox->setCurrentText(m_opts.encryptionMethod());
         } else {
             encMethodComboBox->setCurrentText(archiveFormat.defaultEncryptionMethod());
@@ -150,8 +130,7 @@ void CompressionOptionsWidget::updateWidgets()
             // Show the tooltip only if the encryption is still enabled.
             // This is needed because if the new filter is e.g. tar, the whole encryption group gets disabled.
             if (collapsibleEncryption->isEnabled() && collapsibleEncryption->isExpanded()) {
-                encryptHeaderCheckBox->setToolTip(i18n("Protection of the list of files is not possible with the %1 format.",
-                                                       m_mimetype.comment()));
+                encryptHeaderCheckBox->setToolTip(i18n("Protection of the list of files is not possible with the %1 format.", m_mimetype.comment()));
             } else {
                 encryptHeaderCheckBox->setToolTip(QString());
             }
@@ -159,8 +138,7 @@ void CompressionOptionsWidget::updateWidgets()
 
     } else {
         collapsibleEncryption->setEnabled(false);
-        collapsibleEncryption->setToolTip(i18n("Protection of the archive with password is not possible with the %1 format.",
-                                               m_mimetype.comment()));
+        collapsibleEncryption->setToolTip(i18n("Protection of the archive with password is not possible with the %1 format.", m_mimetype.comment()));
         lblEncMethod->setEnabled(false);
         encMethodComboBox->setEnabled(false);
         encMethodComboBox->clear();
@@ -174,8 +152,7 @@ void CompressionOptionsWidget::updateWidgets()
         lblCompLevel1->setEnabled(false);
         lblCompLevel2->setEnabled(false);
         lblCompLevel3->setEnabled(false);
-        compLevelSlider->setToolTip(i18n("It is not possible to set compression level for the %1 format.",
-                                                m_mimetype.comment()));
+        compLevelSlider->setToolTip(i18n("It is not possible to set compression level for the %1 format.", m_mimetype.comment()));
     } else {
         compLevelSlider->setEnabled(true);
         lblCompLevel1->setEnabled(true);
@@ -194,8 +171,7 @@ void CompressionOptionsWidget::updateWidgets()
     if (archiveFormat.compressionMethods().isEmpty()) {
         lblCompMethod->setEnabled(false);
         compMethodComboBox->setEnabled(false);
-        compMethodComboBox->setToolTip(i18n("It is not possible to set compression method for the %1 format.",
-                                            m_mimetype.comment()));
+        compMethodComboBox->setToolTip(i18n("It is not possible to set compression method for the %1 format.", m_mimetype.comment()));
         compMethodComboBox->clear();
     } else {
         lblCompMethod->setEnabled(true);
@@ -203,8 +179,7 @@ void CompressionOptionsWidget::updateWidgets()
         compMethodComboBox->setToolTip(QString());
         compMethodComboBox->clear();
         compMethodComboBox->insertItems(0, archiveFormat.compressionMethods().keys());
-        if (!m_opts.compressionMethod().isEmpty() &&
-            compMethodComboBox->findText(m_opts.compressionMethod()) > -1) {
+        if (!m_opts.compressionMethod().isEmpty() && compMethodComboBox->findText(m_opts.compressionMethod()) > -1) {
             compMethodComboBox->setCurrentText(m_opts.compressionMethod());
         } else {
             compMethodComboBox->setCurrentText(archiveFormat.defaultCompressionMethod());
@@ -217,8 +192,7 @@ void CompressionOptionsWidget::updateWidgets()
         collapsibleMultiVolume->setToolTip(QString());
     } else {
         collapsibleMultiVolume->setEnabled(false);
-        collapsibleMultiVolume->setToolTip(i18n("The %1 format does not support multi-volume archives.",
-                                                m_mimetype.comment()));
+        collapsibleMultiVolume->setToolTip(i18n("The %1 format does not support multi-volume archives.", m_mimetype.comment()));
     }
 }
 
@@ -274,26 +248,10 @@ void CompressionOptionsWidget::slotMultiVolumeChecked(int state)
 
 void CompressionOptionsWidget::slotCompMethodChanged(const QString &value)
 {
-    // This hack is needed for the RAR format because the available encryption
-    // method is dependent on the selected compression method. Rar uses AES128
-    // for RAR4 format and AES256 for RAR5 format.
-
-    if (m_mimetype == QMimeDatabase().mimeTypeForName(QStringLiteral("application/vnd.rar")) ||
-        m_mimetype == QMimeDatabase().mimeTypeForName(QStringLiteral("application/x-rar"))) {
-
-        encMethodComboBox->clear();
-        if (value == QLatin1String("RAR4")) {
-            encMethodComboBox->insertItem(0, QStringLiteral("AES128"));
-        } else {
-            encMethodComboBox->insertItem(0, QStringLiteral("AES256"));
-        }
-    }
-
     const ArchiveFormat archiveFormat = this->archiveFormat();
     Q_ASSERT(archiveFormat.isValid());
 
     if (m_mimetype == QMimeDatabase().mimeTypeForName(QStringLiteral("application/zip"))) {
-
         if (value == QLatin1String("Zstd")) {
             compLevelSlider->setMaximum(22);
         } else {
@@ -314,3 +272,5 @@ void CompressionOptionsWidget::slotEncryptionMethodChanged(const QString &value)
 }
 
 }
+
+#include "moc_compressionoptionswidget.cpp"

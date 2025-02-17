@@ -1,27 +1,8 @@
 /*
- * Copyright (c) 2015 Elvis Angelaccio <elvis.angelaccio@kde.org>
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES ( INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION ) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * ( INCLUDING NEGLIGENCE OR OTHERWISE ) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+    SPDX-FileCopyrightText: 2015 Elvis Angelaccio <elvis.angelaccio@kde.org>
+
+    SPDX-License-Identifier: BSD-2-Clause
+*/
 
 #include "archive_kerfuffle.h"
 #include "mimetypes.h"
@@ -49,7 +30,7 @@ void MimeTypeTest::testMimeTypeDetection_data()
     QTest::addColumn<QString>("expectedMimeType");
 
     const QString compressedGzipTarMime = QStringLiteral("application/x-compressed-tar");
-    const QString compressedBzip2TarMime = QStringLiteral("application/x-bzip-compressed-tar");
+    const QString compressedBzip2TarMime = QMimeDatabase().mimeTypeForFile(QStringLiteral("dummy.tar.bz2"), QMimeDatabase::MatchExtension).name();
     const QString compressedXzTarMime = QStringLiteral("application/x-xz-compressed-tar");
     const QString compressedLzmaTarMime = QStringLiteral("application/x-lzma-compressed-tar");
     const QString compressedZTarMime = QStringLiteral("application/x-tarz");
@@ -57,7 +38,7 @@ void MimeTypeTest::testMimeTypeDetection_data()
     const QString compressedLzopTarMime = QStringLiteral("application/x-tzo");
     const QString compressedLrzipTarMime = QStringLiteral("application/x-lrzip-compressed-tar");
     const QString compressedLz4TarMime = QStringLiteral("application/x-lz4-compressed-tar");
-    const QString isoMimeType = QStringLiteral("application/x-cd-image");
+    const QString isoMimeType = QMimeDatabase().mimeTypeForFile(QStringLiteral("dummy.iso"), QMimeDatabase::MatchExtension).name();
     const QString debMimeType = QMimeDatabase().mimeTypeForFile(QStringLiteral("dummy.deb"), QMimeDatabase::MatchExtension).name();
     const QString xarMimeType = QStringLiteral("application/x-xar");
     const QString appImageMimeType = QStringLiteral("application/x-iso9660-appimage");
@@ -80,6 +61,16 @@ void MimeTypeTest::testMimeTypeDetection_data()
     QTest::newRow("tar with special char in the extension") << QStringLiteral("foo.tar~1.gz") << compressedGzipTarMime;
     QTest::newRow("another tar with special char in the extension") << QStringLiteral("foo.ta4r.gz") << compressedGzipTarMime;
     QTest::newRow("tar downloaded by wget") << QFINDTESTDATA("data/wget-download.tar.gz.1") << compressedGzipTarMime;
+    QTest::newRow("tar.gz with ascii chars after the extension") << QStringLiteral("foo.tar.gz_copy") << compressedGzipTarMime;
+    QTest::newRow("tar.bz2 with ascii chars after the extension") << QStringLiteral("foo.tar.bz2_copy") << compressedBzip2TarMime;
+    QTest::newRow("tar.xz with ascii chars after the extension") << QStringLiteral("foo.tar.xz_copy") << compressedXzTarMime;
+    QTest::newRow("tar.lzma with ascii chars after the extension") << QStringLiteral("foo.tar.lzma_copy") << compressedLzmaTarMime;
+    QTest::newRow("tar.Z with ascii chars after the extension") << QStringLiteral("foo.tar.Z_copy") << compressedZTarMime;
+    QTest::newRow("tar.lz with ascii chars after the extension") << QStringLiteral("foo.tar.lz_copy") << compressedLzipTarMime;
+    QTest::newRow("tar.lzo with ascii chars after the extension") << QStringLiteral("foo.tar.lzo_copy") << compressedLzopTarMime;
+    QTest::newRow("tar.lrz with ascii chars after the extension") << QStringLiteral("foo.tar.lrz_copy") << compressedLrzipTarMime;
+    QTest::newRow("tar.lz4 with ascii chars after the extension") << QStringLiteral("foo.tar.lz4_copy") << compressedLz4TarMime;
+    QTest::newRow("tar.gz with ascii chars + spaces after the extension") << QStringLiteral("foo. a tar. gz_copy") << compressedGzipTarMime;
 
     // This ISO file may be detected-by-content as text/plain. See https://bugs.freedesktop.org/show_bug.cgi?id=80877
     QTest::newRow("archlinux truncated ISO") << QFINDTESTDATA("data/archlinux-2015.09.01-dual_truncated.iso") << isoMimeType;

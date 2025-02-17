@@ -1,28 +1,21 @@
 ########### next target ###############
 
-# TODO: drop application/x-rar alias once distributions ship shared-mime-info 1.7
-set(SUPPORTED_CLIRAR_MIMETYPES "application/vnd.rar;application/x-rar;")
-
-set(kerfuffle_clirar_SRCS cliplugin.cpp)
+set(kerfuffle_clirar_SRCS cliplugin.cpp cliplugin.h)
 
 ecm_qt_declare_logging_category(kerfuffle_clirar_SRCS
                                 HEADER ark_debug.h
-                                IDENTIFIER ARK
+                                IDENTIFIER ARK_LOG
                                 CATEGORY_NAME ark.clirar DESCRIPTION "Ark Rar plugin" EXPORT ARK)
-
-# NOTE: the first double-quotes of the first mime and the last
-# double-quotes of the last mime must NOT be escaped.
-set(SUPPORTED_MIMETYPES
-    "application/vnd.rar\",
-    \"application/x-rar")
 
 configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/kerfuffle_clirar.json.cmake
     ${CMAKE_CURRENT_BINARY_DIR}/kerfuffle_clirar.json)
 
+kerfuffle_parse_json_mimetypes(${CMAKE_CURRENT_BINARY_DIR}/kerfuffle_clirar.json)
+set(SUPPORTED_ARK_MIMETYPES "${SUPPORTED_ARK_MIMETYPES}${PLUGIN_SUPPORTED_MIMETYPES}" PARENT_SCOPE)
+
 kerfuffle_add_plugin(kerfuffle_clirar ${kerfuffle_clirar_SRCS})
 
-set(SUPPORTED_ARK_MIMETYPES "${SUPPORTED_ARK_MIMETYPES}${SUPPORTED_CLIRAR_MIMETYPES}" PARENT_SCOPE)
 set(INSTALLED_KERFUFFLE_PLUGINS "${INSTALLED_KERFUFFLE_PLUGINS}kerfuffle_clirar;" PARENT_SCOPE)
 
 find_program(UNRAR unrar)

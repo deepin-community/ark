@@ -1,53 +1,38 @@
 /*
- * ark -- archiver for the KDE project
- *
- * Copyright (C) 2016 Ragnar Thomsen <rthomsen6@gmail.com>
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES ( INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION ) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * ( INCLUDING NEGLIGENCE OR OTHERWISE ) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+    SPDX-FileCopyrightText: 2016 Ragnar Thomsen <rthomsen6@gmail.com>
+
+    SPDX-License-Identifier: BSD-2-Clause
+*/
 
 #include "cliproperties.h"
-#include "ark_debug.h"
 #include "archiveformat.h"
+#include "ark_debug.h"
 #include "pluginmanager.h"
 #include <QRegularExpression>
 namespace Kerfuffle
 {
-
 CliProperties::CliProperties(QObject *parent, const KPluginMetaData &metaData, const QMimeType &archiveType)
-        : QObject(parent)
-        , m_mimeType(archiveType)
-        , m_metaData(metaData)
+    : QObject(parent)
+    , m_mimeType(archiveType)
+    , m_metaData(metaData)
 {
 }
 
-QStringList CliProperties::addArgs(const QString &archive, const QStringList &files, const QString &password, bool headerEncryption, int compressionLevel, const QString &compressionMethod, const QString &encryptionMethod, ulong volumeSize)
+QStringList CliProperties::addArgs(const QString &archive,
+                                   const QStringList &files,
+                                   const QString &password,
+                                   bool headerEncryption,
+                                   int compressionLevel,
+                                   const QString &compressionMethod,
+                                   const QString &encryptionMethod,
+                                   ulong volumeSize)
 {
     if (!encryptionMethod.isEmpty()) {
         Q_ASSERT(!password.isEmpty());
     }
 
     QStringList args;
-    for (const QString &s : qAsConst(m_addSwitch)) {
+    for (const QString &s : std::as_const(m_addSwitch)) {
         args << s;
     }
     if (!password.isEmpty()) {
@@ -85,7 +70,7 @@ QStringList CliProperties::commentArgs(const QString &archive, const QString &co
     return args;
 }
 
-QStringList CliProperties::deleteArgs(const QString &archive, const QVector<Archive::Entry*> &files, const QString &password)
+QStringList CliProperties::deleteArgs(const QString &archive, const QList<Archive::Entry *> &files, const QString &password)
 {
     QStringList args;
     args << m_deleteSwitch;
@@ -124,7 +109,7 @@ QStringList CliProperties::extractArgs(const QString &archive, const QStringList
 QStringList CliProperties::listArgs(const QString &archive, const QString &password)
 {
     QStringList args;
-    for (const QString &s : qAsConst(m_listSwitch)) {
+    for (const QString &s : std::as_const(m_listSwitch)) {
         args << s;
     }
 
@@ -138,7 +123,7 @@ QStringList CliProperties::listArgs(const QString &archive, const QString &passw
     return args;
 }
 
-QStringList CliProperties::moveArgs(const QString &archive, const QVector<Archive::Entry*> &entries, Archive::Entry *destination, const QString &password)
+QStringList CliProperties::moveArgs(const QString &archive, const QList<Archive::Entry *> &entries, Archive::Entry *destination, const QString &password)
 {
     QStringList args;
     args << m_moveSwitch;
@@ -148,10 +133,16 @@ QStringList CliProperties::moveArgs(const QString &archive, const QVector<Archiv
     args << archive;
     if (entries.count() > 1) {
         for (const Archive::Entry *file : entries) {
-            args << file->fullPath(NoTrailingSlash) << destination->fullPath() + file->name();
+            args << file->fullPath(NoTrailingSlash);
+            if (destination) {
+                args << destination->fullPath() + file->name();
+            }
         }
     } else {
-        args << entries.at(0)->fullPath(NoTrailingSlash) << destination->fullPath(NoTrailingSlash);
+        args << entries.at(0)->fullPath(NoTrailingSlash);
+        if (destination) {
+            args << destination->fullPath(NoTrailingSlash);
+        }
     }
 
     args.removeAll(QString());
@@ -161,7 +152,7 @@ QStringList CliProperties::moveArgs(const QString &archive, const QVector<Archiv
 QStringList CliProperties::testArgs(const QString &archive, const QString &password)
 {
     QStringList args;
-    for (const QString &s : qAsConst(m_testSwitch)) {
+    for (const QString &s : std::as_const(m_testSwitch)) {
         args << s;
     }
     if (!password.isEmpty()) {
@@ -234,7 +225,7 @@ QString CliProperties::substituteCompressionLevelSwitch(int level) const
 }
 
 QString CliProperties::substituteCompressionMethodSwitch(const QString &method) const
-{   
+{
     if (method.isEmpty()) {
         return QString();
     }
@@ -293,7 +284,7 @@ QString CliProperties::substituteMultiVolumeSwitch(ulong volumeSize) const
 
 bool CliProperties::isTestPassedMsg(const QString &line)
 {
-    for (const QString &rx : qAsConst(m_testPassedPatterns)) {
+    for (const QString &rx : std::as_const(m_testPassedPatterns)) {
         if (QRegularExpression(rx).match(line).hasMatch()) {
             return true;
         }
@@ -302,3 +293,5 @@ bool CliProperties::isTestPassedMsg(const QString &line)
 }
 
 }
+
+#include "moc_cliproperties.cpp"

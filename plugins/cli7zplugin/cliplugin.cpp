@@ -1,25 +1,10 @@
 /*
- * ark -- archiver for the KDE project
- *
- * Copyright (C) 2009 Harald Hvaal <haraldhv@stud.ntnu.no>
- * Copyright (C) 2009-2011 Raphael Kubo da Costa <rakuco@FreeBSD.org>
- * Copyright (c) 2016 Vladyslav Batyrenko <mvlabat@gmail.com>
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *
- */
+    SPDX-FileCopyrightText: 2009 Harald Hvaal <haraldhv@stud.ntnu.no>
+    SPDX-FileCopyrightText: 2009-2011 Raphael Kubo da Costa <rakuco@FreeBSD.org>
+    SPDX-FileCopyrightText: 2016 Vladyslav Batyrenko <mvlabat@gmail.com>
+
+    SPDX-License-Identifier: GPL-2.0-or-later
+*/
 
 #include "cliplugin.h"
 #include "ark_debug.h"
@@ -35,14 +20,15 @@ using namespace Kerfuffle;
 
 K_PLUGIN_CLASS_WITH_JSON(CliPlugin, "kerfuffle_cli7z.json")
 
-CliPlugin::CliPlugin(QObject *parent, const QVariantList & args)
-        : CliInterface(parent, args)
-        , m_archiveType(ArchiveType7z)
-        , m_parseState(ParseStateTitle)
-        , m_linesComment(0)
-        , m_isFirstInformationEntry(true)
+CliPlugin::CliPlugin(QObject *parent, const QVariantList &args)
+    : CliInterface(parent, args)
+    , m_archiveType(ArchiveType7z)
+    , m_parseState(ParseStateTitle)
+    , m_binaryVariant(Undefined)
+    , m_linesComment(0)
+    , m_isFirstInformationEntry(true)
 {
-    qCDebug(ARK) << "Loaded cli_7z plugin";
+    qCDebug(ARK_LOG) << "Loaded cli_7z plugin";
 
     setupCliProperties();
 }
@@ -60,13 +46,32 @@ void CliPlugin::resetParsing()
 
 void CliPlugin::setupCliProperties()
 {
-    qCDebug(ARK) << "Setting up parameters...";
+    qCDebug(ARK_LOG) << "Setting up parameters...";
+
+    if (m_binaryVariant == Undefined) {
+        qCDebug(ARK_LOG) << "Checking 7z variant...";
+        QProcess process;
+        process.setProgram(QStringLiteral("7z"));
+        process.start();
+        process.waitForFinished(500);
+        const QString output = QString::fromUtf8(process.readAllStandardOutput());
+        if (output.contains(QLatin1String("p7zip"))) {
+            qCDebug(ARK_LOG) << "Detected p7zip variant.";
+            m_binaryVariant = P7zip;
+        } else if (output.contains(QLatin1String("7-Zip"))) {
+            qCDebug(ARK_LOG) << "Detected upstream 7-Zip variant.";
+            m_binaryVariant = Upstream7zip;
+        }
+    }
 
     m_cliProps->setProperty("captureProgress", false);
 
     m_cliProps->setProperty("addProgram", QStringLiteral("7z"));
-    m_cliProps->setProperty("addSwitch", QStringList{QStringLiteral("a"),
-                                                 QStringLiteral("-l")});
+    QStringList addSwitch = {QStringLiteral("a")};
+    if (m_binaryVariant == P7zip) {
+        addSwitch << QStringLiteral("-l");
+    }
+    m_cliProps->setProperty("addSwitch", addSwitch);
 
     m_cliProps->setProperty("deleteProgram", QStringLiteral("7z"));
     m_cliProps->setProperty("deleteSwitch", QStringLiteral("d"));
@@ -76,8 +81,7 @@ void CliPlugin::setupCliProperties()
     m_cliProps->setProperty("extractSwitchNoPreserve", QStringList{QStringLiteral("e")});
 
     m_cliProps->setProperty("listProgram", QStringLiteral("7z"));
-    m_cliProps->setProperty("listSwitch", QStringList{QStringLiteral("l"),
-                                                  QStringLiteral("-slt")});
+    m_cliProps->setProperty("listSwitch", QStringList{QStringLiteral("l"), QStringLiteral("-slt")});
 
     m_cliProps->setProperty("moveProgram", QStringLiteral("7z"));
     m_cliProps->setProperty("moveSwitch", QStringLiteral("rn"));
@@ -86,22 +90,25 @@ void CliPlugin::setupCliProperties()
     m_cliProps->setProperty("testSwitch", QStringLiteral("t"));
 
     m_cliProps->setProperty("passwordSwitch", QStringList{QStringLiteral("-p$Password")});
-    m_cliProps->setProperty("passwordSwitchHeaderEnc", QStringList{QStringLiteral("-p$Password"),
-                                                               QStringLiteral("-mhe=on")});
+    m_cliProps->setProperty("passwordSwitchHeaderEnc", QStringList{QStringLiteral("-p$Password"), QStringLiteral("-mhe=on")});
     m_cliProps->setProperty("compressionLevelSwitch", QStringLiteral("-mx=$CompressionLevel"));
-    m_cliProps->setProperty("compressionMethodSwitch", QHash<QString,QVariant>{{QStringLiteral("application/x-7z-compressed"), QStringLiteral("-m0=$CompressionMethod")},
-                                                                               {QStringLiteral("application/zip"), QStringLiteral("-mm=$CompressionMethod")}});
-    m_cliProps->setProperty("encryptionMethodSwitch", QHash<QString,QVariant>{{QStringLiteral("application/x-7z-compressed"), QString()},
-                                                                              {QStringLiteral("application/zip"), QStringLiteral("-mem=$EncryptionMethod")}});
+    m_cliProps->setProperty("compressionMethodSwitch",
+                            QHash<QString, QVariant>{{QStringLiteral("application/x-7z-compressed"), QStringLiteral("-m0=$CompressionMethod")},
+                                                     {QStringLiteral("application/zip"), QStringLiteral("-mm=$CompressionMethod")}});
+    m_cliProps->setProperty("encryptionMethodSwitch",
+                            QHash<QString, QVariant>{{QStringLiteral("application/x-7z-compressed"), QString()},
+                                                     {QStringLiteral("application/zip"), QStringLiteral("-mem=$EncryptionMethod")}});
     m_cliProps->setProperty("multiVolumeSwitch", QStringLiteral("-v$VolumeSizek"));
     m_cliProps->setProperty("testPassedPatterns", QStringList{QStringLiteral("^Everything is Ok$")});
-    m_cliProps->setProperty("fileExistsFileNameRegExp", QStringList{QStringLiteral("^file \\./(.*)$"),
-                                                                    QStringLiteral("^  Path:     \\./(.*)$")});
-    m_cliProps->setProperty("fileExistsInput", QStringList{QStringLiteral("Y"),   //Overwrite
-                                                       QStringLiteral("N"),   //Skip
-                                                       QStringLiteral("A"),   //Overwrite all
-                                                       QStringLiteral("S"),   //Autoskip
-                                                       QStringLiteral("Q")}); //Cancel
+    m_cliProps->setProperty("fileExistsFileNameRegExp", QStringList{QStringLiteral("^file \\./(.*)$"), QStringLiteral("^  Path:     \\./(.*)$")});
+    m_cliProps->setProperty("fileExistsInput",
+                            QStringList{
+                                QStringLiteral("Y"), // Overwrite
+                                QStringLiteral("N"), // Skip
+                                QStringLiteral("A"), // Overwrite all
+                                QStringLiteral("S"), // Autoskip
+                                QStringLiteral("Q"), // Cancel
+                            });
     m_cliProps->setProperty("multiVolumeSuffix", QStringList{QStringLiteral("$Suffix.001")});
 }
 
@@ -115,7 +122,7 @@ void CliPlugin::fixDirectoryFullName()
     }
 }
 
-bool CliPlugin::readListLine(const QString& line)
+bool CliPlugin::readListLine(const QString &line)
 {
     static const QLatin1String archiveInfoDelimiter1("--"); // 7z 9.13+
     static const QLatin1String archiveInfoDelimiter2("----"); // 7z 9.04
@@ -126,7 +133,8 @@ bool CliPlugin::readListLine(const QString& line)
         return false;
     }
 
-    const QRegularExpression rxVersionLine(QStringLiteral("^p7zip Version ([\\d\\.]+) .*$"));
+    static const QRegularExpression rxVersionLine(QStringLiteral("^p7zip Version ([\\d\\.]+) .*$"));
+    static const QRegularExpression rxVersionLine7z(QStringLiteral("^7-Zip(?: \\(\\w\\))? ([\\d\\.]+) .*$"));
     QRegularExpressionMatch matchVersion;
 
     switch (m_parseState) {
@@ -135,19 +143,25 @@ bool CliPlugin::readListLine(const QString& line)
         if (matchVersion.hasMatch()) {
             m_parseState = ParseStateHeader;
             const QString p7zipVersion = matchVersion.captured(1);
-            qCDebug(ARK) << "p7zip version" << p7zipVersion << "detected";
+            qCDebug(ARK_LOG) << "p7zip version" << p7zipVersion << "detected";
+            break;
+        }
+        matchVersion = rxVersionLine7z.match(line);
+        if (matchVersion.hasMatch()) {
+            m_parseState = ParseStateHeader;
+            const QString l7zipVersion = matchVersion.captured(1);
+            qCDebug(ARK_LOG) << "7zip version" << l7zipVersion << "detected";
+            break;
         }
         break;
 
     case ParseStateHeader:
         if (line.startsWith(QLatin1String("Listing archive:"))) {
-            qCDebug(ARK) << "Archive name: "
-                         << line.right(line.size() - 16).trimmed();
-        } else if ((line == archiveInfoDelimiter1) ||
-                   (line == archiveInfoDelimiter2)) {
+            qCDebug(ARK_LOG) << "Archive name: " << line.right(line.size() - 16).trimmed();
+        } else if ((line == archiveInfoDelimiter1) || (line == archiveInfoDelimiter2)) {
             m_parseState = ParseStateArchiveInformation;
         } else if (line.contains(QLatin1String("Error: "))) {
-            qCWarning(ARK) << line.mid(7);
+            qCWarning(ARK_LOG) << line.mid(7);
         }
         break;
 
@@ -157,7 +171,7 @@ bool CliPlugin::readListLine(const QString& line)
 
         } else if (line.startsWith(QLatin1String("Type = "))) {
             const QString type = line.mid(7).trimmed();
-            qCDebug(ARK) << "Archive type: " << type;
+            qCDebug(ARK_LOG) << "Archive type: " << type;
 
             if (type == QLatin1String("7z")) {
                 m_archiveType = ArchiveType7z;
@@ -177,7 +191,7 @@ bool CliPlugin::readListLine(const QString& line)
                 setMultiVolume(true);
             } else {
                 // Should not happen
-                qCWarning(ARK) << "Unsupported archive type";
+                qCWarning(ARK_LOG) << "Unsupported archive type";
                 return false;
             }
 
@@ -200,7 +214,7 @@ bool CliPlugin::readListLine(const QString& line)
             if (!m_comment.trimmed().isEmpty()) {
                 m_comment = m_comment.trimmed();
                 m_linesComment = m_comment.count(QLatin1Char('\n')) + 1;
-                qCDebug(ARK) << "Found a comment with" << m_linesComment << "lines";
+                qCDebug(ARK_LOG) << "Found a comment with" << m_linesComment << "lines";
             }
         } else {
             m_comment.append(line + QLatin1Char('\n'));
@@ -214,8 +228,7 @@ bool CliPlugin::readListLine(const QString& line)
             m_currentArchiveEntry->compressedSizeIsSet = false;
         }
         if (line.startsWith(QLatin1String("Path = "))) {
-            const QString entryFilename =
-                QDir::fromNativeSeparators(line.mid(7).trimmed());
+            const QString entryFilename = QDir::fromNativeSeparators(line.mid(7).trimmed());
             m_currentArchiveEntry->setProperty("fullPath", entryFilename);
 
         } else if (line.startsWith(QLatin1String("Size = "))) {
@@ -230,8 +243,7 @@ bool CliPlugin::readListLine(const QString& line)
             }
 
         } else if (line.startsWith(QLatin1String("Modified = "))) {
-            m_currentArchiveEntry->setProperty("timestamp", QDateTime::fromString(line.mid(11).trimmed(),
-                                                                                  QStringLiteral("yyyy-MM-dd hh:mm:ss")));
+            m_currentArchiveEntry->setProperty("timestamp", QDateTime::fromString(line.mid(11).trimmed(), QStringLiteral("yyyy-MM-dd hh:mm:ss")));
 
         } else if (line.startsWith(QLatin1String("Folder = "))) {
             const QString isDirectoryStr = line.mid(9).trimmed();
@@ -249,8 +261,7 @@ bool CliPlugin::readListLine(const QString& line)
 
             if (attributes.contains(QLatin1Char('_'))) {
                 // Unix attributes
-                m_currentArchiveEntry->setProperty("permissions",
-                                                   attributes.mid(attributes.indexOf(QLatin1Char(' ')) + 1));
+                m_currentArchiveEntry->setProperty("permissions", attributes.mid(attributes.indexOf(QLatin1Char(' ')) + 1));
             } else {
                 // FAT attributes
                 m_currentArchiveEntry->setProperty("permissions", attributes);
@@ -268,17 +279,14 @@ bool CliPlugin::readListLine(const QString& line)
                 handleMethods(methods);
             }
 
-        } else if (line.startsWith(QLatin1String("Encrypted = ")) &&
-                   line.size() >= 13) {
+        } else if (line.startsWith(QLatin1String("Encrypted = ")) && line.size() >= 13) {
             m_currentArchiveEntry->setProperty("isPasswordProtected", line.at(12) == QLatin1Char('+'));
 
-        } else if (line.startsWith(QLatin1String("Block = ")) ||
-                   line.startsWith(QLatin1String("Version = "))) {
+        } else if (line.startsWith(QLatin1String("Block = ")) || line.startsWith(QLatin1String("Version = "))) {
             m_isFirstInformationEntry = true;
             if (!m_currentArchiveEntry->fullPath().isEmpty()) {
                 Q_EMIT entry(m_currentArchiveEntry);
-            }
-            else {
+            } else {
                 delete m_currentArchiveEntry;
             }
             m_currentArchiveEntry = nullptr;
@@ -296,8 +304,7 @@ bool CliPlugin::readExtractLine(const QString &line)
         return false;
     }
 
-    if (line.startsWith(QLatin1String("ERROR: CRC Failed")) ||
-        line.startsWith(QLatin1String("ERROR: Headers Error"))) {
+    if (line.startsWith(QLatin1String("ERROR: CRC Failed")) || line.startsWith(QLatin1String("ERROR: Headers Error"))) {
         Q_EMIT error(i18n("Extraction failed due to one or more corrupt files. Any extracted files may be damaged."));
         return false;
     }
@@ -307,9 +314,8 @@ bool CliPlugin::readExtractLine(const QString &line)
 
 bool CliPlugin::readDeleteLine(const QString &line)
 {
-    if (line.startsWith(QLatin1String("Error: ")) &&
-        line.endsWith(QLatin1String(" is not supported archive"))) {
-        Q_EMIT error(i18n("Delete operation failed. Try upgrading p7zip or disabling the p7zip plugin in the configuration dialog."));
+    if (line.startsWith(QLatin1String("Error: ")) && line.endsWith(QLatin1String(" is not supported archive"))) {
+        Q_EMIT error(i18n("Delete operation failed. Try upgrading 7z or disabling the 7z plugin in the configuration dialog."));
         return false;
     }
 
@@ -319,10 +325,9 @@ bool CliPlugin::readDeleteLine(const QString &line)
 void CliPlugin::handleMethods(const QStringList &methods)
 {
     for (const QString &method : methods) {
-
-        QRegularExpression rxEncMethod(QStringLiteral("^(7zAES|AES-128|AES-192|AES-256|ZipCrypto)$"));
+        static const QRegularExpression rxEncMethod(QStringLiteral("^(7zAES|AES-128|AES-192|AES-256|ZipCrypto)$"));
         if (rxEncMethod.match(method).hasMatch()) {
-            QRegularExpression rxAESMethods(QStringLiteral("^(AES-128|AES-192|AES-256)$"));
+            static const QRegularExpression rxAESMethods(QStringLiteral("^(AES-128|AES-192|AES-256)$"));
             if (rxAESMethods.match(method).hasMatch()) {
                 // Remove dash for AES methods.
                 Q_EMIT encryptionMethodFound(QString(method).remove(QLatin1Char('-')));
@@ -348,7 +353,7 @@ void CliPlugin::handleMethods(const QStringList &methods)
 
 bool CliPlugin::isPasswordPrompt(const QString &line)
 {
-    return line.startsWith(QLatin1String("Enter password (will not be echoed):"));
+    return line.startsWith(QLatin1String("Enter password"));
 }
 
 bool CliPlugin::isWrongPasswordMsg(const QString &line)
@@ -358,8 +363,7 @@ bool CliPlugin::isWrongPasswordMsg(const QString &line)
 
 bool CliPlugin::isCorruptArchiveMsg(const QString &line)
 {
-    return (line == QLatin1String("Unexpected end of archive") ||
-            line == QLatin1String("Headers Error"));
+    return (line == QLatin1String("Unexpected end of archive") || line == QLatin1String("Headers Error"));
 }
 
 bool CliPlugin::isDiskFullMsg(const QString &line)
@@ -369,14 +373,14 @@ bool CliPlugin::isDiskFullMsg(const QString &line)
 
 bool CliPlugin::isFileExistsMsg(const QString &line)
 {
-    return (line == QLatin1String("(Y)es / (N)o / (A)lways / (S)kip all / A(u)to rename all / (Q)uit? ") ||
-            line == QLatin1String("? (Y)es / (N)o / (A)lways / (S)kip all / A(u)to rename all / (Q)uit? "));
+    return (line == QLatin1String("(Y)es / (N)o / (A)lways / (S)kip all / A(u)to rename all / (Q)uit? ")
+            || line == QLatin1String("? (Y)es / (N)o / (A)lways / (S)kip all / A(u)to rename all / (Q)uit? "));
 }
 
 bool CliPlugin::isFileExistsFileName(const QString &line)
 {
-    return (line.startsWith(QLatin1String("file ./")) ||
-            line.startsWith(QLatin1String("  Path:     ./")));
+    return (line.startsWith(QLatin1String("file ./")) || line.startsWith(QLatin1String("  Path:     ./")));
 }
 
 #include "cliplugin.moc"
+#include "moc_cliplugin.cpp"
