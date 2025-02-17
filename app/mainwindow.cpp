@@ -1,78 +1,106 @@
 /*
- * ark -- archiver for the KDE project
- *
- * Copyright (C) 2002-2003: Georg Robbers <Georg.Robbers@urz.uni-hd.de>
- * Copyright (C) 2003: Helio Chissini de Castro <helio@conectiva.com>
- * Copyright (C) 2007 Henrique Pinto <henrique.pinto@kdemail.net>
- * Copyright (C) 2008 Harald Hvaal <haraldhv@stud.ntnu.no>
- * Copyright (C) 2021 Jiří Wolker <woljiri@gmail.com>
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *
- */
+    SPDX-FileCopyrightText: 2002-2003 Georg Robbers <Georg.Robbers@urz.uni-hd.de>
+    SPDX-FileCopyrightText: 2003 Helio Chissini de Castro <helio@conectiva.com>
+    SPDX-FileCopyrightText: 2007 Henrique Pinto <henrique.pinto@kdemail.net>
+    SPDX-FileCopyrightText: 2008 Harald Hvaal <haraldhv@stud.ntnu.no>
+    SPDX-FileCopyrightText: 2021 Jiří Wolker <woljiri@gmail.com>
+
+    SPDX-License-Identifier: GPL-2.0-or-later
+*/
 
 #include "mainwindow.h"
 #include "ark_debug.h"
-#include "archive_kerfuffle.h"
 #include "createdialog.h"
+#include "interface.h"
+#include "pluginmanager.h"
 #include "settingsdialog.h"
 #include "settingspage.h"
-#include "pluginmanager.h"
-#include "interface.h"
-#include "welcomescreen.h"
 
+#include <KActionCollection>
+#include <KConfigDialog>
+#include <KConfigSkeleton>
+#include <KLocalizedString>
+#include <KMessageBox>
 #include <KParts/ReadWritePart>
 #include <KPluginFactory>
-#include <KMessageBox>
-#include <KLocalizedString>
-#include <KActionCollection>
-#include <KStandardAction>
 #include <KRecentFilesMenu>
 #include <KSharedConfig>
-#include <KConfigDialog>
+#include <KStandardAction>
+#include <KToolBar>
+#include <KWindowSystem>
 #include <KXMLGUIFactory>
-#include <KPluginLoader>
-#include <KConfigSkeleton>
 
 #include <QApplication>
+#include <QDockWidget>
 #include <QDragEnterEvent>
 #include <QDragMoveEvent>
 #include <QFileDialog>
+#include <QMenuBar>
 #include <QMimeData>
 #include <QPointer>
 #include <QStatusBar>
-#include <QStackedWidget>
+
+static constexpr char SIDEBAR_LOCKED_KEY[] = "LockSidebar";
+static constexpr char SIDEBAR_VISIBLE_KEY[] = "ShowSidebar";
 
 static bool isValidArchiveDrag(const QMimeData *data)
 {
     return ((data->hasUrls()) && (data->urls().count() == 1));
 }
 
-MainWindow::MainWindow(QWidget *)
-        : KParts::MainWindow()
-        , m_welcomeScreen(new WelcomeScreen(this))
-        , m_windowContents(new QStackedWidget(this))
+class Sidebar : public QDockWidget
 {
-    setupActions();
+    Q_OBJECT
+
+public:
+    explicit Sidebar(QWidget *parent = nullptr)
+        : QDockWidget(parent)
+    {
+        setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+        setFeatures(defaultFeatures());
+    }
+
+    bool isLocked() const
+    {
+        return features().testFlag(NoDockWidgetFeatures);
+    }
+
+    void setLocked(bool locked)
+    {
+        setFeatures(locked ? NoDockWidgetFeatures : defaultFeatures());
+
+        // show titlebar only if not locked
+        if (locked) {
+            if (!m_dumbTitleWidget) {
+                m_dumbTitleWidget = new QWidget;
+            }
+            setTitleBarWidget(m_dumbTitleWidget);
+        } else {
+            setTitleBarWidget(nullptr);
+        }
+    }
+
+private:
+    static DockWidgetFeatures defaultFeatures()
+    {
+        DockWidgetFeatures dockFeatures = DockWidgetClosable | DockWidgetMovable;
+        if (!KWindowSystem::isPlatformWayland()) { // TODO : Remove this check when QTBUG-87332 is fixed
+            dockFeatures |= DockWidgetFloatable;
+        }
+
+        return dockFeatures;
+    }
+
+    QWidget *m_dumbTitleWidget = nullptr;
+};
+
+MainWindow::MainWindow(QWidget *)
+    : KParts::MainWindow()
+    , m_windowContents(new QStackedWidget(this))
+{
     setAcceptDrops(true);
     // Ark doesn't provide a fullscreen mode; remove the corresponding window button
     setWindowFlags(windowFlags() & ~Qt::WindowFullscreenButtonHint);
-
-    setCentralWidget(m_windowContents);
-    m_windowContents->addWidget(m_welcomeScreen);
-    showWelcomeScreen();
 }
 
 MainWindow::~MainWindow()
@@ -80,14 +108,14 @@ MainWindow::~MainWindow()
     guiFactory()->removeClient(m_part);
     delete m_part;
     m_part = nullptr;
-    m_welcomeScreen = nullptr;
+    m_welcomeView = nullptr;
 }
 
-void MainWindow::dragEnterEvent(QDragEnterEvent * event)
+void MainWindow::dragEnterEvent(QDragEnterEvent *event)
 {
-    qCDebug(ARK) << event;
+    qCDebug(ARK_LOG) << event;
 
-    Interface *iface = qobject_cast<Interface*>(m_part);
+    Interface *iface = qobject_cast<Interface *>(m_part);
     if (iface->isBusy()) {
         return;
     }
@@ -99,60 +127,107 @@ void MainWindow::dragEnterEvent(QDragEnterEvent * event)
     return;
 }
 
-void MainWindow::dropEvent(QDropEvent * event)
+void MainWindow::dropEvent(QDropEvent *event)
 {
-    qCDebug(ARK) << event;
+    qCDebug(ARK_LOG) << event;
 
-    Interface *iface = qobject_cast<Interface*>(m_part);
+    Interface *iface = qobject_cast<Interface *>(m_part);
     if (iface->isBusy()) {
         return;
     }
 
-    if ((event->source() == nullptr) &&
-        (isValidArchiveDrag(event->mimeData()))) {
+    if ((event->source() == nullptr) && (isValidArchiveDrag(event->mimeData()))) {
         event->acceptProposedAction();
     }
 
-    //TODO: if this call provokes a message box the drag will still be going
-    //while the box is onscreen. looks buggy, do something about it
+    // TODO: if this call provokes a message box the drag will still be going
+    // while the box is onscreen. looks buggy, do something about it
     openUrl(event->mimeData()->urls().at(0));
 }
 
-void MainWindow::dragMoveEvent(QDragMoveEvent * event)
+void MainWindow::dragMoveEvent(QDragMoveEvent *event)
 {
-    qCDebug(ARK) << event;
+    qCDebug(ARK_LOG) << event;
 
-    Interface *iface = qobject_cast<Interface*>(m_part);
+    Interface *iface = qobject_cast<Interface *>(m_part);
     if (iface->isBusy()) {
         return;
     }
 
-    if ((event->source() == nullptr) &&
-        (isValidArchiveDrag(event->mimeData()))) {
+    if ((event->source() == nullptr) && (isValidArchiveDrag(event->mimeData()))) {
         event->acceptProposedAction();
     }
 }
 
 bool MainWindow::loadPart()
 {
-    KPluginFactory *factory = KPluginLoader(QStringLiteral("kf5/parts/arkpart")).factory();
-
-    m_part = factory ? static_cast<KParts::ReadWritePart*>(factory->create<KParts::ReadWritePart>(this)) : nullptr;
+    m_part = KPluginFactory::instantiatePlugin<KParts::ReadWritePart>(KPluginMetaData(QStringLiteral("kf6/parts/arkpart"))).plugin;
 
     if (!m_part) {
         KMessageBox::error(this, i18n("Unable to find Ark's KPart component, please check your installation."));
-        qCWarning(ARK) << "Error loading Ark KPart.";
+        qCWarning(ARK_LOG) << "Error loading Ark KPart.";
         return false;
     }
 
     m_part->setObjectName(QStringLiteral("ArkPart"));
-    m_windowContents->addWidget(m_part->widget());
+
+    Interface *iface = qobject_cast<Interface *>(m_part);
+    Q_ASSERT(iface);
+    QWidget *infoPanel = iface->infoPanel();
+    infoPanel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+
+    m_sidebar = new Sidebar;
+    m_sidebar->setObjectName(QStringLiteral("ark_sidebar"));
+    m_sidebar->setContextMenuPolicy(Qt::ActionsContextMenu);
+    m_sidebar->setWindowTitle(i18n("Sidebar"));
+    connect(m_sidebar, &QDockWidget::visibilityChanged, this, [this](bool visible) {
+        // sync sidebar visibility with the m_showSidebarAction only if welcome screen is hidden
+        if (m_showSidebarAction && m_windowContents->currentWidget() != m_welcomeView) {
+            m_showSidebarAction->setChecked(visible);
+        }
+    });
+    m_sidebar->setWidget(infoPanel);
+    addDockWidget(Qt::RightDockWidgetArea, m_sidebar);
+
+    setupActions();
+
+    m_welcomeView = new WelcomeView(this);
+    m_windowContents->addWidget(m_welcomeView);
+
+    QWidget *partwidget = m_part->widget();
+    m_windowContents->addWidget(partwidget);
+    m_windowContents->setCurrentWidget(partwidget);
+
+    setCentralWidget(m_windowContents);
+
+    // needs to be above createGUI()
+    KHamburgerMenu *const hamburgerMenu = KStandardAction::hamburgerMenu(nullptr, nullptr, m_part->actionCollection());
+    connect(hamburgerMenu, &KHamburgerMenu::aboutToShowMenu, this, &MainWindow::updateHamburgerMenu);
+    hamburgerMenu->setMenuBar(menuBar());
+
+    QAction *const showMenuBarAction = actionCollection()->action(KStandardAction::name(KStandardAction::ShowMenubar));
+    hamburgerMenu->setShowMenuBarAction(showMenuBarAction);
 
     setXMLFile(QStringLiteral("arkui.rc"));
     setupGUI(ToolBar | Keys | Save);
+
+    // NOTE : apply default sidebar width only after calling setupGUI(...)
+    // and before calling createGUI(...)
+    resizeDocks({m_sidebar}, {m_sidebar->sizeHint().width()}, Qt::Horizontal);
+
     createGUI(m_part);
 
+    // FIXME: workaround for BUG 171080
+    showMenuBarAction->setChecked(!menuBar()->isHidden());
+
     statusBar()->hide();
+
+    KConfigGroup configGroup = KSharedConfig::openConfig()->group(QStringLiteral("General"));
+    m_sidebar->setLocked(configGroup.readEntry(SIDEBAR_LOCKED_KEY, true));
+    m_sidebar->setVisible(configGroup.readEntry(SIDEBAR_VISIBLE_KEY, true));
+
+    m_showSidebarAction->setChecked(m_sidebar->isVisibleTo(this));
+    m_lockSidebarAction->setChecked(m_sidebar->isLocked());
 
     connect(m_part, SIGNAL(ready()), this, SLOT(updateActions()));
     connect(m_part, SIGNAL(ready()), this, SLOT(hideWelcomeScreen()));
@@ -164,18 +239,32 @@ bool MainWindow::loadPart()
 
     updateActions();
 
+    configGroup = KSharedConfig::openConfig()->group(QStringLiteral("General"));
+    if (configGroup.readEntry("ShowWelcomeScreenOnStartup", true)) {
+        showWelcomeScreen();
+    }
+
     return true;
+}
+
+KRecentFilesMenu *MainWindow::recentFilesMenu() const
+{
+    return m_recentFilesMenu;
 }
 
 void MainWindow::showWelcomeScreen()
 {
-    m_windowContents->setCurrentWidget(m_welcomeScreen);
+    m_showSidebarAction->setEnabled(false);
+    m_windowContents->setCurrentWidget(m_welcomeView);
+    m_sidebar->setVisible(false);
 }
 
 void MainWindow::hideWelcomeScreen()
 {
     Q_ASSERT(m_part->widget());
+    m_sidebar->setVisible(m_showSidebarAction->isChecked());
     m_windowContents->setCurrentWidget(m_part->widget());
+    m_showSidebarAction->setEnabled(true);
 }
 
 void MainWindow::setupActions()
@@ -192,14 +281,80 @@ void MainWindow::setupActions()
 
     KStandardAction::preferences(this, &MainWindow::showSettings, actionCollection());
 
-    // Connect the welcome screen to actions created above
-    connect(m_welcomeScreen, &WelcomeScreen::newClicked, m_newAction, &QAction::trigger);
-    connect(m_welcomeScreen, &WelcomeScreen::openClicked, m_openAction, &QAction::trigger);
+    QAction *a = actionCollection()->addAction(QStringLiteral("help_welcome_page"));
+    a->setText(i18n("Welcome Page"));
+    a->setIcon(qApp->windowIcon());
+    a->setWhatsThis(i18n("Show the welcome page"));
+    connect(a, &QAction::triggered, this, [this]() {
+        showWelcomeScreen();
+    });
+
+    // add Menubar toggle to 'Settings' menu
+    KToggleAction *showMenuBar = KStandardAction::showMenubar(nullptr, nullptr, actionCollection());
+    showMenuBar->setWhatsThis(xi18nc("@info:whatsthis",
+                                     "This switches between having a <emphasis>Menubar</emphasis> "
+                                     "and having a <interface>Hamburger Menu</interface> button. Both "
+                                     "contain mostly the same commands and configuration options."));
+    connect(
+        showMenuBar,
+        &KToggleAction::triggered, // Fixes #286822
+        this,
+        [this] {
+            menuBar()->setVisible(!menuBar()->isVisible());
+        },
+        Qt::QueuedConnection);
+
+    m_showSidebarAction = m_part->actionCollection()->action(QStringLiteral("show-infopanel"));
+    m_showSidebarAction->setIcon(QIcon::fromTheme(QStringLiteral("sidebar-show-symbolic")));
+    m_showSidebarAction->disconnect();
+    connect(m_showSidebarAction, &QAction::triggered, m_sidebar, &Sidebar::setVisible);
+
+    m_lockSidebarAction = actionCollection()->addAction(QStringLiteral("ark_lock_sidebar"));
+    m_lockSidebarAction->setCheckable(true);
+    m_lockSidebarAction->setIcon(QIcon::fromTheme(QStringLiteral("lock")));
+    m_lockSidebarAction->setText(i18n("Lock Sidebar"));
+    connect(m_lockSidebarAction, &QAction::triggered, m_sidebar, &Sidebar::setLocked);
+    m_sidebar->addAction(m_lockSidebarAction);
+}
+
+void MainWindow::updateHamburgerMenu()
+{
+    const KActionCollection *ac = m_part->actionCollection();
+    auto hamburgerMenu = static_cast<KHamburgerMenu *>(ac->action(KStandardAction::name(KStandardAction::HamburgerMenu)));
+    auto menu = hamburgerMenu->menu();
+    if (!menu) {
+        menu = new QMenu(this);
+        hamburgerMenu->setMenu(menu);
+    } else {
+        menu->clear();
+    }
+
+    if (!toolBar()->isVisible()) {
+        // If neither the menu bar nor the toolbar are visible, these actions should be available.
+        menu->addAction(actionCollection()->action(KStandardAction::name(KStandardAction::ShowMenubar)));
+        menu->addAction(toolBarMenuAction());
+        menu->addSeparator();
+    }
+
+    menu->addAction(m_newAction);
+    menu->addAction(m_openAction);
+    menu->addMenu(m_recentFilesMenu);
+    menu->addSeparator();
+
+    menu->addAction(ac->action(QStringLiteral("extract")));
+    menu->addAction(ac->action(QStringLiteral("add")));
+    menu->addAction(ac->action(QStringLiteral("edit_find")));
+    menu->addSeparator();
+
+    menu->addMenu(static_cast<QMenu *>(factory()->container(QStringLiteral("ark_file"), m_part)));
+    menu->addSeparator();
+
+    menu->addMenu(static_cast<QMenu *>(factory()->container(QStringLiteral("settings"), this)));
 }
 
 void MainWindow::updateActions()
 {
-    Interface *iface = qobject_cast<Interface*>(m_part);
+    Interface *iface = qobject_cast<Interface *>(m_part);
     Kerfuffle::PluginManager pluginManager;
     m_newAction->setEnabled(!iface->isBusy() && !pluginManager.availableWritePlugins().isEmpty());
     m_openAction->setEnabled(!iface->isBusy());
@@ -208,7 +363,7 @@ void MainWindow::updateActions()
 
 void MainWindow::openArchive()
 {
-    Interface *iface = qobject_cast<Interface*>(m_part);
+    Interface *iface = qobject_cast<Interface *>(m_part);
     Q_ASSERT(iface);
     Q_UNUSED(iface);
 
@@ -229,12 +384,13 @@ void MainWindow::openArchive()
     dlg->open();
 }
 
-void MainWindow::openUrl(const QUrl& url)
+void MainWindow::openUrl(const QUrl &url)
 {
     if (url.isEmpty()) {
         return;
     }
 
+    hideWelcomeScreen();
     m_part->setArguments(m_openArgs);
     m_part->openUrl(url);
 }
@@ -250,6 +406,12 @@ void MainWindow::setShowExtractDialog(bool option)
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
+    KConfigGroup configGroup = KSharedConfig::openConfig()->group(QStringLiteral("General"));
+    configGroup.writeEntry(SIDEBAR_LOCKED_KEY, m_sidebar->isLocked());
+    // NOTE : Consider whether the m_showSidebarAction is checked, because
+    // the sidebar can be forcibly hidden if the welcome screen is displayed
+    configGroup.writeEntry(SIDEBAR_VISIBLE_KEY, m_sidebar->isVisibleTo(this) || m_showSidebarAction->isChecked());
+
     // Preview windows don't have a parent, so we need to manually close them.
     const auto topLevelWidgets = qApp->topLevelWidgets();
     for (QWidget *widget : topLevelWidgets) {
@@ -264,7 +426,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 // Set a sane default window size
 QSize MainWindow::sizeHint() const
 {
-    return QSize(700, 500);
+    return QSize(950, 600);
 }
 
 void MainWindow::quit()
@@ -278,7 +440,7 @@ void MainWindow::showSettings()
         return;
     }
 
-    Interface *iface = qobject_cast<Interface*>(m_part);
+    Interface *iface = qobject_cast<Interface *>(m_part);
     Q_ASSERT(iface);
 
     auto dialog = new Kerfuffle::SettingsDialog(this, QStringLiteral("settings"), iface->config());
@@ -300,7 +462,7 @@ void MainWindow::showSettings()
 
 void MainWindow::writeSettings()
 {
-    Interface *iface = qobject_cast<Interface*>(m_part);
+    Interface *iface = qobject_cast<Interface *>(m_part);
     Q_ASSERT(iface);
     iface->config()->save();
 }
@@ -312,24 +474,23 @@ void MainWindow::addPartUrl()
 
 void MainWindow::newArchive()
 {
-    qCDebug(ARK) << "Creating new archive";
+    qCDebug(ARK_LOG) << "Creating new archive";
 
-    Interface *iface = qobject_cast<Interface*>(m_part);
+    Interface *iface = qobject_cast<Interface *>(m_part);
     Q_ASSERT(iface);
     Q_UNUSED(iface);
 
-    QPointer<Kerfuffle::CreateDialog> dialog = new Kerfuffle::CreateDialog(
-        nullptr, // parent
-        i18n("Create New Archive"), // caption
-        QUrl()); // startDir
+    QPointer<Kerfuffle::CreateDialog> dialog = new Kerfuffle::CreateDialog(nullptr, // parent
+                                                                           i18n("Create New Archive"), // caption
+                                                                           QUrl()); // startDir
 
     if (dialog.data()->exec()) {
         const QUrl saveFileUrl = dialog.data()->selectedUrl();
         const QString password = dialog.data()->password();
         const QString fixedMimeType = dialog.data()->currentMimeType().name();
 
-        qCDebug(ARK) << "CreateDialog returned URL:" << saveFileUrl.toString();
-        qCDebug(ARK) << "CreateDialog returned mime:" << fixedMimeType;
+        qCDebug(ARK_LOG) << "CreateDialog returned URL:" << saveFileUrl.toString();
+        qCDebug(ARK_LOG) << "CreateDialog returned mime:" << fixedMimeType;
 
         m_openArgs.metaData()[QStringLiteral("createNewArchive")] = QStringLiteral("true");
         m_openArgs.metaData()[QStringLiteral("fixedMimeType")] = fixedMimeType;
@@ -337,7 +498,7 @@ void MainWindow::newArchive()
             m_openArgs.metaData()[QStringLiteral("compressionLevel")] = QString::number(dialog.data()->compressionLevel());
         }
         if (dialog.data()->volumeSize() > 0) {
-            qCDebug(ARK) << "Setting volume size:" << QString::number(dialog.data()->volumeSize());
+            qCDebug(ARK_LOG) << "Setting volume size:" << QString::number(dialog.data()->volumeSize());
             m_openArgs.metaData()[QStringLiteral("volumeSize")] = QString::number(dialog.data()->volumeSize());
         }
         if (!dialog.data()->compressionMethod().isEmpty()) {
@@ -365,3 +526,6 @@ void MainWindow::newArchive()
 
     delete dialog.data();
 }
+
+#include "mainwindow.moc"
+#include "moc_mainwindow.cpp"

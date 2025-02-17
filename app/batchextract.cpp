@@ -1,30 +1,9 @@
 /*
- * ark -- archiver for the KDE project
- *
- * Copyright (C) 2008 Harald Hvaal <haraldhv@stud.ntnu.no>
- * Copyright (C) 2009-2010 Raphael Kubo da Costa <rakuco@FreeBSD.org>
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES ( INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION ) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * ( INCLUDING NEGLIGENCE OR OTHERWISE ) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+    SPDX-FileCopyrightText: 2008 Harald Hvaal <haraldhv@stud.ntnu.no>
+    SPDX-FileCopyrightText: 2009-2010 Raphael Kubo da Costa <rakuco@FreeBSD.org>
+
+    SPDX-License-Identifier: BSD-2-Clause
+*/
 
 #include "batchextract.h"
 #include "ark_debug.h"
@@ -34,6 +13,7 @@
 
 #include <KIO/JobTracker>
 #include <KIO/JobUiDelegate>
+#include <KIO/JobUiDelegateFactory>
 #include <KIO/OpenUrlJob>
 #include <KLocalizedString>
 #include <KMessageBox>
@@ -44,11 +24,11 @@
 #include <QPointer>
 #include <QTimer>
 
-BatchExtract::BatchExtract(QObject* parent)
-    : KCompositeJob(parent),
-      m_autoSubfolder(false),
-      m_preservePaths(true),
-      m_openDestinationAfterExtraction(false)
+BatchExtract::BatchExtract(QObject *parent)
+    : KCompositeJob(parent)
+    , m_autoSubfolder(false)
+    , m_preservePaths(true)
+    , m_openDestinationAfterExtraction(false)
 {
     setCapabilities(KJob::Killable);
 
@@ -59,13 +39,14 @@ BatchExtract::~BatchExtract()
 {
 }
 
-void BatchExtract::addExtraction(const QUrl& url)
+void BatchExtract::addExtraction(const QUrl &url)
 {
     QString destination = destinationFolder();
 
     auto job = Kerfuffle::Archive::batchExtract(url.toLocalFile(), destination, autoSubfolder(), preservePaths());
 
-    qCDebug(ARK) << QString(QStringLiteral("Registering job from archive %1, to %2, preservePaths %3")).arg(url.toLocalFile(), destination, QString::number(preservePaths()));
+    qCDebug(ARK_LOG) << QString(QStringLiteral("Registering job from archive %1, to %2, preservePaths %3"))
+                            .arg(url.toLocalFile(), destination, QString::number(preservePaths()));
 
     addSubjob(job);
 
@@ -73,8 +54,7 @@ void BatchExtract::addExtraction(const QUrl& url)
 
     connect(job, &KJob::percentChanged, this, &BatchExtract::forwardProgress);
 
-    connect(job, &Kerfuffle::BatchExtractJob::userQuery,
-            this, &BatchExtract::slotUserQuery);
+    connect(job, &Kerfuffle::BatchExtractJob::userQuery, this, &BatchExtract::slotUserQuery);
 }
 
 bool BatchExtract::doKill()
@@ -113,21 +93,20 @@ void BatchExtract::slotStartJob()
         return;
     }
 
-    for (const auto& url : qAsConst(m_inputs)) {
+    for (const auto &url : std::as_const(m_inputs)) {
         addExtraction(url);
     }
 
     KIO::getJobTracker()->registerJob(this);
 
     Q_EMIT description(this,
-                     i18n("Extracting Files"),
-                     qMakePair(i18n("Source archive"), m_fileNames.value(subjobs().at(0)).first),
-                     qMakePair(i18n("Destination"), m_fileNames.value(subjobs().at(0)).second)
-                    );
+                       i18n("Extracting Files"),
+                       qMakePair(i18n("Source archive"), m_fileNames.value(subjobs().at(0)).first),
+                       qMakePair(i18n("Destination"), m_fileNames.value(subjobs().at(0)).second));
 
     m_initialJobCount = subjobs().size();
 
-    qCDebug(ARK) << "Starting first job";
+    qCDebug(ARK_LOG) << "Starting first job";
 
     subjobs().at(0)->start();
 }
@@ -142,7 +121,7 @@ void BatchExtract::showFailedFiles()
 void BatchExtract::slotResult(KJob *job)
 {
     if (job->error()) {
-        qCDebug(ARK) << "There was en error:" << job->error() << ", errorText:" << job->errorString();
+        qCDebug(ARK_LOG) << "There was en error:" << job->error() << ", errorText:" << job->errorString();
 
         setErrorText(job->errorString());
         setError(job->error());
@@ -152,15 +131,23 @@ void BatchExtract::slotResult(KJob *job)
         if (job->error() != KJob::KilledJobError) {
             const QString filename = m_fileNames.value(job).first;
             if (hasSubjobs()) {
-                KMessageBox::error(nullptr,
-                                   job->errorString().isEmpty() ?
-                                   xi18nc("@info", "There was an error while extracting <filename>%1</filename>. Any further archive will not be extracted.", filename) :
-                                   xi18nc("@info", "There was an error while extracting <filename>%1</filename>:<nl/><message>%2</message><nl/>Any further archive will not be extracted.", filename, job->errorString()));
+                KMessageBox::error(
+                    nullptr,
+                    job->errorString().isEmpty()
+                        ? xi18nc("@info", "There was an error while extracting <filename>%1</filename>. Any further archive will not be extracted.", filename)
+                        : xi18nc("@info",
+                                 "There was an error while extracting <filename>%1</filename>:<nl/><message>%2</message><nl/>Any further archive will not be "
+                                 "extracted.",
+                                 filename,
+                                 job->errorString()));
             } else {
                 KMessageBox::error(nullptr,
-                                   job->errorString().isEmpty() ?
-                                   xi18nc("@info", "There was an error while extracting <filename>%1</filename>.", filename) :
-                                   xi18nc("@info", "There was an error while extracting <filename>%1</filename>:<nl/><message>%2</message>", filename, job->errorString()));
+                                   job->errorString().isEmpty()
+                                       ? xi18nc("@info", "There was an error while extracting <filename>%1</filename>.", filename)
+                                       : xi18nc("@info",
+                                                "There was an error while extracting <filename>%1</filename>:<nl/><message>%2</message>",
+                                                filename,
+                                                job->errorString()));
             }
         }
 
@@ -175,19 +162,18 @@ void BatchExtract::slotResult(KJob *job)
             const QString path = QDir::cleanPath(destinationFolder());
             const QUrl destination(QUrl::fromLocalFile(path));
             KIO::OpenUrlJob *job = new KIO::OpenUrlJob(destination, QStringLiteral("inode/directory"));
-            job->setUiDelegate(new KIO::JobUiDelegate(KJobUiDelegate::AutoHandlingEnabled, nullptr));
+            job->setUiDelegate(KIO::createDefaultJobUiDelegate(KJobUiDelegate::AutoHandlingEnabled, nullptr));
             job->start();
         }
 
-        qCDebug(ARK) << "Finished, emitting the result";
+        qCDebug(ARK_LOG) << "Finished, emitting the result";
         emitResult();
     } else {
-        qCDebug(ARK) << "Starting the next job";
+        qCDebug(ARK_LOG) << "Starting the next job";
         Q_EMIT description(this,
-                         i18n("Extracting Files"),
-                         qMakePair(i18n("Source archive"), m_fileNames.value(subjobs().at(0)).first),
-                         qMakePair(i18n("Destination"), m_fileNames.value(subjobs().at(0)).second)
-                        );
+                           i18n("Extracting Files"),
+                           qMakePair(i18n("Source archive"), m_fileNames.value(subjobs().at(0)).first),
+                           qMakePair(i18n("Destination"), m_fileNames.value(subjobs().at(0)).second));
         subjobs().at(0)->start();
     }
 }
@@ -200,9 +186,9 @@ void BatchExtract::forwardProgress(KJob *job, unsigned long percent)
     setPercent(jobPart * remainingJobs + percent / static_cast<ulong>(m_initialJobCount));
 }
 
-void BatchExtract::addInput(const QUrl& url)
+void BatchExtract::addInput(const QUrl &url)
 {
-    qCDebug(ARK) << "Adding archive" << url.toLocalFile();
+    qCDebug(ARK_LOG) << "Adding archive" << url.toLocalFile();
 
     if (!QFileInfo::exists(url.toLocalFile())) {
         m_failedFiles.append(url.fileName());
@@ -231,7 +217,7 @@ QString BatchExtract::destinationFolder() const
     }
 }
 
-void BatchExtract::setDestinationFolder(const QString& folder)
+void BatchExtract::setDestinationFolder(const QString &folder)
 {
     if (QFileInfo(folder).isDir()) {
         m_destinationFolder = folder;
@@ -252,8 +238,7 @@ void BatchExtract::setPreservePaths(bool value)
 
 bool BatchExtract::showExtractDialog()
 {
-    QPointer<Kerfuffle::ExtractionDialog> dialog =
-        new Kerfuffle::ExtractionDialog;
+    QPointer<Kerfuffle::ExtractionDialog> dialog = new Kerfuffle::ExtractionDialog;
 
     if (m_inputs.size() > 1) {
         dialog.data()->batchModeOption();
@@ -261,7 +246,7 @@ bool BatchExtract::showExtractDialog()
 
     dialog.data()->setModal(true);
     dialog.data()->setAutoSubfolder(autoSubfolder());
-    dialog.data()->setCurrentUrl(QUrl::fromUserInput(destinationFolder(), QString(), QUrl::AssumeLocalFile));
+    dialog.data()->setCurrentUrl(QUrl::fromUserInput(destinationFolder(), QDir::currentPath(), QUrl::AssumeLocalFile));
     dialog.data()->setPreservePaths(preservePaths());
 
     // Only one archive, we need a LoadJob to get the single-folder and subfolder properties.
@@ -278,7 +263,7 @@ bool BatchExtract::showExtractDialog()
                 return;
             }
 
-            auto archive = qobject_cast<Kerfuffle::LoadJob*>(job)->archive();
+            auto archive = qobject_cast<Kerfuffle::LoadJob *>(job)->archive();
             dialog->setExtractToSubfolder(archive->hasMultipleTopLevelEntries());
             dialog->setSubfolder(archive->subfolderName());
         });
@@ -311,7 +296,9 @@ bool BatchExtract::showExtractDialog()
 
     if (!destinationDirectory.isEmpty() && !destinationDirectory.isLocalFile()) {
         KMessageBox::error(nullptr,
-                            xi18nc("@info", "The archive could not be extracted to <filename>%1</filename> because Ark can only extract to local destinations.", destinationDirectory.toDisplayString()));
+                           xi18nc("@info",
+                                  "The archive could not be extracted to <filename>%1</filename> because Ark can only extract to local destinations.",
+                                  destinationDirectory.toDisplayString()));
     }
 
     delete dialog.data();
@@ -319,3 +306,4 @@ bool BatchExtract::showExtractDialog()
     return false;
 }
 
+#include "moc_batchextract.cpp"

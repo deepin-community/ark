@@ -1,29 +1,11 @@
 /*
- * Copyright (c) 2016 Elvis Angelaccio <elvis.angelaccio@kde.org>
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES ( INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION ) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * ( INCLUDING NEGLIGENCE OR OTHERWISE ) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+    SPDX-FileCopyrightText: 2016 Elvis Angelaccio <elvis.angelaccio@kde.org>
+
+    SPDX-License-Identifier: BSD-2-Clause
+*/
 
 #include "createdialog.h"
+#include "archiveformat.h"
 #include "pluginmanager.h"
 
 #include <KCollapsibleGroupBox>
@@ -57,7 +39,7 @@ void CreateDialogTest::testBasicWidgets_data()
 
     QTest::newRow("tar") << QStringLiteral("application/x-tar");
     QTest::newRow("targzip") << QStringLiteral("application/x-compressed-tar");
-    QTest::newRow("tarbzip") << QStringLiteral("application/x-bzip-compressed-tar");
+    QTest::newRow("tarbzip") << QMimeDatabase().mimeTypeForFile(QStringLiteral("dummy.tar.bz2"), QMimeDatabase::MatchExtension).name();
     QTest::newRow("tarZ") << QStringLiteral("application/x-tarz");
     QTest::newRow("tarxz") << QStringLiteral("application/x-xz-compressed-tar");
     QTest::newRow("tarlzma") << QStringLiteral("application/x-lzma-compressed-tar");
@@ -100,8 +82,8 @@ void CreateDialogTest::testBasicWidgets()
 {
     CreateDialog *dialog = new CreateDialog(nullptr, QString(), QUrl());
 
-    auto fileNameLineEdit = dialog->findChild<QLineEdit*>(QStringLiteral("filenameLineEdit"));
-    auto archiveTypeComboBox = dialog->findChild<QComboBox*>(QStringLiteral("mimeComboBox"));
+    auto fileNameLineEdit = dialog->findChild<QLineEdit *>(QStringLiteral("filenameLineEdit"));
+    auto archiveTypeComboBox = dialog->findChild<QComboBox *>(QStringLiteral("mimeComboBox"));
     QVERIFY(fileNameLineEdit);
     QVERIFY(archiveTypeComboBox);
 
@@ -124,6 +106,10 @@ void CreateDialogTest::testEncryption_data()
     QTest::addColumn<bool>("isEncryptionAvailable");
     QTest::addColumn<bool>("isHeaderEncryptionAvailable");
 
+    QMimeType sevenZipMimetype = QMimeDatabase().mimeTypeForName(QStringLiteral("application/x-7z-compressed"));
+    const KPluginMetaData sevenZipPluginMetadata = PluginManager().preferredPluginFor(sevenZipMimetype)->metaData();
+    ArchiveFormat sevenZipFormat = ArchiveFormat::fromMetadata(sevenZipMimetype, sevenZipPluginMetadata);
+
     QTest::newRow("tar") << QStringLiteral("application/x-compressed-tar") << false << false;
 
     if (m_pluginManager.supportedWriteMimeTypes().contains(QLatin1String("application/zip"))) {
@@ -133,7 +119,8 @@ void CreateDialogTest::testEncryption_data()
     }
 
     if (m_pluginManager.supportedWriteMimeTypes().contains(QLatin1String("application/x-7z-compressed"))) {
-        QTest::newRow("7z") << QStringLiteral("application/x-7z-compressed") << true << true;
+        QTest::newRow("7z") << QStringLiteral("application/x-7z-compressed") << (sevenZipFormat.encryptionType() != Archive::EncryptionType::Unencrypted)
+                            << (sevenZipFormat.encryptionType() == Archive::EncryptionType::HeaderEncrypted);
     } else {
         qDebug() << "7z format not available in CreateDialog, skipping test.";
     }
@@ -153,8 +140,8 @@ void CreateDialogTest::testEncryption()
     QFETCH(bool, isEncryptionAvailable);
     QFETCH(bool, isHeaderEncryptionAvailable);
 
-    auto collapsibleEncryption = dialog->findChild<KCollapsibleGroupBox*>(QStringLiteral("collapsibleEncryption"));
-    auto encryptHeaderCheckBox = dialog->findChild<QCheckBox*>(QStringLiteral("encryptHeaderCheckBox"));
+    auto collapsibleEncryption = dialog->findChild<KCollapsibleGroupBox *>(QStringLiteral("collapsibleEncryption"));
+    auto encryptHeaderCheckBox = dialog->findChild<QCheckBox *>(QStringLiteral("encryptHeaderCheckBox"));
     QVERIFY(collapsibleEncryption);
     QVERIFY(encryptHeaderCheckBox);
 
@@ -200,8 +187,8 @@ void CreateDialogTest::testHeaderEncryptionTooltip()
 
     CreateDialog *dialog = new CreateDialog(nullptr, QString(), QUrl());
 
-    auto collapsibleEncryption = dialog->findChild<KCollapsibleGroupBox*>(QStringLiteral("collapsibleEncryption"));
-    auto encryptHeaderCheckBox = dialog->findChild<QCheckBox*>(QStringLiteral("encryptHeaderCheckBox"));
+    auto collapsibleEncryption = dialog->findChild<KCollapsibleGroupBox *>(QStringLiteral("collapsibleEncryption"));
+    auto encryptHeaderCheckBox = dialog->findChild<QCheckBox *>(QStringLiteral("encryptHeaderCheckBox"));
     QVERIFY(collapsibleEncryption);
     QVERIFY(encryptHeaderCheckBox);
 

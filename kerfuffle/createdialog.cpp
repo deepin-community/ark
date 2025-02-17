@@ -1,38 +1,17 @@
 /*
- * ark -- archiver for the KDE project
- *
- * Copyright (C) 2008 Harald Hvaal <haraldhv@stud.ntnu.no>
- * Copyright (C) 2009,2011 Raphael Kubo da Costa <rakuco@FreeBSD.org>
- * Copyright (C) 2015 Elvis Angelaccio <elvis.angelaccio@kde.org>
- * Copyright (C) 2016 Ragnar Thomsen <rthomsen6@gmail.com>
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES ( INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION ) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * ( INCLUDING NEGLIGENCE OR OTHERWISE ) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+    SPDX-FileCopyrightText: 2008 Harald Hvaal <haraldhv@stud.ntnu.no>
+    SPDX-FileCopyrightText: 2009, 2011 Raphael Kubo da Costa <rakuco@FreeBSD.org>
+    SPDX-FileCopyrightText: 2015 Elvis Angelaccio <elvis.angelaccio@kde.org>
+    SPDX-FileCopyrightText: 2016 Ragnar Thomsen <rthomsen6@gmail.com>
+
+    SPDX-License-Identifier: BSD-2-Clause
+*/
 
 #include "createdialog.h"
 #include "archiveformat.h"
 #include "ark_debug.h"
-#include "ui_createdialog.h"
 #include "mimetypes.h"
+#include "ui_createdialog.h"
 
 #include <KMessageBox>
 #include <KSharedConfig>
@@ -42,21 +21,20 @@
 
 namespace Kerfuffle
 {
-class CreateDialogUI: public QWidget, public Ui::CreateDialog
+class CreateDialogUI : public QWidget, public Ui::CreateDialog
 {
     Q_OBJECT
 
 public:
     CreateDialogUI(QWidget *parent = nullptr)
-            : QWidget(parent) {
+        : QWidget(parent)
+    {
         setupUi(this);
     }
 };
 
-CreateDialog::CreateDialog(QWidget *parent,
-                           const QString &caption,
-                           const QUrl &startDir)
-        : QDialog(parent, Qt::Dialog)
+CreateDialog::CreateDialog(QWidget *parent, const QString &caption, const QUrl &startDir)
+    : QDialog(parent, Qt::Dialog)
 {
     setWindowTitle(caption);
     setModal(true);
@@ -77,7 +55,7 @@ CreateDialog::CreateDialog(QWidget *parent,
     }
 
     // Populate combobox with mimetypes.
-    for (const QString &type : qAsConst(m_supportedMimeTypes)) {
+    for (const QString &type : std::as_const(m_supportedMimeTypes)) {
         m_ui->mimeComboBox->addItem(QMimeDatabase().mimeTypeForName(type).comment());
     }
 
@@ -129,7 +107,8 @@ void CreateDialog::slotUpdateWidgets(int index)
 
 void CreateDialog::slotUpdateFilenameExtension(int index)
 {
-    m_ui->chkAddExtension->setText(i18nc("the argument is a file extension (the period is not a typo)", "Automatically add .%1",
+    m_ui->chkAddExtension->setText(i18nc("the argument is a file extension (the period is not a typo)",
+                                         "Automatically add .%1",
                                          QMimeDatabase().mimeTypeForName(m_supportedMimeTypes.at(index)).preferredSuffix()));
 }
 
@@ -230,7 +209,7 @@ void CreateDialog::slotUpdateDefaultMimeType()
 
 void CreateDialog::loadConfiguration()
 {
-    m_config = KConfigGroup(KSharedConfig::openConfig()->group("CreateDialog"));
+    m_config = KConfigGroup(KSharedConfig::openStateConfig()->group(QStringLiteral("CreateDialog")));
     QMimeType lastUsedMime = QMimeDatabase().mimeTypeForName(m_config.readEntry("LastMimeType", QStringLiteral("application/x-compressed-tar")));
     setMimeType(lastUsedMime.name());
 }
@@ -258,3 +237,4 @@ bool CreateDialog::setMimeType(const QString &mimeTypeName)
 }
 
 #include "createdialog.moc"
+#include "moc_createdialog.cpp"

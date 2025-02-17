@@ -1,25 +1,10 @@
 /*
- * ark -- archiver for the KDE project
- *
- * Copyright (C) 2007 Henrique Pinto <henrique.pinto@kdemail.net>
- * Copyright (C) 2008-2009 Harald Hvaal <haraldhv@stud.ntnu.no>
- * Copyright (c) 2016 Vladyslav Batyrenko <mvlabat@gmail.com>
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *
- */
+    SPDX-FileCopyrightText: 2007 Henrique Pinto <henrique.pinto@kdemail.net>
+    SPDX-FileCopyrightText: 2008-2009 Harald Hvaal <haraldhv@stud.ntnu.no>
+    SPDX-FileCopyrightText: 2016 Vladyslav Batyrenko <mvlabat@gmail.com>
+
+    SPDX-License-Identifier: GPL-2.0-or-later
+*/
 #ifndef ARCHIVEMODEL_H
 #define ARCHIVEMODEL_H
 
@@ -34,7 +19,7 @@ using Kerfuffle::Archive;
 
 namespace Kerfuffle
 {
-    class Query;
+class Query;
 }
 
 /**
@@ -44,21 +29,21 @@ namespace Kerfuffle
  * and for determining data displaying order in part's view.
  */
 enum EntryMetaDataType {
-    FullPath,            /**< The entry's file name */
-    Size,                /**< The entry's original size */
-    CompressedSize,      /**< The compressed size for the entry */
-    Permissions,         /**< The entry's permissions */
-    Owner,               /**< The user the entry belongs to */
-    Group,               /**< The user group the entry belongs to */
-    Ratio,               /**< The compression ratio for the entry */
-    CRC,                 /**< The entry's CRC */
-    BLAKE2,              /**< The entry's BLAKE2 */
-    Method,              /**< The compression method used on the entry */
-    Version,             /**< The archiver version needed to extract the entry */
-    Timestamp            /**< The timestamp for the current entry */
+    DisplayName, /**< The entry's name that will be displayed in the view */
+    Size, /**< The entry's original size */
+    CompressedSize, /**< The compressed size for the entry */
+    Permissions, /**< The entry's permissions */
+    Owner, /**< The user the entry belongs to */
+    Group, /**< The user group the entry belongs to */
+    Ratio, /**< The compression ratio for the entry */
+    CRC, /**< The entry's CRC */
+    BLAKE2, /**< The entry's BLAKE2 */
+    Method, /**< The compression method used on the entry */
+    Version, /**< The archiver version needed to extract the entry */
+    Timestamp /**< The timestamp for the current entry */
 };
 
-class ArchiveModel: public QAbstractItemModel
+class ArchiveModel : public QAbstractItemModel
 {
     Q_OBJECT
 public:
@@ -67,23 +52,21 @@ public:
 
     QVariant data(const QModelIndex &index, int role) const override;
     Qt::ItemFlags flags(const QModelIndex &index) const override;
-    QVariant headerData(int section, Qt::Orientation orientation,
-                        int role = Qt::DisplayRole) const override;
-    QModelIndex index(int row, int column,
-                      const QModelIndex &parent = QModelIndex()) const override;
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
     QModelIndex parent(const QModelIndex &index) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
 
-    //drag and drop related
+    // drag and drop related
     Qt::DropActions supportedDropActions() const override;
     QStringList mimeTypes() const override;
-    QMimeData *mimeData(const QModelIndexList & indexes) const override;
-    bool dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent) override;
+    QMimeData *mimeData(const QModelIndexList &indexes) const override;
+    bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) override;
 
     void reset();
     void createEmptyArchive(const QString &path, const QString &mimeType, QObject *parent);
-    KJob* loadArchive(const QString &path, const QString &mimeType, QObject *parent);
+    Kerfuffle::LoadJob *loadArchive(const QString &path, const QString &mimeType, QObject *parent);
     Kerfuffle::Archive *archive() const;
 
     QList<int> shownColumns() const;
@@ -91,17 +74,24 @@ public:
 
     Archive::Entry *entryForIndex(const QModelIndex &index);
 
-    Kerfuffle::ExtractJob* extractFile(Archive::Entry *file, const QString& destinationDir, Kerfuffle::ExtractionOptions options = Kerfuffle::ExtractionOptions()) const;
-    Kerfuffle::ExtractJob* extractFiles(const QVector<Archive::Entry*>& files, const QString& destinationDir, Kerfuffle::ExtractionOptions options = Kerfuffle::ExtractionOptions()) const;
+    Kerfuffle::ExtractJob *
+    extractFile(Archive::Entry *file, const QString &destinationDir, Kerfuffle::ExtractionOptions options = Kerfuffle::ExtractionOptions()) const;
+    Kerfuffle::ExtractJob *extractFiles(const QList<Archive::Entry *> &files,
+                                        const QString &destinationDir,
+                                        Kerfuffle::ExtractionOptions options = Kerfuffle::ExtractionOptions()) const;
 
-    Kerfuffle::PreviewJob* preview(Archive::Entry *file) const;
-    Kerfuffle::OpenJob* open(Archive::Entry *file) const;
-    Kerfuffle::OpenWithJob* openWith(Archive::Entry *file) const;
+    Kerfuffle::PreviewJob *preview(Archive::Entry *file) const;
+    Kerfuffle::OpenJob *open(Archive::Entry *file) const;
+    Kerfuffle::OpenWithJob *openWith(Archive::Entry *file) const;
 
-    Kerfuffle::AddJob* addFiles(QVector<Archive::Entry*> &entries, const Archive::Entry *destination, const Kerfuffle::CompressionOptions& options = Kerfuffle::CompressionOptions());
-    Kerfuffle::MoveJob* moveFiles(QVector<Archive::Entry*> &entries, Archive::Entry *destination, const Kerfuffle::CompressionOptions& options = Kerfuffle::CompressionOptions());
-    Kerfuffle::CopyJob* copyFiles(QVector<Archive::Entry*> &entries, Archive::Entry *destination, const Kerfuffle::CompressionOptions& options = Kerfuffle::CompressionOptions());
-    Kerfuffle::DeleteJob* deleteFiles(QVector<Archive::Entry*> entries);
+    Kerfuffle::AddJob *addFiles(QList<Archive::Entry *> &entries,
+                                const Archive::Entry *destination,
+                                const Kerfuffle::CompressionOptions &options = Kerfuffle::CompressionOptions());
+    Kerfuffle::MoveJob *
+    moveFiles(QList<Archive::Entry *> &entries, Archive::Entry *destination, const Kerfuffle::CompressionOptions &options = Kerfuffle::CompressionOptions());
+    Kerfuffle::CopyJob *
+    copyFiles(QList<Archive::Entry *> &entries, Archive::Entry *destination, const Kerfuffle::CompressionOptions &options = Kerfuffle::CompressionOptions());
+    Kerfuffle::DeleteJob *deleteFiles(QList<Archive::Entry *> entries);
 
     /**
      * @param password The password to encrypt the archive with.
@@ -128,27 +118,27 @@ public:
      * entries for both new and existing paths, the method will return false. Also, if merging is not allowed,
      * this method will return false for entries with the same path and types.
      */
-    bool conflictingEntries(QList<const Archive::Entry*> &conflictingEntries, const QStringList &entries, bool allowMerging) const;
+    bool conflictingEntries(QList<const Archive::Entry *> &conflictingEntries, const QStringList &entries, bool allowMerging) const;
 
     static bool hasDuplicatedEntries(const QStringList &entries);
 
-    static QMap<QString, Archive::Entry*> entryMap(const QVector<Archive::Entry*> &entries);
+    static QMap<QString, Archive::Entry *> entryMap(const QList<Archive::Entry *> &entries);
 
-    QMap<QString, Kerfuffle::Archive::Entry*> filesToMove;
-    QMap<QString, Kerfuffle::Archive::Entry*> filesToCopy;
+    QMap<QString, Kerfuffle::Archive::Entry *> filesToMove;
+    QMap<QString, Kerfuffle::Archive::Entry *> filesToCopy;
 
 Q_SIGNALS:
     void loadingStarted();
     void loadingFinished(KJob *);
-    void error(const QString& error, const QString& details);
-    void droppedFiles(const QStringList& files, const Archive::Entry*);
-    void messageWidget(KMessageWidget::MessageType type, const QString& msg);
+    void error(const QString &error, const QString &details);
+    void droppedFiles(const QStringList &files, const Kerfuffle::Archive::Entry *);
+    void messageWidget(KMessageWidget::MessageType type, const QString &msg);
 
 private Q_SLOTS:
-    void slotNewEntry(Archive::Entry *entry);
-    void slotListEntry(Archive::Entry *entry);
+    void slotNewEntry(Kerfuffle::Archive::Entry *entry);
+    void slotListEntry(Kerfuffle::Archive::Entry *entry);
     void slotLoadingFinished(KJob *job);
-    void slotEntryRemoved(const QString & path);
+    void slotEntryRemoved(const QString &path);
     void slotUserQuery(Kerfuffle::Query *query);
     void slotCleanupEmptyDirs();
 
@@ -162,11 +152,14 @@ private:
      *
      * @return @p fileName without the leading './'
      */
-    QString cleanFileName(const QString& fileName);
+    QString cleanFileName(const QString &fileName);
 
     void initRootEntry();
 
-    enum InsertBehaviour { NotifyViews, DoNotNotifyViews };
+    enum InsertBehaviour {
+        NotifyViews,
+        DoNotNotifyViews
+    };
     Archive::Entry *parentFor(const Kerfuffle::Archive::Entry *entry, InsertBehaviour behaviour = NotifyViews);
     QModelIndex indexForEntry(Archive::Entry *entry);
     /**
@@ -177,7 +170,7 @@ private:
     void insertEntry(Archive::Entry *entry, InsertBehaviour behaviour = NotifyViews);
     void newEntry(Kerfuffle::Archive::Entry *receivedEntry, InsertBehaviour behaviour);
 
-    void traverseAndCountDirNode(Archive::Entry *dir);
+    qulonglong traverseAndComputeDirSizes(Archive::Entry *dir);
 
     QList<int> m_showColumns;
     QScopedPointer<Kerfuffle::Archive> m_archive;
@@ -189,7 +182,6 @@ private:
 
     qulonglong m_numberOfFiles;
     qulonglong m_numberOfFolders;
-    qulonglong m_uncompressedSize;
 
     // Whether a file entry has been listed. Used to ensure all relevant columns are shown,
     // since directories might have fewer columns than files.

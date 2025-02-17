@@ -1,38 +1,17 @@
 /*
- * ark -- archiver for the KDE project
- *
- * Copyright (C) 2008 Harald Hvaal <haraldhv@stud.ntnu.no>
- * Copyright (C) 2009-2010 Raphael Kubo da Costa <rakuco@FreeBSD.org>
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES ( INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION ) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * ( INCLUDING NEGLIGENCE OR OTHERWISE ) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+    SPDX-FileCopyrightText: 2008 Harald Hvaal <haraldhv@stud.ntnu.no>
+    SPDX-FileCopyrightText: 2009-2010 Raphael Kubo da Costa <rakuco@FreeBSD.org>
+
+    SPDX-License-Identifier: BSD-2-Clause
+*/
 
 #ifndef BATCHEXTRACT_H
 #define BATCHEXTRACT_H
 
 #include <KCompositeJob>
 
+#include <QList>
 #include <QMap>
-#include <QVector>
 
 namespace Kerfuffle
 {
@@ -56,7 +35,7 @@ public:
     /**
      * Creates a new BatchExtract object.
      */
-    explicit BatchExtract(QObject* parent = nullptr);
+    explicit BatchExtract(QObject *parent = nullptr);
 
     /**
      * Destroys a BatchExtract object.
@@ -72,7 +51,7 @@ public:
      *
      * @see setAutoSubfolder
      */
-    void addExtraction(const QUrl& url);
+    void addExtraction(const QUrl &url);
 
     bool doKill() override;
 
@@ -110,7 +89,7 @@ public:
      *
      * @param url The file that will be added to the list.
      */
-    void addInput(const QUrl& url);
+    void addInput(const QUrl &url);
 
     /**
      * Shows the extract options dialog before extracting the files.
@@ -141,7 +120,7 @@ public:
      *
      * @param folder The directory that will be used.
      */
-    void setDestinationFolder(const QString& folder);
+    void setDestinationFolder(const QString &folder);
 
     /**
      * Returns whether the destination folder should
@@ -215,10 +194,10 @@ private Q_SLOTS:
 
 private:
     int m_initialJobCount;
-    QMap<KJob*, QPair<QString, QString> > m_fileNames;
+    QMap<KJob *, QPair<QString, QString>> m_fileNames;
     bool m_autoSubfolder;
 
-    QVector<QUrl> m_inputs;
+    QList<QUrl> m_inputs;
     QString m_destinationFolder;
     QStringList m_failedFiles;
     bool m_preservePaths;

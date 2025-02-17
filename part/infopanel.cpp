@@ -1,23 +1,8 @@
 /*
- * ark -- archiver for the KDE project
- *
- * Copyright (C) 2007 Henrique Pinto <henrique.pinto@kdemail.net>
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *
- */
+    SPDX-FileCopyrightText: 2007 Henrique Pinto <henrique.pinto@kdemail.net>
+
+    SPDX-License-Identifier: GPL-2.0-or-later
+*/
 
 #include "infopanel.h"
 #include "archiveentry.h"
@@ -31,13 +16,14 @@
 
 using namespace Kerfuffle;
 
-QPixmap InfoPanel::getPixmap(const QString& name)
+QPixmap InfoPanel::getPixmap(const QString &name)
 {
     return QIcon::fromTheme(name).pixmap(48);
 }
 
 InfoPanel::InfoPanel(ArchiveModel *model, QWidget *parent)
-        : QFrame(parent), m_model(model)
+    : QFrame(parent)
+    , m_model(model)
 {
     setupUi(this);
 
@@ -85,12 +71,12 @@ QString InfoPanel::prettyFileName() const
     return m_prettyFileName;
 }
 
-void InfoPanel::setPrettyFileName(const QString& fileName)
+void InfoPanel::setPrettyFileName(const QString &fileName)
 {
     m_prettyFileName = fileName;
 }
 
-void InfoPanel::setIndex(const QModelIndex& index)
+void InfoPanel::setIndex(const QModelIndex &index)
 {
     if (!index.isValid()) {
         updateWithDefaults();
@@ -105,7 +91,7 @@ void InfoPanel::setIndex(const QModelIndex& index)
         if (entry->isDir()) {
             mimeType = db.mimeTypeForName(QStringLiteral("inode/directory"));
         } else {
-            mimeType = db.mimeTypeForFile(entry->fullPath(), QMimeDatabase::MatchExtension);
+            mimeType = db.mimeTypeForFile(entry->displayName(), QMimeDatabase::MatchExtension);
         }
 
         iconLabel->setPixmap(getPixmap(mimeType.iconName()));
@@ -113,7 +99,7 @@ void InfoPanel::setIndex(const QModelIndex& index)
             uint dirs;
             uint files;
             entry->countChildren(dirs, files);
-            additionalInfo->setText(KIO::itemsSummaryString(dirs + files, files, dirs, 0, false));
+            additionalInfo->setText(KIO::itemsSummaryString(dirs + files, files, dirs, entry->property("size").toULongLong(), true));
         } else if (!entry->property("link").toString().isEmpty()) {
             additionalInfo->setText(i18n("Symbolic Link"));
         } else {
@@ -121,14 +107,10 @@ void InfoPanel::setIndex(const QModelIndex& index)
                 additionalInfo->setText(KIO::convertSize(entry->property("size").toULongLong()));
             } else {
                 additionalInfo->setText(i18n("Unknown size"));
-
             }
         }
 
-        const QStringList nameParts = entry->fullPath().split(QLatin1Char( '/' ), Qt::SkipEmptyParts);
-        const QString name = (nameParts.count() > 0) ? nameParts.last() : entry->fullPath();
-        fileName->setText(name);
-
+        fileName->setText(entry->displayName());
         showMetaDataFor(index);
     }
 }
@@ -138,12 +120,12 @@ void InfoPanel::setIndexes(const QModelIndexList &list)
     if (list.size() == 0) {
         setIndex(QModelIndex());
     } else if (list.size() == 1) {
-        setIndex(list[ 0 ]);
+        setIndex(list[0]);
     } else {
         iconLabel->setPixmap(getPixmap(QStringLiteral("utilities-file-archiver")));
         fileName->setText(i18np("One file selected", "%1 files selected", list.size()));
         quint64 totalSize = 0;
-        for (const QModelIndex& index : list) {
+        for (const QModelIndex &index : list) {
             const Archive::Entry *entry = m_model->entryForIndex(index);
             totalSize += entry->property("size").toULongLong();
         }
@@ -176,7 +158,7 @@ void InfoPanel::showMetaDataFor(const QModelIndex &index)
     if (entry->isDir()) {
         mimeType = db.mimeTypeForName(QStringLiteral("inode/directory"));
     } else {
-        mimeType = db.mimeTypeForFile(entry->fullPath(), QMimeDatabase::MatchExtension);
+        mimeType = db.mimeTypeForFile(entry->displayName(), QMimeDatabase::MatchExtension);
     }
 
     if (entry->isExecutable() && mimeType.isDefault()) {
@@ -220,3 +202,5 @@ void InfoPanel::showMetaDataFor(const QModelIndex &index)
         m_passwordValueLabel->hide();
     }
 }
+
+#include "moc_infopanel.cpp"

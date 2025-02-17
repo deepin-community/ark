@@ -1,28 +1,32 @@
-cmake_minimum_required (VERSION 3.16 FATAL_ERROR)
+cmake_minimum_required (VERSION 3.19 FATAL_ERROR)
 
 # KDE Application Version, managed by release script
-set (RELEASE_SERVICE_VERSION_MAJOR "21")
-set (RELEASE_SERVICE_VERSION_MINOR "08")
-set (RELEASE_SERVICE_VERSION_MICRO "3")
+set (RELEASE_SERVICE_VERSION_MAJOR "24")
+set (RELEASE_SERVICE_VERSION_MINOR "12")
+set (RELEASE_SERVICE_VERSION_MICRO "1")
 set (RELEASE_SERVICE_VERSION "${RELEASE_SERVICE_VERSION_MAJOR}.${RELEASE_SERVICE_VERSION_MINOR}.${RELEASE_SERVICE_VERSION_MICRO}")
 project(ark VERSION ${RELEASE_SERVICE_VERSION})
 
-set(QT_MIN_VERSION 5.15.0)
-set(KF5_MIN_VERSION 5.82.0)
+set(QT_MIN_VERSION 6.6.0)
+set(KF_MIN_VERSION 6.3.0)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-find_package(ECM ${KF5_MIN_VERSION} REQUIRED NO_MODULE)
+find_package(ECM ${KF_MIN_VERSION} REQUIRED NO_MODULE)
 set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(KDEInstallDirs)
 include(KDECMakeSettings)
-include(KDEFrameworkCompilerSettings NO_POLICY_SCOPE)
+include(KDECompilerSettings NO_POLICY_SCOPE)
+
 include(GenerateExportHeader)
 include(FeatureSummary)
 include(ECMQtDeclareLoggingCategory)
 include(ECMSetupVersion)
+include(ECMDeprecationSettings)
+include(KDEClangFormat)
+include(KDEGitCommitHooks)
 
 ecm_setup_version(${RELEASE_SERVICE_VERSION}
                   VARIABLE_PREFIX ARK
@@ -31,30 +35,34 @@ ecm_setup_version(${RELEASE_SERVICE_VERSION}
 ecm_setup_version(PROJECT
                   VARIABLE_PREFIX KERFUFFLE)
 
-find_package(Qt5 ${QT_MIN_VERSION} CONFIG REQUIRED
+find_package(Qt6 ${QT_MIN_VERSION} CONFIG REQUIRED
     Concurrent
     Core
     Gui
     Widgets)
-find_package(KF5 ${KF5_MIN_VERSION} REQUIRED COMPONENTS Archive
-                                                        Config
+find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS Config
                                                         Crash
                                                         DBusAddons
                                                         DocTools
+                                                        FileMetaData
                                                         I18n
-                                                        ItemModels
                                                         KIO
                                                         Service
                                                         Parts
-                                                        Pty
-                                                        WidgetsAddons)
+                                                        WidgetsAddons
+                                                        WindowSystem
+                                                        IconThemes)
 
-find_package(Qt5Test ${QT_MIN_VERSION} CONFIG QUIET)
-set_package_properties(Qt5Test PROPERTIES
+if (NOT WIN32)
+    find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS Pty)
+endif()
+
+find_package(Qt6Test ${QT_MIN_VERSION} CONFIG QUIET)
+set_package_properties(Qt6Test PROPERTIES
     PURPOSE "Required for tests"
     TYPE OPTIONAL)
 
-if(NOT Qt5Test_FOUND)
+if(NOT TARGET Qt6::Test)
     set(BUILD_TESTING OFF CACHE BOOL "Build the testing tree.")
 endif()
 
@@ -69,6 +77,11 @@ set_package_properties(LibZip PROPERTIES
                        URL "https://nih.at/libzip/"
                        DESCRIPTION "A library for handling zip archives"
                        PURPOSE "Optional for zip archives.")
+# To remove once we can depend on LibZip 1.6+
+if ("${LibZip_VERSION}" VERSION_GREATER_EQUAL 1.6)
+    set(LIBZIP_CANCELATION 1)
+endif()
+configure_file(config.h.in config.h)
 
 option(WITH_TEST_COVERAGE "Build with test coverage support" OFF)
 if (WITH_TEST_COVERAGE)
@@ -80,8 +93,11 @@ endif (WITH_TEST_COVERAGE)
 set(SUPPORTED_ARK_MIMETYPES "")
 
 add_definitions(-DTRANSLATION_DOMAIN="ark")
-add_definitions(-DQT_NO_FOREACH)
-add_definitions(-DQT_NO_KEYWORDS)
+
+ecm_set_disabled_deprecation_versions(QT 5.15.2
+    KF 6.7
+)
+
 
 add_subdirectory(plugins)
 add_subdirectory(kerfuffle)
@@ -98,4 +114,9 @@ kdoctools_install(po)
 
 ecm_qt_install_logging_categories(EXPORT ARK FILE ark.categories DESTINATION ${KDE_INSTALL_LOGGINGCATEGORIESDIR})
 
-feature_summary(WHAT ALL INCLUDE_QUIET_PACKAGES FATAL_ON_MISSING_REQUIRED_PACKAGES)
+feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
+
+# add clang-format target for all our real source files
+file(GLOB_RECURSE ALL_CLANG_FORMAT_SOURCE_FILES *.cpp *.h)
+kde_clang_format(${ALL_CLANG_FORMAT_SOURCE_FILES})
+kde_configure_git_pre_commit_hook(CHECKS CLANG_FORMAT)
