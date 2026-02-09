@@ -1,55 +1,34 @@
 /*
- * Copyright (c) 2007 Henrique Pinto <henrique.pinto@kdemail.net>
- * Copyright (c) 2008-2009 Harald Hvaal <haraldhv@stud.ntnu.no>
- * Copyright (c) 2009-2012 Raphael Kubo da Costa <rakuco@FreeBSD.org>
- * Copyright (c) 2016 Vladyslav Batyrenko <mvlabat@gmail.com>
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES ( INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION ) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * ( INCLUDING NEGLIGENCE OR OTHERWISE ) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+    SPDX-FileCopyrightText: 2007 Henrique Pinto <henrique.pinto@kdemail.net>
+    SPDX-FileCopyrightText: 2008-2009 Harald Hvaal <haraldhv@stud.ntnu.no>
+    SPDX-FileCopyrightText: 2009-2012 Raphael Kubo da Costa <rakuco@FreeBSD.org>
+    SPDX-FileCopyrightText: 2016 Vladyslav Batyrenko <mvlabat@gmail.com>
+
+    SPDX-License-Identifier: BSD-2-Clause
+*/
 
 #ifndef JOBS_H
 #define JOBS_H
 
-#include "kerfuffle_export.h"
-#include "archiveinterface.h"
 #include "archive_kerfuffle.h"
 #include "archiveentry.h"
+#include "archiveinterface.h"
+#include "kerfuffle_export.h"
 #include "queries.h"
 
 #include <KJob>
 
 #include <QElapsedTimer>
-#include <QTemporaryDir>
 #include <QPointer>
+#include <QTemporaryDir>
 
 namespace Kerfuffle
 {
-
 class KERFUFFLE_EXPORT Job : public KJob
 {
     Q_OBJECT
 
 public:
-
     /**
      * @return The archive processed by this job.
      * @warning This method should not be called before start().
@@ -76,24 +55,24 @@ protected Q_SLOTS:
     virtual void onCancelled();
     virtual void onError(const QString &message, const QString &details, int errorCode);
     virtual void onInfo(const QString &info);
-    virtual void onEntry(Archive::Entry *entry);
+    virtual void onEntry(Kerfuffle::Archive::Entry *entry);
     virtual void onProgress(double progress);
     virtual void onEntryRemoved(const QString &path);
     virtual void onFinished(bool result);
     virtual void onUserQuery(Kerfuffle::Query *query);
 
 Q_SIGNALS:
-    void entryRemoved(const QString & entry);
-    void newEntry(Archive::Entry*);
-    void userQuery(Kerfuffle::Query*);
+    void entryRemoved(const QString &entry);
+    void newEntry(Kerfuffle::Archive::Entry *);
+    void userQuery(Kerfuffle::Query *);
 
 private:
-    Archive *m_archive;
-    ReadOnlyArchiveInterface *m_archiveInterface;
+    Archive *m_archive = nullptr;
+    ReadOnlyArchiveInterface *m_archiveInterface = nullptr;
     QElapsedTimer jobTimer;
 
     class Private;
-    Private * const d;
+    Private *const d;
 };
 
 /**
@@ -144,7 +123,7 @@ private:
     qlonglong m_filesCount;
 
 private Q_SLOTS:
-    void onNewEntry(const Archive::Entry*);
+    void onNewEntry(const Kerfuffle::Archive::Entry *);
 };
 
 /**
@@ -171,17 +150,19 @@ private Q_SLOTS:
     void slotLoadingFinished(KJob *job);
 
 private:
-
     /**
      * Tracks whether the job is loading or extracting the archive.
      */
-    enum Step {Loading, Extracting};
+    enum Step {
+        Loading,
+        Extracting,
+    };
 
     void setupDestination();
 
     Step m_step = Loading;
     ExtractJob *m_extractJob = nullptr;
-    LoadJob *m_loadJob;
+    LoadJob *m_loadJob = nullptr;
     QString m_destination;
     bool m_autoSubfolder;
     bool m_preservePaths;
@@ -196,8 +177,9 @@ class KERFUFFLE_EXPORT CreateJob : public Job
     Q_OBJECT
 
 public:
-    explicit CreateJob(Archive *archive, const QVector<Archive::Entry*> &entries, const CompressionOptions& options);
+    explicit CreateJob(Archive *archive, const QList<Archive::Entry *> &entries, const CompressionOptions &options);
 
+    ~CreateJob();
     /**
      * @param password The password to encrypt the archive with.
      * @param encryptHeader Whether to encrypt also the list of files.
@@ -217,7 +199,7 @@ protected:
 
 private:
     QPointer<AddJob> m_addJob;
-    QVector<Archive::Entry*> m_entries;
+    QList<Archive::Entry *> m_entries;
     CompressionOptions m_options;
 };
 
@@ -226,7 +208,7 @@ class KERFUFFLE_EXPORT ExtractJob : public Job
     Q_OBJECT
 
 public:
-    ExtractJob(const QVector<Archive::Entry*> &entries, const QString& destinationDir, ExtractionOptions options, ReadOnlyArchiveInterface *interface);
+    ExtractJob(const QList<Archive::Entry *> &entries, const QString &destinationDir, ExtractionOptions options, ReadOnlyArchiveInterface *interface);
 
     QString destinationDirectory() const;
     ExtractionOptions extractionOptions() const;
@@ -235,8 +217,7 @@ public Q_SLOTS:
     void doWork() override;
 
 private:
-
-    QVector<Archive::Entry*> m_entries;
+    QList<Archive::Entry *> m_entries;
     QString m_destinationDir;
     ExtractionOptions m_options;
 };
@@ -252,6 +233,8 @@ class KERFUFFLE_EXPORT TempExtractJob : public Job
 
 public:
     TempExtractJob(Archive::Entry *entry, bool passwordProtectedHint, ReadOnlyArchiveInterface *interface);
+
+    Archive::Entry *entry() const;
 
     /**
      * @return The absolute path of the extracted file.
@@ -273,8 +256,8 @@ public Q_SLOTS:
 private:
     QString extractionDir() const;
 
-    Archive::Entry *m_entry;
-    QTemporaryDir *m_tmpExtractDir;
+    Archive::Entry *m_entry = nullptr;
+    QTemporaryDir *m_tmpExtractDir = nullptr;
     bool m_passwordProtectedHint;
 };
 
@@ -315,7 +298,7 @@ class KERFUFFLE_EXPORT AddJob : public Job
     Q_OBJECT
 
 public:
-    AddJob(const QVector<Archive::Entry*> &files, const Archive::Entry *destination, const CompressionOptions& options, ReadWriteArchiveInterface *interface);
+    AddJob(const QList<Archive::Entry *> &files, const Archive::Entry *destination, const CompressionOptions &options, ReadWriteArchiveInterface *interface);
 
 public Q_SLOTS:
     void doWork() override;
@@ -325,7 +308,7 @@ protected Q_SLOTS:
 
 private:
     QString m_oldWorkingDir;
-    const QVector<Archive::Entry*> m_entries;
+    const QList<Archive::Entry *> m_entries;
     const Archive::Entry *m_destination;
     CompressionOptions m_options;
 };
@@ -336,10 +319,10 @@ private:
  */
 class KERFUFFLE_EXPORT MoveJob : public Job
 {
-Q_OBJECT
+    Q_OBJECT
 
 public:
-    MoveJob(const QVector<Archive::Entry*> &files, Archive::Entry *destination, const CompressionOptions& options, ReadWriteArchiveInterface *interface);
+    MoveJob(const QList<Archive::Entry *> &files, Archive::Entry *destination, const CompressionOptions &options, ReadWriteArchiveInterface *interface);
 
 public Q_SLOTS:
     void doWork() override;
@@ -349,8 +332,8 @@ protected Q_SLOTS:
 
 private:
     int m_finishedSignalsCount;
-    const QVector<Archive::Entry*> m_entries;
-    Archive::Entry *m_destination;
+    const QList<Archive::Entry *> m_entries;
+    Archive::Entry *m_destination = nullptr;
     CompressionOptions m_options;
 };
 
@@ -360,10 +343,10 @@ private:
  */
 class KERFUFFLE_EXPORT CopyJob : public Job
 {
-Q_OBJECT
+    Q_OBJECT
 
 public:
-    CopyJob(const QVector<Archive::Entry*> &entries, Archive::Entry *destination, const CompressionOptions& options, ReadWriteArchiveInterface *interface);
+    CopyJob(const QList<Archive::Entry *> &entries, Archive::Entry *destination, const CompressionOptions &options, ReadWriteArchiveInterface *interface);
 
 public Q_SLOTS:
     void doWork() override;
@@ -373,7 +356,7 @@ protected Q_SLOTS:
 
 private:
     int m_finishedSignalsCount;
-    const QVector<Archive::Entry*> m_entries;
+    const QList<Archive::Entry *> m_entries;
     Archive::Entry *m_destination;
     CompressionOptions m_options;
 };
@@ -383,13 +366,13 @@ class KERFUFFLE_EXPORT DeleteJob : public Job
     Q_OBJECT
 
 public:
-    DeleteJob(const QVector<Archive::Entry*> &files, ReadWriteArchiveInterface *interface);
+    DeleteJob(const QList<Archive::Entry *> &files, ReadWriteArchiveInterface *interface);
 
 public Q_SLOTS:
     void doWork() override;
 
 private:
-    QVector<Archive::Entry*> m_entries;
+    QList<Archive::Entry *> m_entries;
 };
 
 class KERFUFFLE_EXPORT CommentJob : public Job
@@ -397,7 +380,7 @@ class KERFUFFLE_EXPORT CommentJob : public Job
     Q_OBJECT
 
 public:
-    CommentJob(const QString& comment, ReadWriteArchiveInterface *interface);
+    CommentJob(const QString &comment, ReadWriteArchiveInterface *interface);
 
 public Q_SLOTS:
     void doWork() override;
@@ -422,7 +405,6 @@ private Q_SLOTS:
 
 private:
     bool m_testSuccess;
-
 };
 
 } // namespace Kerfuffle

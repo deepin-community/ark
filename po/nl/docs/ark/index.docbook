@@ -625,27 +625,27 @@
 
 <para
 >Met de &RMB; op een archief klikken in een bestandsbeheerder zoals &dolphin; toont een contextmenu met een item <guimenuitem
->Openen met Ark</guimenuitem
+>Uitpakken</guimenuitem
 >. Het menu heeft deze extra items om een archief uit te pakken met &ark;: </para>
 
 <itemizedlist>
 <listitem>
 <para
 ><guimenuitem
->Archief hier uitpakken, submap autodetecteren</guimenuitem
-> maakt een submap in de map aan met het archief en pakt de mappen en bestanden erin uit.</para>
+>Hier uitpakken</guimenuitem
+> maakt een submap in de map aan met het archief en pakt de mappen en bestanden erin uit. In het geval dat het archief slechts één bestand of map bevat, zal geen submap worden aangemaakt.</para>
 </listitem>
 <listitem>
 <para
 ><guimenuitem
->Archief uitpakken naar...</guimenuitem
+>Hier uitpakken en archief verwijderen</guimenuitem
+> maakt een submap in de map aan met het archief, pakt de mappen en bestanden erin uit en verwijdert het archief.</para>
+</listitem>
+<listitem>
+<para
+><guimenuitem
+>Uitpakken naar…</guimenuitem
 > opent de dialoog Uitpakken waar u de doelmap kunt kiezen en verschillende uitpakopties.</para>
-</listitem>
-<listitem>
-<para
-><guimenuitem
->Archief hier uitpakken</guimenuitem
-> pakt de inhoud van het archief uit in dezelfde map.</para>
 </listitem>
 </itemizedlist>
 
@@ -658,9 +658,9 @@
 <listitem>
 <para
 ><guimenuitem
->Hier (als TAR.GZ)</guimenuitem
-> of <guimenuitem
->Hier (als ZIP)</guimenuitem
+>Comprimeer naar "Archief.tar.gz"</guimenuitem
+> en <guimenuitem
+>Comprimeer naar "Archief.zip"</guimenuitem
 > maakt deze typen archief aan in de huidige map.</para>
 </listitem>
 <listitem>

@@ -1,52 +1,37 @@
 /*
- * Copyright (c) 2007 Henrique Pinto <henrique.pinto@kdemail.net>
- * Copyright (c) 2008-2009 Harald Hvaal <haraldhv@stud.ntnu.no>
- * Copyright (c) 2009-2012 Raphael Kubo da Costa <rakuco@FreeBSD.org>
- * Copyright (c) 2016 Vladyslav Batyrenko <mvlabat@gmail.com>
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES ( INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION ) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * ( INCLUDING NEGLIGENCE OR OTHERWISE ) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+    SPDX-FileCopyrightText: 2007 Henrique Pinto <henrique.pinto@kdemail.net>
+    SPDX-FileCopyrightText: 2008-2009 Harald Hvaal <haraldhv@stud.ntnu.no>
+    SPDX-FileCopyrightText: 2009-2012 Raphael Kubo da Costa <rakuco@FreeBSD.org>
+    SPDX-FileCopyrightText: 2016 Vladyslav Batyrenko <mvlabat@gmail.com>
+
+    SPDX-License-Identifier: BSD-2-Clause
+*/
 
 #include "archiveinterface.h"
 #include "ark_debug.h"
+#include "jobs.h"
 #include "mimetypes.h"
+#include "windows_stat.h"
 
 #include <QDir>
 #include <QFileInfo>
 
 namespace Kerfuffle
 {
-ReadOnlyArchiveInterface::ReadOnlyArchiveInterface(QObject *parent, const QVariantList & args)
-        : QObject(parent)
-        , m_numberOfVolumes(0)
-        , m_numberOfEntries(0)
-        , m_waitForFinishedSignal(false)
-        , m_isHeaderEncryptionEnabled(false)
-        , m_isCorrupt(false)
-        , m_isMultiVolume(false)
+ReadOnlyArchiveInterface::ReadOnlyArchiveInterface(QObject *parent, const QVariantList &args)
+    : QObject(parent)
+    , m_numberOfVolumes(0)
+    , m_numberOfEntries(0)
+    , m_waitForFinishedSignal(false)
+    , m_isHeaderEncryptionEnabled(false)
+    , m_isCorrupt(false)
+    , m_isMultiVolume(false)
+    , m_unpackedSize(0)
 {
     Q_ASSERT(args.size() >= 2);
+    qRegisterMetaType<Kerfuffle::Query *>();
 
-    qCDebug(ARK) << "Created read-only interface for" << args.first().toString();
+    qCDebug(ARK_LOG) << "Created read-only interface for" << args.first().toString();
     m_filename = args.first().toString();
     m_mimetype = determineMimeType(m_filename);
     connect(this, &ReadOnlyArchiveInterface::entry, this, &ReadOnlyArchiveInterface::onEntry);
@@ -59,8 +44,9 @@ ReadOnlyArchiveInterface::~ReadOnlyArchiveInterface()
 
 void ReadOnlyArchiveInterface::onEntry(Archive::Entry *archiveEntry)
 {
-    Q_UNUSED(archiveEntry)
-    m_numberOfEntries++;
+    Q_ASSERT(archiveEntry);
+    m_numberOfEntries += 1;
+    m_unpackedSize += archiveEntry->isSparse() ? archiveEntry->sparseSize() : archiveEntry->size();
 }
 
 QString ReadOnlyArchiveInterface::filename() const
@@ -100,7 +86,7 @@ QString ReadOnlyArchiveInterface::password() const
 
 bool ReadOnlyArchiveInterface::doKill()
 {
-    //default implementation
+    // default implementation
     return false;
 }
 
@@ -135,9 +121,9 @@ QString ReadOnlyArchiveInterface::multiVolumeName() const
 }
 
 ReadWriteArchiveInterface::ReadWriteArchiveInterface(QObject *parent, const QVariantList &args)
-        : ReadOnlyArchiveInterface(parent, args)
+    : ReadOnlyArchiveInterface(parent, args)
 {
-    qCDebug(ARK) << "Created read-write interface for" << args.first().toString();
+    qCDebug(ARK_LOG) << "Created read-write interface for" << args.first().toString();
 
     connect(this, &ReadWriteArchiveInterface::entryRemoved, this, &ReadWriteArchiveInterface::onEntryRemoved);
 }
@@ -151,7 +137,8 @@ bool ReadOnlyArchiveInterface::waitForFinishedSignal()
     return m_waitForFinishedSignal;
 }
 
-int ReadOnlyArchiveInterface::moveRequiredSignals() const {
+int ReadOnlyArchiveInterface::moveRequiredSignals() const
+{
     return 1;
 }
 
@@ -165,7 +152,58 @@ void ReadOnlyArchiveInterface::setWaitForFinishedSignal(bool value)
     m_waitForFinishedSignal = value;
 }
 
-QStringList ReadOnlyArchiveInterface::entryFullPaths(const QVector<Archive::Entry*> &entries, PathFormat format)
+qulonglong ReadOnlyArchiveInterface::unpackedSize() const
+{
+    return m_unpackedSize;
+}
+
+QString ReadOnlyArchiveInterface::permissionsToString(mode_t perm)
+{
+    QString modeval;
+    if ((perm & S_IFMT) == QT_STAT_DIR) {
+        modeval.append(QLatin1Char('d'));
+    } else if ((perm & S_IFMT) == QT_STAT_LNK) {
+        modeval.append(QLatin1Char('l'));
+    } else {
+        modeval.append(QLatin1Char('-'));
+    }
+    modeval.append((perm & S_IRUSR) ? QLatin1Char('r') : QLatin1Char('-'));
+    modeval.append((perm & S_IWUSR) ? QLatin1Char('w') : QLatin1Char('-'));
+    if ((perm & S_ISUID) && (perm & S_IXUSR)) {
+        modeval.append(QLatin1Char('s'));
+    } else if ((perm & S_ISUID)) {
+        modeval.append(QLatin1Char('S'));
+    } else if ((perm & S_IXUSR)) {
+        modeval.append(QLatin1Char('x'));
+    } else {
+        modeval.append(QLatin1Char('-'));
+    }
+    modeval.append((perm & S_IRGRP) ? QLatin1Char('r') : QLatin1Char('-'));
+    modeval.append((perm & S_IWGRP) ? QLatin1Char('w') : QLatin1Char('-'));
+    if ((perm & S_ISGID) && (perm & S_IXGRP)) {
+        modeval.append(QLatin1Char('s'));
+    } else if ((perm & S_ISGID)) {
+        modeval.append(QLatin1Char('S'));
+    } else if ((perm & S_IXGRP)) {
+        modeval.append(QLatin1Char('x'));
+    } else {
+        modeval.append(QLatin1Char('-'));
+    }
+    modeval.append((perm & S_IROTH) ? QLatin1Char('r') : QLatin1Char('-'));
+    modeval.append((perm & S_IWOTH) ? QLatin1Char('w') : QLatin1Char('-'));
+    if ((perm & S_ISVTX) && (perm & S_IXOTH)) {
+        modeval.append(QLatin1Char('t'));
+    } else if ((perm & S_ISVTX)) {
+        modeval.append(QLatin1Char('T'));
+    } else if ((perm & S_IXOTH)) {
+        modeval.append(QLatin1Char('x'));
+    } else {
+        modeval.append(QLatin1Char('-'));
+    }
+    return modeval;
+}
+
+QStringList ReadOnlyArchiveInterface::entryFullPaths(const QList<Archive::Entry *> &entries, PathFormat format)
 {
     QStringList filesList;
     for (const Archive::Entry *file : entries) {
@@ -174,18 +212,18 @@ QStringList ReadOnlyArchiveInterface::entryFullPaths(const QVector<Archive::Entr
     return filesList;
 }
 
-QVector<Archive::Entry*> ReadOnlyArchiveInterface::entriesWithoutChildren(const QVector<Archive::Entry*> &entries)
+QList<Archive::Entry *> ReadOnlyArchiveInterface::entriesWithoutChildren(const QList<Archive::Entry *> &entries)
 {
     // QMap is easy way to get entries sorted by their fullPath.
-    QMap<QString, Archive::Entry*> sortedEntries;
+    QMap<QString, Archive::Entry *> sortedEntries;
     for (Archive::Entry *entry : entries) {
         sortedEntries.insert(entry->fullPath(), entry);
     }
 
-    QVector<Archive::Entry*> filteredEntries;
+    QList<Archive::Entry *> filteredEntries;
     QString lastFolder;
-    for (Archive::Entry *entry : qAsConst(sortedEntries)) {
-        if (lastFolder.count() > 0 && entry->fullPath().startsWith(lastFolder)) {
+    for (Archive::Entry *entry : std::as_const(sortedEntries)) {
+        if (!lastFolder.isEmpty() && entry->fullPath().startsWith(lastFolder)) {
             continue;
         }
 
@@ -205,10 +243,10 @@ QStringList ReadOnlyArchiveInterface::entryPathsFromDestination(QStringList entr
 
     QString newPath;
     int nameLength = 0;
-    for (const QString &entryPath : qAsConst(entries)) {
-        if (lastFolder.count() > 0 && entryPath.startsWith(lastFolder)) {
+    for (const QString &entryPath : std::as_const(entries)) {
+        if (!lastFolder.isEmpty() && entryPath.startsWith(lastFolder)) {
             // Replace last moved or copied folder path with destination path.
-            int charsCount = entryPath.count() - lastFolder.count();
+            int charsCount = entryPath.length() - lastFolder.length();
             if (entriesWithoutChildren != 1) {
                 charsCount += nameLength;
             }
@@ -226,7 +264,7 @@ QStringList ReadOnlyArchiveInterface::entryPathsFromDestination(QStringList entr
                 newPath = destinationPath;
             }
             if (entryPath.right(1) == QLatin1String("/")) {
-                nameLength = name.count() + 1; // plus slash
+                nameLength = name.length() + 1; // plus slash
                 lastFolder = entryPath;
             } else {
                 nameLength = 0;
@@ -291,3 +329,5 @@ void ReadWriteArchiveInterface::onEntryRemoved(const QString &path)
 }
 
 } // namespace Kerfuffle
+
+#include "moc_archiveinterface.cpp"

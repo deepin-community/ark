@@ -1,25 +1,10 @@
 /*
- * ark -- archiver for the KDE project
- *
- * Copyright (C) 2007 Henrique Pinto <henrique.pinto@kdemail.net>
- * Copyright (C) 2008 Harald Hvaal <haraldhv@stud.ntnu.no>
- * Copyright (C) 2021 Jiří Wolker <woljiri@gmail.com>
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *
- */
+    SPDX-FileCopyrightText: 2007 Henrique Pinto <henrique.pinto@kdemail.net>
+    SPDX-FileCopyrightText: 2008 Harald Hvaal <haraldhv@stud.ntnu.no>
+    SPDX-FileCopyrightText: 2021 Jiří Wolker <woljiri@gmail.com>
+
+    SPDX-License-Identifier: GPL-2.0-or-later
+*/
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
@@ -27,7 +12,7 @@
 #include <KParts/OpenUrlArguments>
 #include <QStackedWidget>
 
-#include "welcomescreen.h"
+#include "welcomeview/welcomeview.h"
 
 namespace KParts
 {
@@ -35,18 +20,21 @@ class ReadWritePart;
 }
 
 class KRecentFilesMenu;
+class Sidebar;
 
-class MainWindow: public KParts::MainWindow
+class MainWindow : public KParts::MainWindow
 {
     Q_OBJECT
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
-    bool loadPart();
 
-    void dragEnterEvent(class QDragEnterEvent * event) override;
-    void dropEvent(class QDropEvent * event) override;
-    void dragMoveEvent(class QDragMoveEvent * event) override;
+    bool loadPart();
+    KRecentFilesMenu *recentFilesMenu() const;
+
+    void dragEnterEvent(class QDragEnterEvent *event) override;
+    void dropEvent(class QDropEvent *event) override;
+    void dragMoveEvent(class QDragMoveEvent *event) override;
 
 public Q_SLOTS:
     void openUrl(const QUrl &url);
@@ -70,14 +58,18 @@ private Q_SLOTS:
 
 private:
     void setupActions();
+    void updateHamburgerMenu();
 
     KParts::ReadWritePart *m_part;
-    KRecentFilesMenu      *m_recentFilesMenu;
-    QAction               *m_openAction;
-    QAction               *m_newAction;
+    KRecentFilesMenu *m_recentFilesMenu;
+    QAction *m_openAction;
+    QAction *m_newAction;
     KParts::OpenUrlArguments m_openArgs;
-    WelcomeScreen         *m_welcomeScreen;
-    QStackedWidget        *m_windowContents;
+    WelcomeView *m_welcomeView;
+    QStackedWidget *m_windowContents;
+    Sidebar *m_sidebar = nullptr;
+    QAction *m_showSidebarAction = nullptr;
+    QAction *m_lockSidebarAction = nullptr;
 };
 
 #endif // MAINWINDOW_H

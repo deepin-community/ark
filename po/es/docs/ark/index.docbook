@@ -29,7 +29,7 @@
 
 <bookinfo>
 <title
->El manual de &ark;</title>
+>Manual de &ark;</title>
 
 <authorgroup>
 <author
@@ -201,7 +201,7 @@
 
 <para
 >Para abrir un archivo comprimido en &ark;, seleccione <guimenuitem
->Abrir...</guimenuitem
+>Abrir…</guimenuitem
 > (<keycombo action="simul"
 >&Ctrl;<keycap
 >O</keycap
@@ -227,7 +227,7 @@
 >Puede realizar varias operaciones en un archivo comprimido abierto usando el menú <guimenu
 >Archivo comprimido</guimenu
 >. Por ejemplo, puede guardar el archivo comprimido con un nombre diferente usando <guimenuitem
->Guardar como...</guimenuitem
+>Guardar como…</guimenuitem
 >. Puede ver las propiedades del archivo comprimido (como su tipo, tamaño y suma de comprobación MD5) usando la opción <guimenuitem
 >Propiedades</guimenuitem
 >.</para>
@@ -331,7 +331,7 @@
 <listitem>
 <para
 ><guimenuitem
->Abrir con...</guimenuitem
+>Abrir con…</guimenuitem
 > le permite escoger una aplicación para abrir el archivo.</para>
 </listitem>
 <listitem>
@@ -342,7 +342,7 @@
 >&Alt;<keycap
 >F2</keycap
 ></keycombo
->) permite cambiar los nombres de archivos y de carpetas. Como en el gestor de archivos Dolphin, esta acción se puede invocar usando un acceso rápido de teclado y el cambio de nombre se lleva a cabo mediante edición en línea. También se realiza una comprobación del nombre de los archivos para impedir el uso de caracteres no válidos, como <userinput
+>) permite cambiar los nombres de archivos y de carpetas. Como en el gestor de archivos Dolphin, esta acción se puede invocar usando un atajo de teclado y el cambio de nombre se lleva a cabo mediante edición en línea. También se realiza una comprobación del nombre de los archivos para impedir el uso de caracteres no válidos, como <userinput
 >/</userinput
 >, <userinput
 >.</userinput
@@ -409,7 +409,7 @@
 >Si edita y guarda un archivo que había abierto usando <guimenuitem
 >Abrir</guimenuitem
 > o <guimenuitem
->Abrir con...</guimenuitem
+>Abrir con…</guimenuitem
 >, &ark; le preguntará si desea actualizar dicho archivo dentro del archivo comprimido. Si responde afirmativamente, se actualizará dicho archivo dentro del archivo comprimido.</para>
 
 </sect2>
@@ -425,7 +425,7 @@
 > en el menú <guimenu
 >Archivo</guimenu
 >. Esto abre un submenú con las carpetas a las que ha accedido anteriormente, donde podrá seleccionar una para extraer archivos rápidamente en ella. También puede realizar la misma acción usando la opción del submenú <guisubmenu
->Extraer en...</guisubmenu
+>Extraer en…</guisubmenu
 > para abrir el diálogo <guilabel
 >Extraer</guilabel
 >, donde podrá ajustar diversas opciones que afectan a la extracción. Consulte más adelante la información sobre las opciones disponibles en el diálogo de extracción.</para>
@@ -538,7 +538,7 @@
 
 <para
 >Para añadir archivos o carpetas en el nuevo archivo comprimido, use <guimenuitem
->Añadir archivos...</guimenuitem
+>Añadir archivos…</guimenuitem
 > en el menú <guimenu
 >Archivo comprimido</guimenu
 >.</para>
@@ -650,28 +650,28 @@
 >Uso de &ark; en el gestor de archivos</title>
 
 <para
->Si pulsa con el &RMB; sobre un archivo en un gestor de archivos (como &dolphin;) se muestra un menú de contexto que contiene un elemento <guimenuitem
->Abrir con Ark</guimenuitem
->. El menú posee elementos adicionales para extraer un archivo comprimido usando &ark;: </para>
+>Si pulsa el &RMB; sobre un archivo en un gestor de archivos (como &dolphin;) se muestra un menú de contexto que contiene el elemento <guimenuitem
+>Extraer</guimenuitem
+>. Este menú posee elementos adicionales para extraer un archivo comprimido usando &ark;: </para>
 
 <itemizedlist>
 <listitem>
 <para
 ><guimenuitem
->Extraer archivo comprimido aquí, autodetectar subcarpeta</guimenuitem
-> crea una subcarpeta en la carpeta que contiene el archivo comprimido y extrae las carpetas y archivos en ella.</para>
+>Extraer aquí</guimenuitem
+> crea una subcarpeta en la carpeta que contiene el archivo comprimido y extrae las carpetas y los archivos en ella. Si el archivo comprimido solo contiene un único archivo o carpeta, no se creará ninguna subcarpeta.</para>
 </listitem>
 <listitem>
 <para
 ><guimenuitem
->Extraer archivo comprimido en...</guimenuitem
+>Extraer aquí y borrar archivo comprimido</guimenuitem
+>, crea una subcarpeta en la carpeta que contiene el archivo comprimido y extrae las carpetas y los archivos en ella, borrando después el archivo comprimido.</para>
+</listitem>
+<listitem>
+<para
+><guimenuitem
+>Extraer en…</guimenuitem
 > abre un diálogo de extracción en el que podrá escoger la carpeta de destino y varias opciones de extracción.</para>
-</listitem>
-<listitem>
-<para
-><guimenuitem
->Extraer archivo comprimido aquí</guimenuitem
-> extrae el contenido completo del archivo comprimido en la misma carpeta.</para>
 </listitem>
 </itemizedlist>
 
@@ -684,15 +684,15 @@
 <listitem>
 <para
 ><guimenuitem
->Aquí (como TAR.GZ)</guimenuitem
-> o <guimenuitem
->Aquí (como ZIP)</guimenuitem
+>Comprimir como «Archivo.tar.gz»</guimenuitem
+> y <guimenuitem
+>Comprimir como «Archivo.zip»</guimenuitem
 > crea estos tipos de archivos en la carpeta actual.</para>
 </listitem>
 <listitem>
 <para
 ><guimenuitem
->Comprimir en...</guimenuitem
+>Comprimir en…</guimenuitem
 > abre un diálogo en el que podrá seleccionar la carpeta, el nombre y el tipo de archivo comprimido.</para>
 </listitem>
 </itemizedlist>

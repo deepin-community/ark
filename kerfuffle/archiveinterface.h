@@ -1,44 +1,26 @@
 /*
- * Copyright (c) 2007 Henrique Pinto <henrique.pinto@kdemail.net>
- * Copyright (c) 2008-2009 Harald Hvaal <haraldhv@stud.ntnu.no>
- * Copyright (c) 2009-2012 Raphael Kubo da Costa <rakuco@FreeBSD.org>
- * Copyright (c) 2016 Vladyslav Batyrenko <mvlabat@gmail.com>
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES ( INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION ) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * ( INCLUDING NEGLIGENCE OR OTHERWISE ) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+    SPDX-FileCopyrightText: 2007 Henrique Pinto <henrique.pinto@kdemail.net>
+    SPDX-FileCopyrightText: 2008-2009 Harald Hvaal <haraldhv@stud.ntnu.no>
+    SPDX-FileCopyrightText: 2009-2012 Raphael Kubo da Costa <rakuco@FreeBSD.org>
+    SPDX-FileCopyrightText: 2016 Vladyslav Batyrenko <mvlabat@gmail.com>
+
+    SPDX-License-Identifier: BSD-2-Clause
+*/
 
 #ifndef ARCHIVEINTERFACE_H
 #define ARCHIVEINTERFACE_H
 
 #include "archive_kerfuffle.h"
-#include "kerfuffle_export.h"
 #include "archiveentry.h"
+#include "kerfuffle_export.h"
 
 #include <KPluginMetaData>
 
 #include <QObject>
-#include <QStringList>
 #include <QString>
+#include <QStringList>
 #include <QVariantList>
+#include <qplatformdefs.h>
 
 namespace Kerfuffle
 {
@@ -46,11 +28,10 @@ class Query;
 
 enum {
     PossiblyMaliciousArchiveError = KJob::UserDefinedError + 1,
-    DestinationNotWritableError
+    DestinationNotWritableError,
 };
 
-
-class KERFUFFLE_EXPORT ReadOnlyArchiveInterface: public QObject
+class KERFUFFLE_EXPORT ReadOnlyArchiveInterface : public QObject
 {
     Q_OBJECT
 public:
@@ -106,7 +87,7 @@ public:
      * @note If returning false, make sure to emit the error() signal beforewards to notify
      * the user of the error condition.
      */
-    virtual bool extractFiles(const QVector<Archive::Entry*> &files, const QString &destinationDirectory, const ExtractionOptions &options) = 0;
+    virtual bool extractFiles(const QList<Archive::Entry *> &files, const QString &destinationDirectory, const ExtractionOptions &options) = 0;
 
     /**
      * @return Whether the plugins do NOT run the functions in their own thread.
@@ -127,14 +108,14 @@ public:
     /**
      * Returns the list of filenames retrieved from the list of entries.
      */
-    static QStringList entryFullPaths(const QVector<Archive::Entry*> &entries, PathFormat format = WithTrailingSlash);
+    static QStringList entryFullPaths(const QList<Archive::Entry *> &entries, PathFormat format = WithTrailingSlash);
 
     /**
      * Returns the list of the entries, excluding their children.
      *
      * This method relies on entries paths so doesn't require parents to be set.
      */
-    static QVector<Archive::Entry*> entriesWithoutChildren(const QVector<Archive::Entry*> &entries);
+    static QList<Archive::Entry *> entriesWithoutChildren(const QList<Archive::Entry *> &entries);
 
     /**
      * Returns the string list of entry paths, which will be a result of adding/moving/copying entries.
@@ -181,6 +162,13 @@ public:
      */
     virtual bool isLocked() const;
 
+    /**
+     * Returns the size of the unpacked archive
+     */
+    qulonglong unpackedSize() const;
+
+    static QString permissionsToString(mode_t perm);
+
 Q_SIGNALS:
 
     /**
@@ -190,7 +178,7 @@ Q_SIGNALS:
      */
     void cancelled();
     void error(const QString &message, const QString &details = QString(), int errorCode = KJob::UserDefinedError);
-    void entry(Archive::Entry *archiveEntry);
+    void entry(Kerfuffle::Archive::Entry *archiveEntry);
     void progress(double progress);
     void info(const QString &info);
     void finished(bool result);
@@ -204,7 +192,6 @@ Q_SIGNALS:
     void userQuery(Kerfuffle::Query *query);
 
 protected:
-
     /**
      * Setting this option to true will NOT run the functions in their own thread.
      * Instead it will be necessary to call finished(bool) when the operation is actually finished.
@@ -226,16 +213,17 @@ private:
     bool m_isHeaderEncryptionEnabled;
     bool m_isCorrupt;
     bool m_isMultiVolume;
+    qulonglong m_unpackedSize;
 
 private Q_SLOTS:
-    void onEntry(Archive::Entry *archiveEntry);
+    void onEntry(Kerfuffle::Archive::Entry *archiveEntry);
 };
 
-class KERFUFFLE_EXPORT ReadWriteArchiveInterface: public ReadOnlyArchiveInterface
+class KERFUFFLE_EXPORT ReadWriteArchiveInterface : public ReadOnlyArchiveInterface
 {
     Q_OBJECT
 public:
-    enum OperationMode  {
+    enum OperationMode {
         NoOperation,
         List,
         Extract,
@@ -244,7 +232,7 @@ public:
         Copy,
         Delete,
         Comment,
-        Test
+        Test,
     };
 
     explicit ReadWriteArchiveInterface(QObject *parent, const QVariantList &args);
@@ -261,10 +249,11 @@ public:
      * @note If returning false, make sure to emit the error() signal beforewards to notify
      * the user of the error condition.
      */
-    virtual bool addFiles(const QVector<Archive::Entry*> &files, const Archive::Entry *destination, const CompressionOptions& options, uint numberOfEntriesToAdd = 0) = 0;
-    virtual bool moveFiles(const QVector<Archive::Entry*> &files, Archive::Entry *destination, const CompressionOptions& options) = 0;
-    virtual bool copyFiles(const QVector<Archive::Entry*> &files, Archive::Entry *destination, const CompressionOptions& options) = 0;
-    virtual bool deleteFiles(const QVector<Archive::Entry*> &files) = 0;
+    virtual bool
+    addFiles(const QList<Archive::Entry *> &files, const Archive::Entry *destination, const CompressionOptions &options, uint numberOfEntriesToAdd = 0) = 0;
+    virtual bool moveFiles(const QList<Archive::Entry *> &files, Archive::Entry *destination, const CompressionOptions &options) = 0;
+    virtual bool copyFiles(const QList<Archive::Entry *> &files, Archive::Entry *destination, const CompressionOptions &options) = 0;
+    virtual bool deleteFiles(const QList<Archive::Entry *> &files) = 0;
     virtual bool addComment(const QString &comment) = 0;
 
 Q_SIGNALS:

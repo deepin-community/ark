@@ -1,40 +1,17 @@
 /*
- * ark -- archiver for the KDE project
- *
- * Copyright (C) 2016 Ragnar Thomsen <rthomsen6@gmail.com>
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES ( INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION ) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * ( INCLUDING NEGLIGENCE OR OTHERWISE ) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+    SPDX-FileCopyrightText: 2016 Ragnar Thomsen <rthomsen6@gmail.com>
+
+    SPDX-License-Identifier: BSD-2-Clause
+*/
 #ifndef CLIPROPERTIES_H
 #define CLIPROPERTIES_H
 
 #include "archiveinterface.h"
 #include "kerfuffle_export.h"
 
-
 namespace Kerfuffle
 {
-
-class KERFUFFLE_EXPORT CliProperties: public QObject
+class KERFUFFLE_EXPORT CliProperties : public QObject
 {
     Q_OBJECT
 
@@ -57,8 +34,8 @@ class KERFUFFLE_EXPORT CliProperties: public QObject
     Q_PROPERTY(QStringList passwordSwitch MEMBER m_passwordSwitch)
     Q_PROPERTY(QStringList passwordSwitchHeaderEnc MEMBER m_passwordSwitchHeaderEnc)
     Q_PROPERTY(QString compressionLevelSwitch MEMBER m_compressionLevelSwitch)
-    Q_PROPERTY(QHash<QString,QVariant> compressionMethodSwitch MEMBER m_compressionMethodSwitch)
-    Q_PROPERTY(QHash<QString,QVariant> encryptionMethodSwitch MEMBER m_encryptionMethodSwitch)
+    Q_PROPERTY(QHash<QString, QVariant> compressionMethodSwitch MEMBER m_compressionMethodSwitch)
+    Q_PROPERTY(QHash<QString, QVariant> encryptionMethodSwitch MEMBER m_encryptionMethodSwitch)
     Q_PROPERTY(QString multiVolumeSwitch MEMBER m_multiVolumeSwitch)
 
     Q_PROPERTY(QStringList testPassedPatterns MEMBER m_testPassedPatterns)
@@ -81,10 +58,10 @@ public:
                         const QString &encryptionMethod,
                         ulong volumeSize);
     QStringList commentArgs(const QString &archive, const QString &commentfile);
-    QStringList deleteArgs(const QString &archive, const QVector<Archive::Entry*> &files, const QString &password);
+    QStringList deleteArgs(const QString &archive, const QList<Archive::Entry *> &files, const QString &password);
     QStringList extractArgs(const QString &archive, const QStringList &files, bool preservePaths, const QString &password);
     QStringList listArgs(const QString &archive, const QString &password);
-    QStringList moveArgs(const QString &archive, const QVector<Archive::Entry *> &entries, Archive::Entry *destination, const QString &password);
+    QStringList moveArgs(const QString &archive, const QList<Archive::Entry *> &entries, Archive::Entry *destination, const QString &password);
     QStringList testArgs(const QString &archive, const QString &password);
 
     bool isTestPassedMsg(const QString &line);
@@ -116,8 +93,8 @@ private:
     QStringList m_passwordSwitch;
     QStringList m_passwordSwitchHeaderEnc;
     QString m_compressionLevelSwitch;
-    QHash<QString,QVariant> m_compressionMethodSwitch;
-    QHash<QString,QVariant> m_encryptionMethodSwitch;
+    QHash<QString, QVariant> m_compressionMethodSwitch;
+    QHash<QString, QVariant> m_encryptionMethodSwitch;
     QString m_multiVolumeSwitch;
 
     QStringList m_testPassedPatterns;

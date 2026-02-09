@@ -97,7 +97,7 @@
 ><option
 >-f</option
 > <replaceable
-> suffix</replaceable
+> suffixe</replaceable
 ></group
 > <group choice="opt"
 ><option
@@ -124,7 +124,7 @@
 > dossier </replaceable
 ></group
 > <arg choice="opt"
->&kf5;  Options génériques</arg
+>&kde-frameworks; Options génériques</arg
 > <arg choice="opt"
 >Options génériques pour &Qt; </arg
 > </cmdsynopsis>
@@ -320,7 +320,7 @@
 <member
 >Veuillez consulter la documentation utilisateur à partir de la page <ulink url="help:/ark"
 >help:/ark</ulink
-> ou en saisissant cette &URL; dans &konqueror;, ou  grâce au centre d'aide <userinput
+> ou en saisissant cette &URL; dans &konqueror;, ou grâce au centre d'aide <userinput
 ><command
 >khelpcenter</command
 > <parameter
@@ -328,9 +328,9 @@
 ></userinput
 >).</member>
 <member
->kf5options(7)</member>
+>kf6options(7)</member>
 <member
->qt5options(7)</member>
+>qt6options(7)</member>
 </simplelist>
 </refsect1>
 

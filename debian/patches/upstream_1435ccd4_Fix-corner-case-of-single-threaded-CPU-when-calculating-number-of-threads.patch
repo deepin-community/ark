@@ -1,0 +1,28 @@
+From 1435ccd417f6ab533d511865846c263936dec6c6 Mon Sep 17 00:00:00 2001
+From: Zhangzhi Hu <integral@member.fsf.org>
+Date: Thu, 27 Mar 2025 18:56:24 +0000
+Subject: [PATCH] Fix corner case of single-threaded CPU when calculating
+ number of threads
+
+Currently, the number of threads will be 0 on single-threaded CPUs.
+Use `std::max` to fix this corner case.
+---
+ plugins/libarchive/readwritelibarchiveplugin.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/plugins/libarchive/readwritelibarchiveplugin.cpp b/plugins/libarchive/readwritelibarchiveplugin.cpp
+index 5f91385f9..b5c8e711c 100644
+--- a/plugins/libarchive/readwritelibarchiveplugin.cpp
++++ b/plugins/libarchive/readwritelibarchiveplugin.cpp
+@@ -302,7 +302,7 @@ bool ReadWriteLibarchivePlugin::initializeNewFileCompressionOptions(const Compre
+ {
+     int ret;
+     bool requiresExecutable = false;
+-    const auto threads = std::to_string(static_cast<unsigned>(std::thread::hardware_concurrency() * 0.8));
++    const auto threads = std::to_string(std::max(1u, static_cast<unsigned>(std::thread::hardware_concurrency() * 0.8)));
+     const bool is7zFile = filename().right(2).toUpper() == QLatin1String("7Z");
+ 
+     if (is7zFile) {
+-- 
+GitLab
+
