@@ -1,27 +1,8 @@
 /*
- * Copyright (c) 2016 Elvis Angelaccio <elvis.angelaccio@kde.org>
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES ( INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION ) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * ( INCLUDING NEGLIGENCE OR OTHERWISE ) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+    SPDX-FileCopyrightText: 2016 Elvis Angelaccio <elvis.angelaccio@kde.org>
+
+    SPDX-License-Identifier: BSD-2-Clause
+*/
 
 #include "archiveentry.h"
 #include "jobs.h"
@@ -50,8 +31,8 @@ QTEST_GUILESS_MAIN(DeleteTest)
 void DeleteTest::testDelete_data()
 {
     QTest::addColumn<QString>("archiveName");
-    QTest::addColumn<Plugin*>("plugin");
-    QTest::addColumn<QVector<Archive::Entry*>>("targetEntries");
+    QTest::addColumn<Plugin *>("plugin");
+    QTest::addColumn<QList<Archive::Entry *>>("targetEntries");
     QTest::addColumn<uint>("expectedEntriesCount");
     QTest::addColumn<uint>("expectedRemainingEntriesCount");
 
@@ -64,20 +45,11 @@ void DeleteTest::testDelete_data()
         const auto plugins = m_pluginManager.preferredWritePluginsFor(mime);
         for (const auto plugin : plugins) {
             QTest::newRow(qPrintable(QStringLiteral("delete a single file (%1, %2)").arg(format, plugin->metaData().pluginId())))
-                << filename
-                << plugin
-                << QVector<Archive::Entry*> { new Archive::Entry(this, QStringLiteral("dir1/a.txt")) }
-                << 13u
-                << 12u;
+                << filename << plugin << QList<Archive::Entry *>{new Archive::Entry(this, QStringLiteral("dir1/a.txt"))} << 13u << 12u;
 
             QTest::newRow(qPrintable(QStringLiteral("delete multiple files (%1, %2)").arg(format, plugin->metaData().pluginId())))
-                << filename
-                << plugin
-                << QVector<Archive::Entry*> {
-                       new Archive::Entry(this, QStringLiteral("a.txt")),
-                       new Archive::Entry(this, QStringLiteral("dir1/b.txt"))
-                   }
-                << 13u
+                << filename << plugin
+                << QList<Archive::Entry *>{new Archive::Entry(this, QStringLiteral("a.txt")), new Archive::Entry(this, QStringLiteral("dir1/b.txt"))} << 13u
                 << 11u;
         }
     }
@@ -91,7 +63,7 @@ void DeleteTest::testDelete()
     const QString archivePath = QStringLiteral("%1/%2").arg(temporaryDir.path(), archiveName);
     QVERIFY(QFile::copy(QFINDTESTDATA(QStringLiteral("data/%1").arg(archiveName)), archivePath));
 
-    QFETCH(Plugin*, plugin);
+    QFETCH(Plugin *, plugin);
     QVERIFY(plugin);
 
     auto loadJob = Archive::load(archivePath, plugin);
@@ -109,7 +81,7 @@ void DeleteTest::testDelete()
     QFETCH(uint, expectedEntriesCount);
     QCOMPARE(archive->numberOfEntries(), expectedEntriesCount);
 
-    QFETCH(QVector<Archive::Entry*>, targetEntries);
+    QFETCH(QList<Archive::Entry *>, targetEntries);
     auto deleteJob = archive->deleteFiles(targetEntries);
     QVERIFY(deleteJob);
     TestHelper::startAndWaitForResult(deleteJob);

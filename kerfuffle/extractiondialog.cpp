@@ -1,29 +1,8 @@
 /*
- * ark -- archiver for the KDE project
- *
- * Copyright (C) 2009 Harald Hvaal <haraldhv@stud.ntnu.no>
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES ( INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION ) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * ( INCLUDING NEGLIGENCE OR OTHERWISE ) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+    SPDX-FileCopyrightText: 2009 Harald Hvaal <haraldhv@stud.ntnu.no>
+
+    SPDX-License-Identifier: BSD-2-Clause
+*/
 
 #include "extractiondialog.h"
 #include "ark_debug.h"
@@ -42,25 +21,27 @@
 
 namespace Kerfuffle
 {
-
-class ExtractionDialogUI: public QFrame, public Ui::ExtractionDialog
+class ExtractionDialogUI : public QFrame, public Ui::ExtractionDialog
 {
     Q_OBJECT
 
 public:
     ExtractionDialogUI(QWidget *parent = nullptr)
-            : QFrame(parent) {
+        : QFrame(parent)
+    {
         setupUi(this);
     }
 };
 
 ExtractionDialog::ExtractionDialog(QWidget *parent)
-        : QDialog(parent, Qt::Dialog)
+    : QDialog(parent, Qt::Dialog)
 
 {
     setWindowTitle(i18nc("@title:window", "Extract"));
 
     QHBoxLayout *hlayout = new QHBoxLayout();
+    hlayout->setContentsMargins({});
+    hlayout->setSpacing(0);
     setLayout(hlayout);
 
     fileWidget = new KFileWidget(QUrl::fromLocalFile(QDir::homePath()), this);
@@ -78,6 +59,11 @@ ExtractionDialog::ExtractionDialog(QWidget *parent)
 
     fileWidget->cancelButton()->show();
     connect(fileWidget->cancelButton(), &QPushButton::clicked, this, &QDialog::reject);
+
+    auto horizontalSeparator = new QFrame(this);
+    horizontalSeparator->setFrameStyle(QFrame::VLine);
+    horizontalSeparator->setMaximumWidth(1);
+    hlayout->addWidget(horizontalSeparator);
 
     m_ui = new ExtractionDialogUI(this);
     hlayout->addWidget(m_ui);
@@ -112,9 +98,8 @@ void ExtractionDialog::slotAccepted()
 
     // If extracting to a subfolder, we need to do some checks.
     if (extractToSubfolder()) {
-
         // Check if subfolder contains slashes.
-        if (subfolder().contains(QLatin1String( "/" ))) {
+        if (subfolder().contains(QLatin1String("/"))) {
             KMessageBox::error(this, i18n("The subfolder name may not contain the character '/'."));
             return;
         }
@@ -124,13 +109,14 @@ void ExtractionDialog::slotAccepted()
         while (1) {
             if (QDir(pathWithSubfolder).exists()) {
                 if (QFileInfo(pathWithSubfolder).isDir()) {
-                    int overwrite = KMessageBox::questionYesNoCancel(this,
-                                                                     xi18nc("@info", "The folder <filename>%1</filename> already exists. Are you sure you want to extract here?", pathWithSubfolder),
-                                                                     i18n("Folder exists"),
-                                                                     KGuiItem(i18n("Extract here")),
-                                                                     KGuiItem(i18n("Retry")));
+                    int overwrite = KMessageBox::questionTwoActionsCancel(
+                        this,
+                        xi18nc("@info", "The folder <filename>%1</filename> already exists. Are you sure you want to extract here?", pathWithSubfolder),
+                        i18n("Folder exists"),
+                        KGuiItem(i18n("Extract here")),
+                        KGuiItem(i18n("Retry")));
 
-                    if (overwrite == KMessageBox::No) {
+                    if (overwrite == KMessageBox::SecondaryAction) {
                         // The user clicked Retry.
                         continue;
                     } else if (overwrite == KMessageBox::Cancel) {
@@ -150,18 +136,17 @@ void ExtractionDialog::slotAccepted()
             }
             break;
         }
-
     }
 
     // Add new destination value to arkrc for quickExtractMenu.
-    KConfigGroup conf(KSharedConfig::openConfig(), "ExtractDialog");
+    KConfigGroup conf(KSharedConfig::openConfig(), QStringLiteral("ExtractDialog"));
     QStringList destHistory = conf.readPathEntry("DirHistory", QStringList());
     destHistory.prepend(destinationPath);
     destHistory.removeDuplicates();
     if (destHistory.size() > 10) {
         destHistory.removeLast();
     }
-    conf.writePathEntry ("DirHistory", destHistory);
+    conf.writePathEntry("DirHistory", destHistory);
 
     fileWidget->accept();
     accept();
@@ -187,7 +172,7 @@ void ExtractionDialog::batchModeOption()
     m_ui->extractAllLabel->setText(i18n("Extract multiple archives"));
 }
 
-void ExtractionDialog::setSubfolder(const QString& subfolder)
+void ExtractionDialog::setSubfolder(const QString &subfolder)
 {
     m_ui->subfolder->setText(subfolder);
 }
@@ -222,10 +207,13 @@ void ExtractionDialog::setShowSelectedFiles(bool value)
 {
     if (value) {
         m_ui->filesToExtractGroupBox->show();
+        m_ui->gridLayout->removeItem(m_ui->gridLayoutVerticalSpacer);
+        delete m_ui->gridLayoutVerticalSpacer;
         m_ui->selectedFilesButton->setChecked(true);
         m_ui->extractAllLabel->hide();
-    } else  {
+    } else {
         m_ui->filesToExtractGroupBox->hide();
+        m_ui->gridLayout->addItem(new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding), 6, 0);
         m_ui->selectedFilesButton->setChecked(false);
         m_ui->extractAllLabel->show();
     }
@@ -258,7 +246,7 @@ void ExtractionDialog::setOpenDestinationFolderAfterExtraction(bool value)
 
 void ExtractionDialog::setCloseAfterExtraction(bool value)
 {
-  m_ui->closeAfterExtraction->setChecked(value);
+    m_ui->closeAfterExtraction->setChecked(value);
 }
 
 void ExtractionDialog::setPreservePaths(bool value)
@@ -305,7 +293,7 @@ void ExtractionDialog::writeSettings()
     ArkSettings::self()->save();
 
     // Save dialog window size
-    KConfigGroup group(KSharedConfig::openConfig(), "ExtractDialog");
+    KConfigGroup group(KSharedConfig::openConfig(), QStringLiteral("ExtractDialog"));
     KWindowConfig::saveWindowSize(windowHandle(), group, KConfigBase::Persistent);
 }
 
@@ -316,11 +304,12 @@ void ExtractionDialog::setCurrentUrl(const QUrl &url)
 
 void ExtractionDialog::restoreWindowSize()
 {
-  // Restore window size from config file, needs a windowHandle so must be called after show()
-  KConfigGroup group(KSharedConfig::openConfig(), "ExtractDialog");
-  KWindowConfig::restoreWindowSize(windowHandle(), group);
+    // Restore window size from config file, needs a windowHandle so must be called after show()
+    KConfigGroup group(KSharedConfig::openConfig(), QStringLiteral("ExtractDialog"));
+    KWindowConfig::restoreWindowSize(windowHandle(), group);
 }
 
 }
 
 #include "extractiondialog.moc"
+#include "moc_extractiondialog.cpp"

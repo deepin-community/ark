@@ -1,6 +1,7 @@
 # translation of ark.po to french
 # traduction de ark.po en français
 #
+# SPDX-FileCopyrightText: 2012, 2013, 2020, 2021, 2022, 2023, 2024, 2025 Xavier Besnard <xavier.besnard@kde.org>
 # Robert Jacolin <rjacolin@ifrance.com>, 2003, 2004.
 # Gérard Delafond <gerard@delafond.org>, 2003.
 # Matthieu Robin <kde@macolu.org>, 2004, 2005, 2006.
@@ -8,26 +9,26 @@
 # Guillaume Pujol <guill.p@gmail.com>, 2007.
 # Sébastien Renard <Sebastien.Renard@digitalfox.org>, 2008.
 # Jean-Jacques Finazzi <mrjay01@users.sourceforge.net>, 2007, 2008, 2009, 2010, 2011, 2012.
-# xavier <xavier.besnard@neuf.fr>, 2012, 2013, 2020, 2021.
-# Thomas Vergnaud <thomas.vergnaud@gmx.fr>, 2014, 2015, 2016, 2017, 2018, 2019.
+# Thomas Vergnaud <thomas.vergnaud@gmx.fr>, 2014, 2015, 2016, 2017, 2018, 2019, 2022.
 # Vincent Pinon <vpinon@kde.org>, 2017.
 # Simon Depiets <sdepiets@gmail.com>, 2018, 2019.
+# Xavier Besnard <xavier.besnard@kde.org>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: ark\n"
 "Report-Msgid-Bugs-To: https://bugs.kde.org\n"
-"POT-Creation-Date: 2021-09-21 01:42+0000\n"
-"PO-Revision-Date: 2021-05-09 10:45+0200\n"
-"Last-Translator: Xavier Besnard <xavier.besnard@neuf.fr>\n"
-"Language-Team: French <kde-francophone@kde.org>\n"
+"POT-Creation-Date: 2025-03-06 00:44+0000\n"
+"PO-Revision-Date: 2025-01-14 14:42+0100\n"
+"Last-Translator: Xavier Besnard <xavier.besnard@kde.org>\n"
+"Language-Team: French <French <kde-francophone@kde.org>>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Lokalize 21.04.0\n"
-"X-Environment: kde\n"
 "X-Accelerator-Marker: &\n"
+"X-Environment: kde\n"
+"X-Generator: Lokalize 24.12.1\n"
 "X-Text-Markup: kde4\n"
 
 #, kde-format
@@ -39,36 +40,37 @@ msgstr "Xavier Besnard, Jean-Jacques Finazzi, Thomas Vergnaud, Simon Depiets"
 msgctxt "EMAIL OF TRANSLATORS"
 msgid "Your emails"
 msgstr ""
-"xavier.besnard@neuf.fr, mrjay01@users.sourceforge.net, thomas.vergnaud@gmx."
-"fr, sdepiets@gmail.com"
+"xavier.besnard@kde.org, mrjay01@users.sourceforge.net, thomas.vergnaud@mailo."
+"eu, sdepiets@gmail.com"
 
 #. i18n: ectx: Menu (archive)
-#: app/arkui.rc:5 part/ark_part.rc:5
+#: app/arkui.rc:5
 #, kde-format
+msgctxt "Noun, not a verb. Top level menu item, i.e. like File"
 msgid "&Archive"
-msgstr "&Archive"
+msgstr "&Archiver"
 
-#: app/batchextract.cpp:123 app/batchextract.cpp:187
+#: app/batchextract.cpp:103 app/batchextract.cpp:174
 #, kde-format
 msgid "Extracting Files"
 msgstr "Extraction des fichiers"
 
-#: app/batchextract.cpp:124 app/batchextract.cpp:188
+#: app/batchextract.cpp:104 app/batchextract.cpp:175
 #, kde-format
 msgid "Source archive"
 msgstr "Archive source"
 
-#: app/batchextract.cpp:125 app/batchextract.cpp:189
+#: app/batchextract.cpp:105 app/batchextract.cpp:176
 #, kde-format
 msgid "Destination"
 msgstr "Destination"
 
-#: app/batchextract.cpp:138
+#: app/batchextract.cpp:117
 #, kde-format
 msgid "The following files could not be extracted:"
 msgstr "Impossible d'extraire les fichiers suivants :"
 
-#: app/batchextract.cpp:157
+#: app/batchextract.cpp:137
 #, kde-kuit-format
 msgctxt "@info"
 msgid ""
@@ -78,7 +80,7 @@ msgstr ""
 "Une erreur est survenue pendant l'extraction de <filename>%1</filename>. Les "
 "archives suivantes ne seront pas extraites."
 
-#: app/batchextract.cpp:158
+#: app/batchextract.cpp:139
 #, kde-kuit-format
 msgctxt "@info"
 msgid ""
@@ -88,14 +90,14 @@ msgstr ""
 "Une erreur est survenue pendant l'extraction de <filename>%1</filename> :<nl/"
 "> <message>%2</message><nl/> Les archives suivantes ne seront pas extraites."
 
-#: app/batchextract.cpp:162
+#: app/batchextract.cpp:146
 #, kde-kuit-format
 msgctxt "@info"
 msgid "There was an error while extracting <filename>%1</filename>."
 msgstr ""
 "Une erreur est survenue pendant l'extraction de <filename>%1</filename>."
 
-#: app/batchextract.cpp:163
+#: app/batchextract.cpp:148
 #, kde-kuit-format
 msgctxt "@info"
 msgid ""
@@ -105,7 +107,7 @@ msgstr ""
 "Une erreur est survenue pendant l'extraction de <filename>%1</filename> :<nl/"
 "> <message>%2</message>"
 
-#: app/batchextract.cpp:314
+#: app/batchextract.cpp:300
 #, kde-kuit-format
 msgctxt "@info"
 msgid ""
@@ -117,200 +119,195 @@ msgstr ""
 
 #: app/compressfileitemaction.cpp:71
 #, kde-format
-msgctxt "@action:inmenu Part of Compress submenu in Dolphin context menu"
-msgid "Here (as TAR.GZ)"
-msgstr "Ici (en tar.gz)"
+msgctxt "@action:inmenu Compress submenu in Dolphin context menu"
+msgid "Compress"
+msgstr "Compresser"
 
-#: app/compressfileitemaction.cpp:80
-#, kde-format
-msgctxt "@action:inmenu Part of Compress submenu in Dolphin context menu"
-msgid "Here (as ZIP)"
-msgstr "Ici (en zip)"
-
-#: app/compressfileitemaction.cpp:87
+#: app/compressfileitemaction.cpp:97
 #, kde-format
 msgctxt "@action:inmenu Part of Compress submenu in Dolphin context menu"
 msgid "Compress to..."
 msgstr "Compresser vers…"
 
-#: app/compressfileitemaction.cpp:92
+#: app/compressfileitemaction.cpp:105
 #, kde-format
-msgctxt "@action:inmenu Compress submenu in Dolphin context menu"
-msgid "Compress"
-msgstr "Compresser"
+msgctxt ""
+"@action:inmenu Part of Compress submenu in Dolphin context menu, %1 filename"
+msgid "Compress to \"%1\""
+msgstr "Compresser vers « %1 »…"
 
-#: app/extractfileitemaction.cpp:72
+#: app/extractfileitemaction.cpp:66
 #, kde-format
 msgctxt "@action:inmenu Part of Extract submenu in Dolphin context menu"
-msgid "Extract archive to..."
-msgstr "Extraire l'archive vers..."
+msgid "Extract to…"
+msgstr "Extraire vers..."
+
+#: app/extractfileitemaction.cpp:78
+#, kde-format
+msgctxt "@action:inmenu Part of Extract submenu in Dolphin context menu"
+msgid "Extract here"
+msgstr "Extraire ici"
 
 #: app/extractfileitemaction.cpp:84
 #, kde-format
 msgctxt "@action:inmenu Part of Extract submenu in Dolphin context menu"
-msgid "Extract archive here"
-msgstr "Extraire l'archive ici"
+msgid "Extract here and delete archive"
+msgstr "Extraire ici et supprimer l'archive"
 
-#: app/extractfileitemaction.cpp:92
-#, kde-format
-msgctxt "@action:inmenu Part of Extract submenu in Dolphin context menu"
-msgid "Extract archive here, autodetect subfolder"
-msgstr "Extraire l'archive ici, détecter le sous-dossier"
-
-#: app/extractfileitemaction.cpp:98
+#: app/extractfileitemaction.cpp:91
 #, kde-format
 msgctxt "@action:inmenu Extract submenu in Dolphin context menu"
 msgid "Extract"
 msgstr "Extraire"
 
-#: app/extractHereDndPlugin.cpp:70
+#: app/extractHereDndPlugin.cpp:54
 #, kde-format
 msgctxt ""
 "@action:inmenu Context menu shown when an archive is being drag'n'dropped"
 msgid "Extract here"
 msgstr "Extraire ici"
 
-#: app/main.cpp:95
+#: app/main.cpp:76
 #, kde-format
 msgid "Ark"
 msgstr "Ark"
 
-#: app/main.cpp:97
+#: app/main.cpp:78
 #, kde-format
 msgid "KDE Archiving tool"
 msgstr "Outil d'archivage de KDE"
 
-#: app/main.cpp:99
+#: app/main.cpp:80
 #, kde-format
 msgid "(c) 1997-2019, The Ark Developers"
-msgstr "© 1997-2019, les développeurs d'Ark"
+msgstr "© 1997-2019, les développeurs de Ark"
 
-#: app/main.cpp:106
+#: app/main.cpp:86
 #, kde-format
 msgid "Elvis Angelaccio"
 msgstr "Elvis Angelaccio"
 
-#: app/main.cpp:107
+#: app/main.cpp:86
 #, kde-format
 msgid "Maintainer"
 msgstr "Mainteneur"
 
-#: app/main.cpp:109
+#: app/main.cpp:87
 #, kde-format
 msgid "Ragnar Thomsen"
 msgstr "Ragnar Thomsen"
 
-#: app/main.cpp:110
+#: app/main.cpp:87
 #, kde-format
 msgid "Maintainer, KF5 port"
 msgstr "Mainteneur, portage sur KF5"
 
-#: app/main.cpp:112
+#: app/main.cpp:88
 #, kde-format
 msgid "Raphael Kubo da Costa"
 msgstr "Raphael Kubo da Costa"
 
-#: app/main.cpp:113 app/main.cpp:116 app/main.cpp:119
+#: app/main.cpp:88 app/main.cpp:89 app/main.cpp:90
 #, kde-format
 msgid "Former Maintainer"
 msgstr "Mainteneur précédent"
 
-#: app/main.cpp:115
+#: app/main.cpp:89
 #, kde-format
 msgid "Harald Hvaal"
 msgstr "Harald Hvaal"
 
-#: app/main.cpp:118
+#: app/main.cpp:90
 #, kde-format
 msgid "Henrique Pinto"
 msgstr "Henrique Pinto"
 
-#: app/main.cpp:121
+#: app/main.cpp:91
 #, kde-format
 msgid "Helio Chissini de Castro"
 msgstr "Helio Chissini de Castro"
 
-#: app/main.cpp:122
+#: app/main.cpp:91
 #, kde-format
 msgid "Former maintainer"
 msgstr "Mainteneur précédent"
 
-#: app/main.cpp:124
+#: app/main.cpp:92
 #, kde-format
 msgid "Georg Robbers"
 msgstr "Georg Robbers"
 
-#: app/main.cpp:127
+#: app/main.cpp:93
 #, kde-format
 msgid "Roberto Selbach Teixeira"
 msgstr "Roberto Selbach Teixeira"
 
-#: app/main.cpp:130
+#: app/main.cpp:94
 #, kde-format
 msgid "Francois-Xavier Duranceau"
 msgstr "François-Xavier Duranceau"
 
-#: app/main.cpp:133
+#: app/main.cpp:95
 #, kde-format
 msgid "Emily Ezust (Corel Corporation)"
 msgstr "Emily Ezust (Corel Corporation)"
 
-#: app/main.cpp:136
+#: app/main.cpp:96
 #, kde-format
 msgid "Michael Jarrett (Corel Corporation)"
 msgstr "Michael Jarrett (Corel Corporation)"
 
-#: app/main.cpp:139
+#: app/main.cpp:97
 #, kde-format
 msgid "Robert Palmbos"
 msgstr "Robert Palmbos"
 
-#: app/main.cpp:143
+#: app/main.cpp:99
 #, kde-format
 msgid "Vladyslav Batyrenko"
 msgstr "Vladyslav Batyrenko"
 
-#: app/main.cpp:144
+#: app/main.cpp:100
 #, kde-format
 msgid "Advanced editing functionalities"
 msgstr "Fonctionnalités d'édition avancées"
 
-#: app/main.cpp:147
+#: app/main.cpp:103
 #, kde-format
 msgid "Bryce Corkins"
 msgstr "Bryce Corkins"
 
-#: app/main.cpp:148
+#: app/main.cpp:103
 #, kde-format
 msgid "Icons"
 msgstr "Icônes"
 
-#: app/main.cpp:150
+#: app/main.cpp:104
 #, kde-format
 msgid "Liam Smit"
 msgstr "Liam Smit"
 
-#: app/main.cpp:151
+#: app/main.cpp:104
 #, kde-format
 msgid "Ideas, help with the icons"
 msgstr "Idées, aide pour les icônes"
 
-#: app/main.cpp:153
+#: app/main.cpp:105
 #, kde-format
 msgid "Andrew Smith"
 msgstr "Andrew Smith"
 
-#: app/main.cpp:154
+#: app/main.cpp:105
 #, kde-format
 msgid "bkisofs code"
 msgstr "code de « bkisofs »"
 
-#: app/main.cpp:164
+#: app/main.cpp:114
 #, kde-format
 msgid "URLs to open."
 msgstr "URL à ouvrir."
 
-#: app/main.cpp:167
+#: app/main.cpp:117
 #, kde-format
 msgid ""
 "Show a dialog for specifying the options for the operation (extract/add)"
@@ -318,7 +315,7 @@ msgstr ""
 "Affiche une boîte de dialogue pour spécifier les options pour l'opération "
 "(extraire / ajouter)"
 
-#: app/main.cpp:170
+#: app/main.cpp:120
 #, kde-format
 msgid ""
 "Destination folder to extract to. Defaults to current path if not specified."
@@ -327,12 +324,12 @@ msgstr ""
 "l'emplacement courant sera utilisé."
 
 #. i18n: ectx: label, entry (openDestinationFolderAfterExtraction), group (Extraction)
-#: app/main.cpp:174 kerfuffle/ark.kcfg:23
+#: app/main.cpp:124 kerfuffle/ark.kcfg:23
 #, kde-format
 msgid "Open destination folder after extraction."
 msgstr "Ouvrir le dossier de destination après l'extraction."
 
-#: app/main.cpp:177
+#: app/main.cpp:127
 #, kde-format
 msgid ""
 "Query the user for an archive filename and add specified files to it. Quit "
@@ -341,7 +338,7 @@ msgstr ""
 "Demande un nom de fichier d'archive à l'utilisateur et y ajoute les fichiers "
 "spécifiés. Quitte l'application une fois la tâche terminée."
 
-#: app/main.cpp:180
+#: app/main.cpp:130
 #, kde-format
 msgid ""
 "Add the specified files to 'filename'. Create archive if it does not exist. "
@@ -350,7 +347,7 @@ msgstr ""
 "Ajoute les fichiers spécifiés à « nom de fichier ». Crée l'archive si elle "
 "n'existe pas. Quitte l'application une fois la tâche terminée."
 
-#: app/main.cpp:184
+#: app/main.cpp:134
 #, kde-format
 msgid ""
 "Change the current dir to the first entry and add all other entries relative "
@@ -359,7 +356,7 @@ msgstr ""
 "Prend la première entrée comme emplacement courant et ajoute toutes les "
 "autres entrées relativement à celle-ci."
 
-#: app/main.cpp:187
+#: app/main.cpp:138
 #, kde-format
 msgid ""
 "Automatically choose a filename, with the selected suffix (for example rar, "
@@ -368,7 +365,7 @@ msgstr ""
 "Choisit automatiquement un nom de fichier, avec le suffixe spécifié (par "
 "exemple « rar », « tar.gz », « zip » ou tout autre type pris en charge)"
 
-#: app/main.cpp:191
+#: app/main.cpp:143
 #, kde-format
 msgid ""
 "Use the batch interface instead of the usual dialog. This option is implied "
@@ -377,7 +374,7 @@ msgstr ""
 "Utiliser l'interface de traitement en lot au lieu de la boîte de dialogue "
 "habituelle. Cette option est implicite si plus d'une URL est spécifiée."
 
-#: app/main.cpp:194
+#: app/main.cpp:146
 #, kde-format
 msgid ""
 "The destination argument will be set to the path of the first file supplied."
@@ -385,7 +382,7 @@ msgstr ""
 "L'argument de destination sera défini comme l'emplacement du premier fichier "
 "fourni."
 
-#: app/main.cpp:197
+#: app/main.cpp:149
 #, kde-format
 msgid ""
 "Archive contents will be read, and if detected to not be a single folder or "
@@ -395,60 +392,153 @@ msgstr ""
 "Le contenu de l'archive sera lu. S'il ne s'agit pas d'un dossier ou fichier "
 "unique, un sous-dossier du nom de l'archive sera créé."
 
-#: app/main.cpp:200
+#: app/main.cpp:152
 #, kde-format
 msgid "List supported MIME types."
 msgstr "Liste les types MIME pris en charge"
 
-#: app/mainwindow.cpp:143
+#: app/mainwindow.cpp:167
 #, kde-format
 msgid "Unable to find Ark's KPart component, please check your installation."
 msgstr ""
 "Impossible de trouver le composant « KPart » de Ark, veuillez vérifier votre "
 "installation."
 
-#: app/mainwindow.cpp:216
+#: app/mainwindow.cpp:182
+#, kde-format
+msgid "Sidebar"
+msgstr "Barre latérale"
+
+#: app/mainwindow.cpp:285
+#, kde-format
+msgid "Welcome Page"
+msgstr "Page d'accueil"
+
+#: app/mainwindow.cpp:287
+#, kde-format
+msgid "Show the welcome page"
+msgstr "Afficher la page d'accueil"
+
+#: app/mainwindow.cpp:295
+#, kde-kuit-format
+msgctxt "@info:whatsthis"
+msgid ""
+"This switches between having a <emphasis>Menubar</emphasis> and having a "
+"<interface>Hamburger Menu</interface> button. Both contain mostly the same "
+"commands and configuration options."
+msgstr ""
+"Ceci permet le basculement entre un bouton de <emphasis>Barre de menus</"
+"emphasis> ou de <interface>Menu en Hamburger</interface>. Les deux "
+"contiennent majoritairement les mêmes commandes et les mêmes options de "
+"configuration."
+
+#: app/mainwindow.cpp:315
+#, kde-format
+msgid "Lock Sidebar"
+msgstr "Verrouiller la barre latérale"
+
+#: app/mainwindow.cpp:371
 #, kde-format
 msgctxt "to open an archive"
 msgid "Open Archive"
 msgstr "Ouvrir une archive"
 
-#: app/mainwindow.cpp:323
+#: app/mainwindow.cpp:484
 #, kde-format
 msgid "Create New Archive"
 msgstr "Créer une nouvelle archive"
 
-#. i18n: ectx: property (windowTitle), widget (QWidget, WelcomeScreen)
-#: app/welcomescreen.ui:18
+#: app/welcomeview/welcomeview.cpp:50
 #, kde-format
-msgid "Form"
-msgstr "Formulaire"
+msgid "Welcome to %1"
+msgstr "Bienvenue dans %1"
 
-#. i18n: ectx: property (text), widget (QLabel, label)
-#: app/welcomescreen.ui:53
+#: app/welcomeview/welcomeview.cpp:55
 #, kde-format
-msgid "Welcome to Ark"
-msgstr "Bienvenue dans Ark"
+msgid "No recent files"
+msgstr "Aucun fichier récent"
 
-#. i18n: ectx: property (text), widget (QPushButton, openButton)
-#: app/welcomescreen.ui:97
+#: app/welcomeview/welcomeview.cpp:143
 #, kde-format
-msgctxt "to open an archive"
+msgid "Copy &Location"
+msgstr "Copier un emp&lacement"
+
+#: app/welcomeview/welcomeview.cpp:149
+#, kde-format
+msgid "&Open Containing Folder"
+msgstr "&Ouvrir le dossier contenant"
+
+#: app/welcomeview/welcomeview.cpp:156
+#, kde-format
+msgid "&Remove"
+msgstr "Supp&rimer"
+
+#. i18n: ectx: property (windowTitle), widget (QScrollArea, WelcomeView)
+#: app/welcomeview/welcomeview.ui:17
+#, kde-format
+msgid "Welcome"
+msgstr "Accueil"
+
+#. i18n: ectx: property (text), widget (QPushButton, buttonOpenArchive)
+#: app/welcomeview/welcomeview.ui:179
+#, kde-format
 msgid "Open Archive..."
 msgstr "Ouvrir une archive..."
 
-#. i18n: ectx: property (text), widget (QPushButton, newButton)
-#: app/welcomescreen.ui:107
+#. i18n: ectx: property (text), widget (QPushButton, buttonNewArchive)
+#: app/welcomeview/welcomeview.ui:186
 #, kde-format
-msgid "Create New Archive..."
-msgstr "Créer une nouvelle archive..."
+msgid "New Archive"
+msgstr "Nouvelle archive"
 
-#: kerfuffle/adddialog.cpp:59 kerfuffle/adddialog.cpp:97
+#. i18n: ectx: property (toolTip), widget (QPushButton, buttonClearRecentFiles)
+#: app/welcomeview/welcomeview.ui:193
+#, kde-format
+msgid "Clear Recent Files"
+msgstr "Effacer les fichiers récents"
+
+#. i18n: ectx: property (text), widget (QLabel, labelRecentFiles)
+#: app/welcomeview/welcomeview.ui:222
+#, kde-format
+msgid "Recent Files"
+msgstr "Fichiers récents"
+
+#. i18n: ectx: property (text), widget (QLabel, labelHelp)
+#: app/welcomeview/welcomeview.ui:263
+#, kde-format
+msgid "Help"
+msgstr "Aide"
+
+#. i18n: ectx: property (text), widget (KUrlLabel, labelHomepage)
+#: app/welcomeview/welcomeview.ui:273
+#, kde-format
+msgid "Visit homepage"
+msgstr "Consulter la page d'accueil"
+
+#. i18n: ectx: property (text), widget (KUrlLabel, labelHandbook)
+#: app/welcomeview/welcomeview.ui:286
+#, kde-format
+msgid "Read handbook"
+msgstr "Lire un manuel"
+
+#. i18n: ectx: property (text), widget (QCheckBox, checkBoxShowOnStartup)
+#: app/welcomeview/welcomeview.ui:345
+#, kde-format
+msgid "Show on startup"
+msgstr "Afficher au démarrage"
+
+#. i18n: ectx: property (toolTip), widget (QPushButton, buttonClose)
+#: app/welcomeview/welcomeview.ui:400
+#, kde-format
+msgid "Close Welcome Page"
+msgstr "Fermer la page d'accueil"
+
+#: kerfuffle/adddialog.cpp:32 kerfuffle/adddialog.cpp:70
 #, kde-format
 msgid "Advanced Options"
 msgstr "Options avancées"
 
-#: kerfuffle/adddialog.cpp:68
+#: kerfuffle/adddialog.cpp:41
 #, kde-format
 msgctxt "@action:button"
 msgid "Add"
@@ -460,17 +550,17 @@ msgstr "Ajouter"
 msgid "Files/Folders to Compress"
 msgstr "Fichiers / dossiers à compresser"
 
-#: kerfuffle/addtoarchive.cpp:99
+#: kerfuffle/addtoarchive.cpp:78
 #, kde-format
 msgid "Compress to Archive"
 msgstr "Compresser dans une archive"
 
-#: kerfuffle/addtoarchive.cpp:153
+#: kerfuffle/addtoarchive.cpp:132
 #, kde-format
 msgid "No input files were given."
 msgstr "Aucun fichier fourni en entrée."
 
-#: kerfuffle/addtoarchive.cpp:160
+#: kerfuffle/addtoarchive.cpp:140
 #, kde-kuit-format
 msgid ""
 "You need to either supply a filename for the archive or a suffix (such as "
@@ -479,6 +569,12 @@ msgstr ""
 "Vous devez soit fournir un nom de fichier pour l'archive, soit un suffixe "
 "(tel que « rar », « tar.gz ») avec l'argument <command>--autofilename</"
 "command>."
+
+#: kerfuffle/addtoarchive.cpp:244
+#, kde-format
+msgctxt "Default name of a newly-created multi-file archive"
+msgid "Archive"
+msgstr "Archive"
 
 #. i18n: ectx: label, entry (showEncryptionWarning), group (General)
 #: kerfuffle/ark.kcfg:9
@@ -540,20 +636,20 @@ msgstr "Limiter ou non l'aperçu en fonction de la taille du fichier."
 msgid "Preview file size limit in megabytes."
 msgstr "Limite de taille pour l'aperçu des fichiers, en méga-octets."
 
-#: kerfuffle/cliinterface.cpp:266
+#: kerfuffle/cliinterface.cpp:233
 #, kde-kuit-format
 msgctxt "@info"
 msgid "Failed to locate program <filename>%1</filename> on disk."
 msgstr ""
 "Impossible de trouver le programme <filename>%1</filename> sur le disque."
 
-#: kerfuffle/cliinterface.cpp:376
+#: kerfuffle/cliinterface.cpp:343
 #, kde-format
 msgid "Extraction failed. Make sure that enough space is available."
 msgstr ""
 "Échec de l'extraction : assurez-vous qu'il y a assez d'espace sur le disque."
 
-#: kerfuffle/cliinterface.cpp:379
+#: kerfuffle/cliinterface.cpp:346
 #, kde-format
 msgid ""
 "Extraction failed. Make sure you provided the correct password and that "
@@ -562,7 +658,7 @@ msgstr ""
 "Échec de l'extraction : assurez-vous d'avoir fourni le bon mot de passe et "
 "d'avoir suffisamment d'espace sur le disque."
 
-#: kerfuffle/cliinterface.cpp:390 kerfuffle/cliinterface.cpp:515
+#: kerfuffle/cliinterface.cpp:357 kerfuffle/cliinterface.cpp:478
 #, kde-format
 msgctxt "@info"
 msgid "Could not move the extracted file to the destination directory."
@@ -572,35 +668,35 @@ msgstr[0] ""
 msgstr[1] ""
 "Cliquez pour ouvrir le fichier sélectionné avec l'application associée"
 
-#: kerfuffle/cliinterface.cpp:874
+#: kerfuffle/cliinterface.cpp:833
 #, kde-format
 msgctxt "@info"
 msgid "Extraction failed because the disk is full."
 msgstr "L'extraction a échoué car le disque est plein."
 
-#: kerfuffle/cliinterface.cpp:881
+#: kerfuffle/cliinterface.cpp:840 plugins/cliarjplugin/cliplugin.cpp:145
 #, kde-format
 msgctxt "@info"
 msgid "Extraction failed: Incorrect password"
 msgstr "Échec de l'extraction : mot de passe incorrect."
 
-#: kerfuffle/cliinterface.cpp:915
+#: kerfuffle/cliinterface.cpp:874
 #, kde-format
 msgid "Incorrect password."
 msgstr "Mot de passe incorrect."
 
-#: kerfuffle/cliinterface.cpp:938
+#: kerfuffle/cliinterface.cpp:896
 #, kde-format
 msgid "Ark does not currently support testing this archive."
 msgstr "Ark ne prend actuellement pas en charge le test d'archive."
 
-#: kerfuffle/compressionoptionswidget.cpp:153
+#: kerfuffle/compressionoptionswidget.cpp:133
 #, kde-format
 msgid "Protection of the list of files is not possible with the %1 format."
 msgstr ""
 "La protection de la liste des fichiers n'est pas possible avec le format %1."
 
-#: kerfuffle/compressionoptionswidget.cpp:162
+#: kerfuffle/compressionoptionswidget.cpp:141
 #, kde-format
 msgid ""
 "Protection of the archive with password is not possible with the %1 format."
@@ -608,17 +704,17 @@ msgstr ""
 "La protection d'archive par mot de passe n'est pas possible avec le format "
 "%1."
 
-#: kerfuffle/compressionoptionswidget.cpp:177
+#: kerfuffle/compressionoptionswidget.cpp:155
 #, kde-format
 msgid "It is not possible to set compression level for the %1 format."
 msgstr "Impossible de fixer le taux de compression pour le format %1."
 
-#: kerfuffle/compressionoptionswidget.cpp:197
+#: kerfuffle/compressionoptionswidget.cpp:174
 #, kde-format
 msgid "It is not possible to set compression method for the %1 format."
 msgstr "Impossible de définir la méthode de compression pour le format %1."
 
-#: kerfuffle/compressionoptionswidget.cpp:220
+#: kerfuffle/compressionoptionswidget.cpp:195
 #, kde-format
 msgid "The %1 format does not support multi-volume archives."
 msgstr "Le format %1 ne prend pas en charge les archives à plusieurs volumes."
@@ -706,15 +802,15 @@ msgstr "Taille de volume :"
 #: kerfuffle/previewsettingspage.ui:32
 #, kde-format
 msgid " megabytes"
-msgstr " méga-octets"
+msgstr " méga-octets"
 
-#: kerfuffle/createdialog.cpp:132
+#: kerfuffle/createdialog.cpp:111
 #, kde-format
 msgctxt "the argument is a file extension (the period is not a typo)"
 msgid "Automatically add .%1"
-msgstr "Ajouter automatiquement .%1"
+msgstr "Ajouter automatiquement .%1"
 
-#: kerfuffle/createdialog.cpp:219
+#: kerfuffle/createdialog.cpp:198
 #, kde-format
 msgid "The chosen password does not match the given verification password."
 msgstr ""
@@ -751,23 +847,23 @@ msgstr "Type :"
 msgid "Extension:"
 msgstr "Extension :"
 
-#: kerfuffle/extractiondialog.cpp:61
+#: kerfuffle/extractiondialog.cpp:40
 #, kde-format
 msgctxt "@title:window"
 msgid "Extract"
 msgstr "Extraire"
 
-#: kerfuffle/extractiondialog.cpp:75
+#: kerfuffle/extractiondialog.cpp:56
 #, kde-format
 msgid "Extract"
 msgstr "Extraire"
 
-#: kerfuffle/extractiondialog.cpp:118
+#: kerfuffle/extractiondialog.cpp:103
 #, kde-format
 msgid "The subfolder name may not contain the character '/'."
 msgstr "Le nom de sous-dossier ne doit pas contenir le caractère « / »."
 
-#: kerfuffle/extractiondialog.cpp:128
+#: kerfuffle/extractiondialog.cpp:114
 #, kde-kuit-format
 msgctxt "@info"
 msgid ""
@@ -777,39 +873,39 @@ msgstr ""
 "Le dossier <filename>%1</filename> existe déjà. Voulez-vous vraiment "
 "effectuer l'extraction ici ?"
 
-#: kerfuffle/extractiondialog.cpp:129
+#: kerfuffle/extractiondialog.cpp:115
 #, kde-format
 msgid "Folder exists"
 msgstr "Le dossier existe"
 
-#: kerfuffle/extractiondialog.cpp:130
+#: kerfuffle/extractiondialog.cpp:116
 #, kde-format
 msgid "Extract here"
 msgstr "Extraire ici"
 
-#: kerfuffle/extractiondialog.cpp:131
+#: kerfuffle/extractiondialog.cpp:117
 #, kde-format
 msgid "Retry"
 msgstr "Ré-essayer"
 
-#: kerfuffle/extractiondialog.cpp:141 kerfuffle/extractiondialog.cpp:147
+#: kerfuffle/extractiondialog.cpp:127 kerfuffle/extractiondialog.cpp:133
 #, kde-kuit-format
 msgctxt "@info"
 msgid "The folder <filename>%1</filename> could not be created."
 msgstr "Impossible de créer le dossier <filename>%1</filename>."
 
-#: kerfuffle/extractiondialog.cpp:142
+#: kerfuffle/extractiondialog.cpp:128
 #, kde-kuit-format
 msgctxt "@info"
 msgid "<filename>%1</filename> already exists, but is not a folder."
 msgstr "<filename>%1</filename> existe déjà mais n'est pas un dossier."
 
-#: kerfuffle/extractiondialog.cpp:148
+#: kerfuffle/extractiondialog.cpp:134
 #, kde-format
 msgid "Please check your permissions to create it."
 msgstr "Veuillez vérifier vos droits d'accès pour le créer."
 
-#: kerfuffle/extractiondialog.cpp:187
+#: kerfuffle/extractiondialog.cpp:172
 #, kde-format
 msgid "Extract multiple archives"
 msgstr "Extraire plusieurs archives"
@@ -833,50 +929,50 @@ msgid "E&xtraction into subfolder:"
 msgstr "E&xtraction dans le sous-dossier :"
 
 #. i18n: ectx: property (title), widget (QGroupBox, groupBox)
-#: kerfuffle/extractiondialog.ui:113
+#: kerfuffle/extractiondialog.ui:116
 #, kde-format
 msgid "Options"
 msgstr "Options"
 
 #. i18n: ectx: property (text), widget (QCheckBox, openFolderCheckBox)
-#: kerfuffle/extractiondialog.ui:132
+#: kerfuffle/extractiondialog.ui:125
 #, kde-format
 msgid "Open &destination folder after extraction"
 msgstr "Ouvrir le &dossier de destination après l'extraction"
 
 #. i18n: ectx: property (text), widget (QCheckBox, closeAfterExtraction)
-#: kerfuffle/extractiondialog.ui:139
+#: kerfuffle/extractiondialog.ui:132
 #, kde-format
 msgid "Close &Ark after extraction"
 msgstr "Fermer &Ark après l'extraction"
 
 #. i18n: ectx: property (text), widget (QCheckBox, preservePaths)
-#: kerfuffle/extractiondialog.ui:146
+#: kerfuffle/extractiondialog.ui:139
 #, kde-format
 msgid "&Preserve paths when extracting"
 msgstr "&Préserver la structure des dossiers lors de l'extraction"
 
 #. i18n: ectx: property (text), widget (QCheckBox, autoSubfolders)
-#: kerfuffle/extractiondialog.ui:153
+#: kerfuffle/extractiondialog.ui:146
 #, kde-format
 msgid "&Automatically create subfolders"
 msgstr "Créer &automatiquement des sous-dossiers"
 
 #. i18n: ectx: property (title), widget (QGroupBox, filesToExtractGroupBox)
-#: kerfuffle/extractiondialog.ui:169
+#: kerfuffle/extractiondialog.ui:175
 #, kde-format
 msgctxt "@title:group"
 msgid "Extract"
 msgstr "Extraire"
 
 #. i18n: ectx: property (text), widget (QRadioButton, selectedFilesButton)
-#: kerfuffle/extractiondialog.ui:187
+#: kerfuffle/extractiondialog.ui:193
 #, kde-format
 msgid "Sele&cted files only"
 msgstr "Seulement les fichiers séle&ctionnés"
 
 #. i18n: ectx: property (text), widget (QRadioButton, allFilesButton)
-#: kerfuffle/extractiondialog.ui:203
+#: kerfuffle/extractiondialog.ui:209
 #, kde-format
 msgid "All &files"
 msgstr "Tous les &fichiers"
@@ -916,7 +1012,7 @@ msgstr ""
 msgid "Extract to a subfolder if the archive has more than one top-level entry"
 msgstr ""
 "Extraire vers un sous-dossier si l'archive a plus d'un élément au premier "
-"niveau."
+"niveau"
 
 #. i18n: ectx: property (text), widget (QLabel, label)
 #: kerfuffle/generalsettingspage.ui:17
@@ -943,14 +1039,14 @@ msgid "Show a warning when creating zip archives with AES encryption"
 msgstr ""
 "Afficher un avertissement à la création d'archives zip avec chiffrement AES"
 
-#: kerfuffle/jobs.cpp:117
+#: kerfuffle/jobs.cpp:100
 #, kde-format
 msgid "No suitable plugin found. Ark does not seem to support this file type."
 msgstr ""
 "Impossible de trouver un module d'extension approprié. Ark ne semble pas "
 "pouvoir prendre en charge ce format de fichier."
 
-#: kerfuffle/jobs.cpp:121
+#: kerfuffle/jobs.cpp:104
 #, kde-format
 msgid ""
 "Failed to load a suitable plugin. Make sure any executables needed to handle "
@@ -959,7 +1055,7 @@ msgstr ""
 "Impossible de charger le module d'extension approprié. Assurez-vous que les "
 "programmes nécessaires à la prise en charge du type d'archive sont installés."
 
-#: kerfuffle/jobs.cpp:185
+#: kerfuffle/jobs.cpp:169
 #, kde-format
 msgid ""
 "Could not load the archive because it contains ill-formed entries and might "
@@ -968,38 +1064,43 @@ msgstr ""
 "Impossible de charger l'archive car il contient des entrées mal formées et "
 "pourrait être malicieux."
 
-#: kerfuffle/jobs.cpp:268
+#: kerfuffle/jobs.cpp:258
 #, kde-format
 msgid "Loading archive"
 msgstr "Chargement de l'archive"
 
-#: kerfuffle/jobs.cpp:268 kerfuffle/jobs.cpp:527 kerfuffle/jobs.cpp:673
-#: kerfuffle/jobs.cpp:726 kerfuffle/jobs.cpp:764 kerfuffle/jobs.cpp:796
-#: kerfuffle/jobs.cpp:844
+#: kerfuffle/jobs.cpp:258 kerfuffle/jobs.cpp:551 kerfuffle/jobs.cpp:733
+#: kerfuffle/jobs.cpp:785 kerfuffle/jobs.cpp:822 kerfuffle/jobs.cpp:853
+#: kerfuffle/jobs.cpp:899
 #, kde-format
 msgid "Archive"
 msgstr "Archive"
 
-#: kerfuffle/jobs.cpp:523
+#: kerfuffle/jobs.cpp:410 kerfuffle/jobs.cpp:582
+#, kde-kuit-format
+msgid "No space available on device <filename>%1</filename>"
+msgstr "Aucun espace disponible sur le périphérique <filename>%1</filename>"
+
+#: kerfuffle/jobs.cpp:545
 #, kde-format
 msgid "Extracting all files"
 msgstr "Extraction de tous les fichiers"
 
 #. i18np on purpose so this translation may properly be reused.
-#: kerfuffle/jobs.cpp:525 kerfuffle/jobs.cpp:599
+#: kerfuffle/jobs.cpp:547 kerfuffle/jobs.cpp:656
 #, kde-format
 msgid "Extracting one file"
 msgid_plural "Extracting %1 files"
 msgstr[0] "Extraction d'un fichier"
 msgstr[1] "Extraction de %1 fichiers"
 
-#: kerfuffle/jobs.cpp:527
+#: kerfuffle/jobs.cpp:552
 #, kde-format
 msgctxt "extraction folder"
 msgid "Destination"
 msgstr "Destination"
 
-#: kerfuffle/jobs.cpp:531
+#: kerfuffle/jobs.cpp:556
 #, kde-kuit-format
 msgid ""
 "Could not write to destination <filename>%1</filename>.<nl/>Check whether "
@@ -1008,45 +1109,45 @@ msgstr ""
 "Impossible d'écrire vers la destination <filename>%1</filename>.<nl/>Assurez-"
 "vous que vous avez les droits d'accès suffisants."
 
-#: kerfuffle/jobs.cpp:672
+#: kerfuffle/jobs.cpp:732
 #, kde-format
 msgid "Compressing a file"
 msgid_plural "Compressing %1 files"
 msgstr[0] "Compression d'un fichier"
 msgstr[1] "Compression de %1 fichiers"
 
-#: kerfuffle/jobs.cpp:725
+#: kerfuffle/jobs.cpp:784
 #, kde-format
 msgid "Moving a file"
 msgid_plural "Moving %1 files"
 msgstr[0] "Déplacement d'un fichier"
 msgstr[1] "Déplacement de %1 fichiers"
 
-#: kerfuffle/jobs.cpp:763
+#: kerfuffle/jobs.cpp:821
 #, kde-format
 msgid "Copying a file"
 msgid_plural "Copying %1 files"
 msgstr[0] "Copie d'un fichier"
 msgstr[1] "Copie de %1 fichiers"
 
-#: kerfuffle/jobs.cpp:795
+#: kerfuffle/jobs.cpp:852
 #, kde-format
 msgid "Deleting a file from the archive"
 msgid_plural "Deleting %1 files"
 msgstr[0] "Suppression d'un fichier"
 msgstr[1] "Suppression de %1 fichiers"
 
-#: kerfuffle/jobs.cpp:819
+#: kerfuffle/jobs.cpp:875
 #, kde-format
 msgid "Adding comment"
 msgstr "Ajout d'un commentaire"
 
-#: kerfuffle/jobs.cpp:844
+#: kerfuffle/jobs.cpp:899
 #, kde-format
 msgid "Testing archive"
 msgstr "Test de l'archive"
 
-#: kerfuffle/pluginsettingspage.cpp:57
+#: kerfuffle/pluginsettingspage.cpp:33
 #, kde-format
 msgid ""
 "The plugin cannot be used because one or more required executables are "
@@ -1057,14 +1158,14 @@ msgstr ""
 
 #. i18n: @title:column
 #. i18n: ectx: property (text), widget (QTreeWidget, kcfg_disabledPlugins)
-#: kerfuffle/pluginsettingspage.ui:24
+#: kerfuffle/pluginsettingspage.ui:36
 #, kde-format
 msgid "Name"
 msgstr "Nom"
 
 #. i18n: @title:column
 #. i18n: ectx: property (text), widget (QTreeWidget, kcfg_disabledPlugins)
-#: kerfuffle/pluginsettingspage.ui:29
+#: kerfuffle/pluginsettingspage.ui:41
 #, kde-format
 msgid "Description"
 msgstr "Description"
@@ -1075,56 +1176,56 @@ msgstr "Description"
 msgid "Disable preview for files larger than:"
 msgstr "Désactiver l'aperçu pour les fichiers plus grands que :"
 
-#: kerfuffle/propertiesdialog.cpp:61
+#: kerfuffle/propertiesdialog.cpp:41
 #, kde-format
 msgctxt "@title:window"
 msgid "Properties for %1"
 msgstr "Propriétés pour %1"
 
 #. i18n: ectx: property (text), widget (KSqueezedTextLabel, m_passwordValueLabel)
-#: kerfuffle/propertiesdialog.cpp:69 kerfuffle/propertiesdialog.cpp:71
+#: kerfuffle/propertiesdialog.cpp:49 kerfuffle/propertiesdialog.cpp:51
 #: part/infopanel.ui:195
 #, kde-format
 msgid "yes"
 msgstr "oui"
 
-#: kerfuffle/propertiesdialog.cpp:69 kerfuffle/propertiesdialog.cpp:70
-#: kerfuffle/propertiesdialog.cpp:71 kerfuffle/propertiesdialog.cpp:84
+#: kerfuffle/propertiesdialog.cpp:49 kerfuffle/propertiesdialog.cpp:50
+#: kerfuffle/propertiesdialog.cpp:51 kerfuffle/propertiesdialog.cpp:63
 #, kde-format
 msgid "no"
 msgstr "non"
 
-#: kerfuffle/propertiesdialog.cpp:70
+#: kerfuffle/propertiesdialog.cpp:50
 #, kde-format
 msgid "yes (%1 volumes)"
 msgstr "oui (%1 volumes)"
 
-#: kerfuffle/propertiesdialog.cpp:72
+#: kerfuffle/propertiesdialog.cpp:52
 #, kde-format
 msgid "%1 file"
 msgid_plural "%1 files"
 msgstr[0] "%1 fichier"
 msgstr[1] "%1 fichiers"
 
-#: kerfuffle/propertiesdialog.cpp:73
+#: kerfuffle/propertiesdialog.cpp:52
 #, kde-format
 msgid ", %1 folder"
 msgid_plural ", %1 folders"
 msgstr[0] ", %1 dossier"
 msgstr[1] ", %1 dossiers"
 
-#: kerfuffle/propertiesdialog.cpp:87
+#: kerfuffle/propertiesdialog.cpp:66
 #, kde-format
 msgid "only file contents (%1)"
 msgstr "seulement le contenu des fichiers (%1)"
 
-#: kerfuffle/propertiesdialog.cpp:90
+#: kerfuffle/propertiesdialog.cpp:69
 #, kde-format
 msgid "yes (%1)"
 msgstr "oui (%1)"
 
-#: kerfuffle/propertiesdialog.cpp:107 kerfuffle/propertiesdialog.cpp:108
-#: kerfuffle/propertiesdialog.cpp:109
+#: kerfuffle/propertiesdialog.cpp:86 kerfuffle/propertiesdialog.cpp:87
+#: kerfuffle/propertiesdialog.cpp:88
 #, kde-format
 msgid "Calculating..."
 msgstr "Calcul…"
@@ -1226,13 +1327,13 @@ msgstr "Multi-volume :"
 msgid "Compression method(s):"
 msgstr "Méthode(s) de compression :"
 
-#: kerfuffle/queries.cpp:94
+#: kerfuffle/queries.cpp:73
 #, kde-format
 msgctxt "@title:window"
 msgid "File Already Exists"
 msgstr "Le fichier existe déjà"
 
-#: kerfuffle/queries.cpp:177
+#: kerfuffle/queries.cpp:169
 #, kde-kuit-format
 msgctxt "@info"
 msgid ""
@@ -1242,12 +1343,12 @@ msgstr ""
 "L'archive <filename>%1</filename> est protégée par un mot de passe. Veuillez "
 "saisir le mot de passe."
 
-#: kerfuffle/queries.cpp:181
+#: kerfuffle/queries.cpp:173
 #, kde-format
 msgid "Incorrect password, please try again."
 msgstr "Mot de passe incorrect. Veuillez réessayer."
 
-#: kerfuffle/queries.cpp:216
+#: kerfuffle/queries.cpp:209
 #, kde-kuit-format
 msgctxt "@info"
 msgid ""
@@ -1257,35 +1358,35 @@ msgstr ""
 "L'archive que vous essayer d'ouvrir est corrompue.<nl/> Certains fichiers "
 "sont peut-être absents ou endommagés."
 
-#: kerfuffle/queries.cpp:218
+#: kerfuffle/queries.cpp:211
 #, kde-format
 msgctxt "@title:window"
 msgid "Corrupt archive"
 msgstr "Archive corrompue"
 
-#: kerfuffle/queries.cpp:219
+#: kerfuffle/queries.cpp:212
 #, kde-format
 msgctxt "@action:button"
 msgid "Open as Read-Only"
 msgstr "Ouvrir en lecture seule"
 
-#: kerfuffle/queries.cpp:220
+#: kerfuffle/queries.cpp:213
 #, kde-format
 msgctxt "@action:button"
 msgid "Don't Open"
 msgstr "Ne pas ouvrir"
 
-#: kerfuffle/queries.cpp:229
+#: kerfuffle/queries.cpp:223
 #, kde-format
 msgid "Don't ask again."
 msgstr "Ne plus demander."
 
-#: kerfuffle/queries.cpp:241
+#: kerfuffle/queries.cpp:235
 #, kde-format
 msgid "Error during extraction"
 msgstr "Une erreur est survenue pendant l'extraction."
 
-#: kerfuffle/queries.cpp:242
+#: kerfuffle/queries.cpp:236
 #, kde-kuit-format
 msgid ""
 "Extraction of the entry:<nl/>    <filename>%1</filename><nl/>failed with the "
@@ -1295,93 +1396,99 @@ msgstr ""
 "une erreur avec le message :<nl/>    %2<nl/><nl/>Voulez-vous poursuivre "
 "l'extraction ?<nl/>"
 
-#: part/archivemodel.cpp:176
+#: part/archivemodel.cpp:154
 #, kde-format
 msgctxt "Name of a file inside an archive"
 msgid "Name"
 msgstr "Nom"
 
-#: part/archivemodel.cpp:178
+#: part/archivemodel.cpp:156
 #, kde-format
 msgctxt "Uncompressed size of a file inside an archive"
-msgid "Size"
-msgstr "Taille"
+msgid "Original Size"
+msgstr "Taille originale"
 
-#: part/archivemodel.cpp:180
+#: part/archivemodel.cpp:158
 #, kde-format
 msgctxt "Compressed size of a file inside an archive"
-msgid "Compressed"
-msgstr "Compressé"
+msgid "Compressed Size"
+msgstr "Taille compressée"
 
-#: part/archivemodel.cpp:182
+#: part/archivemodel.cpp:160
 #, kde-format
 msgctxt "Compression rate of file"
 msgid "Rate"
 msgstr "Taux"
 
-#: part/archivemodel.cpp:184
+#: part/archivemodel.cpp:162
 #, kde-format
 msgctxt "File's owner username"
 msgid "Owner"
 msgstr "Propriétaire"
 
-#: part/archivemodel.cpp:186
+#: part/archivemodel.cpp:164
 #, kde-format
 msgctxt "File's group"
 msgid "Group"
 msgstr "Groupe"
 
-#: part/archivemodel.cpp:188
+#: part/archivemodel.cpp:166
 #, kde-format
 msgctxt "File permissions"
 msgid "Mode"
 msgstr "Mode"
 
-#: part/archivemodel.cpp:190
+#: part/archivemodel.cpp:168
 #, kde-format
 msgctxt "CRC hash code"
 msgid "CRC checksum"
 msgstr "Somme de contrôle CRC"
 
-#: part/archivemodel.cpp:192
+#: part/archivemodel.cpp:170
 #, kde-format
 msgctxt "BLAKE2 hash code"
 msgid "BLAKE2 checksum"
 msgstr "Somme de contrôle BLAKE2"
 
-#: part/archivemodel.cpp:194
+#: part/archivemodel.cpp:172
 #, kde-format
 msgctxt "Compression method"
 msgid "Method"
 msgstr "Méthode"
 
-#: part/archivemodel.cpp:197
+#: part/archivemodel.cpp:175
 #, kde-format
 msgctxt "File version"
 msgid "Version"
 msgstr "Version"
 
-#: part/archivemodel.cpp:199
+#: part/archivemodel.cpp:177
 #, kde-format
 msgctxt "Timestamp"
 msgid "Date"
 msgstr "Date"
 
-#: part/archivemodel.cpp:201
+#: part/archivemodel.cpp:179
 #, kde-format
 msgctxt "Unnamed column"
 msgid "??"
 msgstr " ? ?"
 
-#: part/archivemodel.cpp:312
+#: part/archivemodel.cpp:279
 #, kde-format
 msgid "Adding files is not supported for this archive."
 msgstr "L'ajout de fichier n'est pas pris en charge par cette archive."
 
-#: part/archivemodel.cpp:320
+#: part/archivemodel.cpp:287
 #, kde-format
 msgid "You can only add local files to an archive."
 msgstr "Vous pouvez uniquement ajouter des fichiers locaux à une archive."
+
+#. i18n: ectx: Menu (archive)
+#: part/ark_part.rc:5
+#, kde-format
+msgid "&Archive"
+msgstr "&Archive"
 
 #. i18n: ectx: Menu (ark_file)
 #: part/ark_part.rc:15
@@ -1407,24 +1514,24 @@ msgstr "Barre principale d'outils"
 msgid "&Help"
 msgstr "&Aide"
 
-#: part/arkviewer.cpp:66
+#: part/arkviewer.cpp:52
 #, kde-format
 msgid "Closing preview"
 msgstr "Fermeture de l'aperçu"
 
-#: part/arkviewer.cpp:67
+#: part/arkviewer.cpp:53
 #, kde-format
 msgid "Please wait while the preview is being closed..."
 msgstr "Veuillez patienter pendant la fermeture de l'aperçu..."
 
-#: part/arkviewer.cpp:114
+#: part/arkviewer.cpp:99
 #, kde-format
 msgid "The internal viewer cannot preview this file."
 msgstr ""
 "Le programme d'affichage intégré ne peut pas afficher d'aperçu pour ce "
 "fichier."
 
-#: part/arkviewer.cpp:130
+#: part/arkviewer.cpp:116
 #, kde-kuit-format
 msgid ""
 "The internal viewer cannot preview this type of file<nl/>(%1).<nl/><nl/>Do "
@@ -1434,19 +1541,19 @@ msgstr ""
 "fichier<nl/>(%1).<nl/><nl/> Voulez-vous essayer de l'afficher comme du texte "
 "brut ?"
 
-#: part/arkviewer.cpp:131 part/arkviewer.cpp:143
+#: part/arkviewer.cpp:117 part/arkviewer.cpp:129
 #, kde-format
 msgctxt "@title:window"
 msgid "Cannot Preview File"
 msgstr "Impossible de faire un aperçu pour le fichier"
 
-#: part/arkviewer.cpp:132 part/arkviewer.cpp:144
+#: part/arkviewer.cpp:118 part/arkviewer.cpp:130
 #, kde-format
 msgctxt "@action:button"
 msgid "Preview as Text"
 msgstr "Afficher un aperçu en texte"
 
-#: part/arkviewer.cpp:142
+#: part/arkviewer.cpp:128
 #, kde-kuit-format
 msgid ""
 "The internal viewer cannot preview this unknown type of file.<nl/><nl/>Do "
@@ -1456,28 +1563,28 @@ msgstr ""
 "inconnu de fichier<nl/>().<nl/><nl/> Voulez-vous essayer de l'afficher comme "
 "du texte brut ?"
 
-#: part/arkviewer.cpp:208
+#: part/arkviewer.cpp:201
 #, kde-format
 msgctxt "@action"
 msgid "About Viewer Component"
 msgstr "À propos du composant d'affichage"
 
-#: part/infopanel.cpp:67
+#: part/infopanel.cpp:53
 #, kde-format
 msgid "No archive loaded"
 msgstr "Aucune archive ouverte"
 
-#: part/infopanel.cpp:118
+#: part/infopanel.cpp:104
 #, kde-format
 msgid "Symbolic Link"
 msgstr "Lien symbolique"
 
-#: part/infopanel.cpp:123
+#: part/infopanel.cpp:109
 #, kde-format
 msgid "Unknown size"
 msgstr "Taille inconnue"
 
-#: part/infopanel.cpp:144
+#: part/infopanel.cpp:126
 #, kde-format
 msgid "One file selected"
 msgid_plural "%1 files selected"
@@ -1515,24 +1622,30 @@ msgid "Target:"
 msgstr "Cible :"
 
 #. i18n: ectx: property (windowTitle), widget (QWidget, JobTrackerWidget)
-#: part/jobtracker.ui:13
+#: part/jobtracker.ui:14
 #, kde-format
 msgid "Job Tracker"
 msgstr "Outil de suivi de tâches"
 
 #. i18n: ectx: property (text), widget (QLabel, descriptionLabel)
-#: part/jobtracker.ui:43
+#: part/jobtracker.ui:44
 #, kde-format
 msgid "<b>Job Description</b>"
 msgstr "<b>Description de tâches</b>"
 
 #. i18n: ectx: property (text), widget (QLabel, informationLabel)
-#: part/jobtracker.ui:62
+#: part/jobtracker.ui:63
 #, kde-format
 msgid "Some Information about the job"
 msgstr "Quelques informations à propos de la tâche"
 
-#: part/overwritedialog.cpp:47
+#. i18n: ectx: property (format), widget (QProgressBar, progressBar)
+#: part/jobtracker.ui:88
+#, no-c-format, kde-format
+msgid "%p%"
+msgstr "%p %"
+
+#: part/overwritedialog.cpp:26
 #, kde-format
 msgid ""
 "Files with the following paths already exist. Remove them if you really want "
@@ -1541,7 +1654,7 @@ msgstr ""
 "Des fichiers existent déjà à cet emplacement. Retirez-les si vous voulez "
 "vraiment écrire par-dessus."
 
-#: part/overwritedialog.cpp:49
+#: part/overwritedialog.cpp:28
 #, kde-format
 msgid ""
 "Files with the following paths already exist. Do you want to continue "
@@ -1550,87 +1663,81 @@ msgstr ""
 "Des fichiers existent déjà à l'emplacement suivant. Voulez-vous vraiment "
 "écrire par-dessus ?"
 
-#: part/part.cpp:126
+#: part/part.cpp:112
 #, kde-format
 msgid "Comment"
 msgstr "Commentaire"
 
-#: part/part.cpp:137
+#: part/part.cpp:125
 #, kde-format
 msgid "Comment has been modified."
 msgstr "Le commentaire a été modifié."
 
-#: part/part.cpp:142
+#: part/part.cpp:130
 #, kde-format
 msgid "Save"
 msgstr "Enregistrer"
 
-#: part/part.cpp:165
+#: part/part.cpp:153
 #, kde-format
 msgid "Type to search..."
 msgstr "Saisissez le texte à rechercher…"
 
-#: part/part.cpp:323
+#: part/part.cpp:303
 #, kde-kuit-format
 msgctxt "@info"
 msgid "Ark can extract archives to local destinations only."
 msgstr "Ark ne peut extraire des archives que vers des emplacements locaux."
 
-#: part/part.cpp:375
+#: part/part.cpp:355
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Show Information Panel"
 msgstr "Afficher le panneau d'informations"
 
-#: part/part.cpp:382
+#: part/part.cpp:361
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "Save Copy As..."
 msgstr "Enregistrer une copie sous..."
 
-#: part/part.cpp:386
+#: part/part.cpp:365
 #, kde-format
 msgctxt "open a file with external program"
-msgid "&Open"
-msgstr "&Ouvrir"
+msgid "&Open in External Application"
+msgstr "&Ouvrir dans une application externe"
 
-#: part/part.cpp:388
-#, kde-format
-msgctxt "@info:tooltip"
-msgid "Click to open the selected file with the associated application"
-msgstr "Cliquez pour ouvrir le fichier sélectionné avec l'application associée"
-
-#: part/part.cpp:392
+#: part/part.cpp:372
 #, kde-format
 msgctxt "open a file with external program"
 msgid "Open &With..."
 msgstr "Ouvrir &avec…"
 
-#: part/part.cpp:394
+#: part/part.cpp:374
 #, kde-format
 msgctxt "@info:tooltip"
 msgid "Click to open the selected file with an external program"
 msgstr "Cliquez pour ouvrir le fichier sélectionné avec un programme externe"
 
-#: part/part.cpp:398
+#: part/part.cpp:380
 #, kde-format
 msgctxt "to preview a file inside an archive"
 msgid "Pre&view"
 msgstr "&Aperçu"
 
-#: part/part.cpp:400
+#: part/part.cpp:382
 #, kde-format
 msgctxt "@info:tooltip"
 msgid "Click to preview the selected file"
 msgstr "Cliquez pour afficher un aperçu du fichier sélectionné"
 
-#: part/part.cpp:405
+#: part/part.cpp:389
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "E&xtract All"
 msgstr "E&xtraire tout"
 
-#: part/part.cpp:407
+#: part/part.cpp:391
 #, kde-format
 msgid ""
 "Click to open an extraction dialog, where you can choose how to extract all "
@@ -1639,13 +1746,13 @@ msgstr ""
 "Cliquez pour ouvrir une boîte de dialogue d'extraction, à partir de laquelle "
 "vous pourrez choisir d'extraire tous les fichiers de l'archive"
 
-#: part/part.cpp:412
+#: part/part.cpp:396
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "&Extract"
 msgstr "&Extraire"
 
-#: part/part.cpp:415
+#: part/part.cpp:399
 #, kde-format
 msgid ""
 "Click to open an extraction dialog, where you can choose to extract either "
@@ -1655,48 +1762,54 @@ msgstr ""
 "vous pourrez choisir d'extraire tous les fichiers ou seulement ceux "
 "sélectionnés"
 
-#: part/part.cpp:420
+#: part/part.cpp:404
 #, kde-format
 msgid "Add &Files..."
 msgstr "Ajouter des &fichiers…"
 
-#: part/part.cpp:421 part/part.cpp:483
+#: part/part.cpp:405 part/part.cpp:466
 #, kde-format
 msgctxt "@info:tooltip"
 msgid "Click to add files to the archive"
 msgstr "Cliquez pour ajouter des fichiers à l'archive"
 
-#: part/part.cpp:437
+#: part/part.cpp:412
+#, kde-format
+msgctxt "@action"
+msgid "Remove from Archive"
+msgstr "Supprimer de l'archive"
+
+#: part/part.cpp:422
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "&Properties"
 msgstr "&Propriétés"
 
-#: part/part.cpp:439
+#: part/part.cpp:424
 #, kde-format
 msgctxt "@info:tooltip"
 msgid "Click to see properties for archive"
 msgstr "Cliquez pour voir les propriétés de l'archive"
 
-#: part/part.cpp:445
+#: part/part.cpp:430
 #, kde-format
 msgctxt "@info:tooltip"
 msgid "Click to add or edit comment"
 msgstr "Cliquez pour ajouter ou éditer un commentaire"
 
-#: part/part.cpp:450
+#: part/part.cpp:435
 #, kde-format
 msgctxt "@action:inmenu"
 msgid "&Test Integrity"
 msgstr "&Tester l'intégrité"
 
-#: part/part.cpp:452 part/part.cpp:484
+#: part/part.cpp:437 part/part.cpp:467
 #, kde-format
 msgctxt "@info:tooltip"
 msgid "Click to test the archive for integrity"
 msgstr "Cliquez pour tester l'intégrité de l'archive"
 
-#: part/part.cpp:478
+#: part/part.cpp:462
 #, kde-kuit-format
 msgctxt "@info:tooltip"
 msgid ""
@@ -1709,7 +1822,7 @@ msgstr ""
 "Veuillez extraire les fichiers et créer une nouvelle archive si vous voulez "
 "ajouter des fichiers."
 
-#: part/part.cpp:481
+#: part/part.cpp:464
 #, kde-kuit-format
 msgctxt "@info:tooltip"
 msgid ""
@@ -1719,74 +1832,74 @@ msgstr ""
 "Le test des archives protégées par mot de passe sans chiffrage d'en-tête "
 "n'est pas pris en charge pour le moment."
 
-#: part/part.cpp:549
+#: part/part.cpp:505
 #, kde-format
 msgctxt "@action:inmenu mutually exclusive with Add &Comment"
 msgid "Edit &Comment"
 msgstr "Éditer le &commentaire"
 
-#: part/part.cpp:550 part/part.cpp:558
+#: part/part.cpp:506 part/part.cpp:512
 #, kde-format
 msgctxt "@action:inmenu mutually exclusive with Edit &Comment"
 msgid "Add &Comment"
 msgstr "Ajouter un &commentaire"
 
-#: part/part.cpp:659
+#: part/part.cpp:612
 #, kde-format
 msgid "The archive passed the integrity test."
 msgstr "Le test d'intégrité a réussi."
 
-#: part/part.cpp:659 part/part.cpp:661
+#: part/part.cpp:612 part/part.cpp:614
 #, kde-format
 msgid "Test Results"
 msgstr "Résultats du test"
 
-#: part/part.cpp:661
+#: part/part.cpp:614
 #, kde-format
 msgid "The archive failed the integrity test."
 msgstr "Le test d'intégrité a échoué."
 
-#: part/part.cpp:682
+#: part/part.cpp:634
 #, kde-format
 msgid "Extract To..."
 msgstr "Extraire vers..."
 
-#: part/part.cpp:696
+#: part/part.cpp:646
 #, kde-format
 msgid "Quick Extract To..."
 msgstr "Extraction rapide vers..."
 
-#: part/part.cpp:825
+#: part/part.cpp:775
 #, kde-format
 msgctxt "@title:tab"
 msgid "General"
 msgstr "Général"
 
-#: part/part.cpp:826
+#: part/part.cpp:776
 #, kde-format
 msgctxt "@title:tab"
 msgid "Extraction"
 msgstr "Extraction"
 
-#: part/part.cpp:827
+#: part/part.cpp:777
 #, kde-format
 msgctxt "@title:tab"
 msgid "Plugins"
 msgstr "Modules externes"
 
-#: part/part.cpp:828
+#: part/part.cpp:778
 #, kde-format
 msgctxt "@title:tab"
 msgid "Previews"
 msgstr "Aperçus"
 
-#: part/part.cpp:840
+#: part/part.cpp:794
 #, kde-kuit-format
 msgctxt "@info"
 msgid "<filename>%1</filename> is a directory."
 msgstr "<filename>%1</filename> est un dossier."
 
-#: part/part.cpp:849
+#: part/part.cpp:802
 #, kde-kuit-format
 msgctxt "@info"
 msgid ""
@@ -1796,23 +1909,23 @@ msgstr ""
 "Impossible d'écraser <filename>%1</filename>. Assurez-vous que vous avez les "
 "droits d'écriture."
 
-#: part/part.cpp:855
+#: part/part.cpp:808
 #, kde-kuit-format
 msgctxt "@info"
 msgid ""
 "The archive <filename>%1</filename> will be created as soon as you add a "
 "file."
 msgstr ""
-"L'archive <filename>%1</filename> sera créée dès que vous ajouterez un "
+"L'archive <filename>%1</filename> sera créée dès que vous ajouterez un "
 "fichier."
 
-#: part/part.cpp:858
+#: part/part.cpp:811
 #, kde-kuit-format
 msgctxt "@info"
 msgid "The archive <filename>%1</filename> was not found."
-msgstr "Impossible de trouver l'archive <filename>%1</filename>."
+msgstr "Impossible de trouver l'archive <filename>%1</filename>."
 
-#: part/part.cpp:863
+#: part/part.cpp:817
 #, kde-kuit-format
 msgctxt "@info"
 msgid ""
@@ -1822,7 +1935,7 @@ msgstr ""
 "L'archive <filename>%1</filename> n'a pas pu être chargée, car il est "
 "impossible de la lire."
 
-#: part/part.cpp:876
+#: part/part.cpp:830
 #, kde-kuit-format
 msgctxt "@info"
 msgid ""
@@ -1830,19 +1943,19 @@ msgid ""
 "it?"
 msgstr "L'archive <filename>%1</filename> existe déjà. Voulez-vous l'écraser ?"
 
-#: part/part.cpp:878
+#: part/part.cpp:831
 #, kde-format
 msgctxt "@title:window"
 msgid "File Exists"
 msgstr "Le fichier existe"
 
-#: part/part.cpp:915
+#: part/part.cpp:868
 #, kde-kuit-format
 msgctxt "@info"
 msgid "The archive is empty or Ark could not open its content."
 msgstr "L'archive est vide ou Ark ne peut pas ouvrir son contenu."
 
-#: part/part.cpp:920
+#: part/part.cpp:875
 #, kde-kuit-format
 msgctxt "@info"
 msgid "Ark does not currently support ISO files with UDF filesystem."
@@ -1850,7 +1963,7 @@ msgstr ""
 "Ark ne prend pas encore en charge les fichiers ISO avec le système de "
 "fichiers UDF."
 
-#: part/part.cpp:949
+#: part/part.cpp:907
 #, kde-kuit-format
 msgctxt "@info"
 msgid ""
@@ -1860,12 +1973,12 @@ msgstr ""
 "Le chargement de l'archive <filename>%1</filename> a échoué avec l'erreur "
 "suivante :<nl/><message>%2</message>"
 
-#: part/part.cpp:1009
+#: part/part.cpp:967
 #, kde-format
 msgid "Ark cannot open symlinks."
 msgstr "Ark ne peut pas ouvrir les liens symboliques."
 
-#: part/part.cpp:1131
+#: part/part.cpp:1094
 #, kde-kuit-format
 msgid ""
 "The file <filename>%1</filename> was modified. Do you want to update the "
@@ -1874,45 +1987,57 @@ msgstr ""
 "Le fichier <filename>%1</filename> a été modifié. Voulez-vous mettre "
 "l'archive à jour ?"
 
-#: part/part.cpp:1133
+#: part/part.cpp:1095
 #, kde-format
 msgctxt "@title:window"
 msgid "File Modified"
 msgstr "Fichier modifié"
 
-#: part/part.cpp:1413
+#: part/part.cpp:1096
+#, kde-format
+msgctxt "@action:button"
+msgid "Update"
+msgstr "Mettre à jour"
+
+#: part/part.cpp:1097
+#, kde-format
+msgctxt "@action:button"
+msgid "Ignore"
+msgstr "Ignorer"
+
+#: part/part.cpp:1370
 #, kde-format
 msgctxt "@title:window"
 msgid "Add Files"
 msgstr "Ajouter des fichiers"
 
-#: part/part.cpp:1418
+#: part/part.cpp:1375
 #, kde-format
 msgctxt "@title:window"
 msgid "Add Files to %1"
 msgstr "Ajouter des fichiers à %1"
 
-#: part/part.cpp:1482
+#: part/part.cpp:1435
 #, kde-format
 msgid "Filename can't contain slashes and can't be equal to \".\" or \"..\""
 msgstr "Un nom de fichier ne peut pas contenir « / », « . » ou « .. »"
 
-#: part/part.cpp:1526
+#: part/part.cpp:1479
 #, kde-format
 msgid "Folders can't be moved into themselves."
 msgstr "Impossible de déplacer un dossier dans lui-même."
 
-#: part/part.cpp:1527
+#: part/part.cpp:1479
 #, kde-format
 msgid "Moving a folder into itself"
 msgstr "Déplacement d'un dossier dans lui-même"
 
-#: part/part.cpp:1555
+#: part/part.cpp:1507
 #, kde-format
 msgid "Entries with the same names can't be pasted to the same destination."
 msgstr "Des éléments homonymes ne peuvent pas être collés au même endroit."
 
-#: part/part.cpp:1650
+#: part/part.cpp:1606
 #, kde-format
 msgctxt "@info"
 msgid "Deleting this file is not undoable. Are you sure you want to do this?"
@@ -1925,7 +2050,7 @@ msgstr[1] ""
 "Impossible d'annuler la suppression de ces fichiers. Voulez-vous vraiment "
 "effectuer ceci ?"
 
-#: part/part.cpp:1653
+#: part/part.cpp:1609
 #, kde-format
 msgctxt "@title:window"
 msgid "Delete File"
@@ -1933,13 +2058,13 @@ msgid_plural "Delete Files"
 msgstr[0] "Supprimer le fichier"
 msgstr[1] "Supprimer les fichiers"
 
-#: part/part.cpp:1697
+#: part/part.cpp:1648
 #, kde-format
 msgctxt "@title:window"
 msgid "Save Copy As"
 msgstr "Enregistrer une copie sous"
 
-#: part/part.cpp:1712
+#: part/part.cpp:1663
 #, kde-kuit-format
 msgctxt "@info"
 msgid ""
@@ -1949,7 +2074,7 @@ msgstr ""
 "Impossible d'enregistrer l'archive en tant que <filename>%1</filename>. "
 "Veuillez essayer de l'enregistrer à un autre emplacement."
 
-#: part/part.cpp:1716
+#: part/part.cpp:1668
 #, kde-kuit-format
 msgctxt "@info"
 msgid ""
@@ -1959,18 +2084,18 @@ msgstr ""
 "L'archive <filename>%1</filename> n'existe plus. En conséquence, il est "
 "impossible de le copier vers l'emplacement spécifié."
 
-#: plugins/cli7zplugin/cliplugin.cpp:125
-#: plugins/cliunarchiverplugin/cliplugin.cpp:100
+#: plugins/cli7zplugin/cliplugin.cpp:132
+#: plugins/cliunarchiverplugin/cliplugin.cpp:88
 #, kde-format
 msgid "Listing the archive failed."
 msgstr "Échec de l'obtention du contenu de l'archive."
 
-#: plugins/cli7zplugin/cliplugin.cpp:295
+#: plugins/cli7zplugin/cliplugin.cpp:304
 #, kde-format
 msgid "Extraction failed due to an unknown error."
 msgstr "La conversion a échoué à cause d'une erreur inconnue."
 
-#: plugins/cli7zplugin/cliplugin.cpp:301 plugins/clizipplugin/cliplugin.cpp:202
+#: plugins/cli7zplugin/cliplugin.cpp:309 plugins/clizipplugin/cliplugin.cpp:191
 #, kde-format
 msgid ""
 "Extraction failed due to one or more corrupt files. Any extracted files may "
@@ -1979,24 +2104,54 @@ msgstr ""
 "L'extraction a échoué à cause d'un ou plusieurs fichiers corrompus. Les "
 "fichiers qui ont été extraits peuvent être endommagés."
 
-#: plugins/cli7zplugin/cliplugin.cpp:312
+#: plugins/cli7zplugin/cliplugin.cpp:319
 #, kde-format
 msgid ""
-"Delete operation failed. Try upgrading p7zip or disabling the p7zip plugin "
-"in the configuration dialog."
+"Delete operation failed. Try upgrading 7z or disabling the 7z plugin in the "
+"configuration dialog."
 msgstr ""
-"L'opération de suppression a échoué. Essayez de mettre à jour p7zip ou de "
-"désactiver le module externe p7zip dans la boîte de dialogue de "
-"configuration."
+"L'opération de suppression a échoué. Essayez de mettre à jour le logiciel "
+"« 7z » ou de désactiver le module externe « 7z » dans la boîte de dialogue "
+"de configuration."
 
-#: plugins/clirarplugin/cliplugin.cpp:171
-#: plugins/clirarplugin/cliplugin.cpp:314
-#: plugins/clirarplugin/cliplugin.cpp:567
+#: plugins/cliarjplugin/cliplugin.cpp:321
+#, kde-format
+msgid "ARJ old"
+msgstr "Ancien format « ARJ »"
+
+#: plugins/cliarjplugin/cliplugin.cpp:322
+#, kde-format
+msgid "ARJ"
+msgstr "ARJ"
+
+#: plugins/cliarjplugin/cliplugin.cpp:323
+#, kde-format
+msgid "GOST256"
+msgstr "GOST256"
+
+#: plugins/cliarjplugin/cliplugin.cpp:324
+#, kde-format
+msgid "GOST256L"
+msgstr "GOST256L"
+
+#: plugins/cliarjplugin/cliplugin.cpp:325
+#, kde-format
+msgid "GOST 40-bit"
+msgstr "GOST 40-bits"
+
+#: plugins/cliarjplugin/cliplugin.cpp:327
+#, kde-format
+msgid "unknown"
+msgstr "inconnu"
+
+#: plugins/clirarplugin/cliplugin.cpp:153
+#: plugins/clirarplugin/cliplugin.cpp:293
+#: plugins/clirarplugin/cliplugin.cpp:540
 #, kde-format
 msgid "Failed to find all archive volumes."
 msgstr "Impossible de trouver tous les volumes de l'archive."
 
-#: plugins/clirarplugin/cliplugin.cpp:335
+#: plugins/clirarplugin/cliplugin.cpp:314
 #, kde-format
 msgid ""
 "Your unrar executable is version %1, which is too old to handle this "
@@ -2006,82 +2161,92 @@ msgstr ""
 "prendre en charge l'archive. Veuillez mettre à jour vers une version plus "
 "récente."
 
-#: plugins/clirarplugin/cliplugin.cpp:342
+#: plugins/clirarplugin/cliplugin.cpp:320
 #, kde-format
 msgid ""
 "Unrar reported a non-RAR archive. The installed unrar version (%1) is old. "
 "Try updating your unrar."
 msgstr ""
-"Unrar a signalé une archive qui n'est pas au format rar. La version de unrar "
-"(%1) est trop ancienne. Essayez de mettre à jour unurar."
+"Le logiciel « unrar » a signalé une archive n'étant pas au format « rar ». "
+"La version de unrar (%1) est trop ancienne. Essayez de mettre à jour le "
+"logiciel « unrar »."
 
-#: plugins/clirarplugin/cliplugin.cpp:562
+#: plugins/clirarplugin/cliplugin.cpp:535
 #, kde-format
 msgid "One or more wrong checksums"
 msgstr "Une ou plusieurs sommes de contrôles sont mauvaises"
 
-#: plugins/cliunarchiverplugin/cliplugin.cpp:112
+#: plugins/cliunarchiverplugin/cliplugin.cpp:100
 #, kde-format
 msgid "Extraction failed."
 msgstr "Échec de l'extraction."
 
-#: plugins/cliunarchiverplugin/cliplugin.cpp:146
+#: plugins/cliunarchiverplugin/cliplugin.cpp:134
 #, kde-format
 msgid "Not enough memory for loading the archive."
 msgstr "Pas assez de mémoire pour charger l'archive."
 
-#: plugins/cliunarchiverplugin/cliplugin.cpp:198
+#: plugins/cliunarchiverplugin/cliplugin.cpp:185
 #, kde-format
 msgid "Wrong password."
 msgstr "Mot de passe incorrect."
 
-#: plugins/clizipplugin/cliplugin.cpp:192
+#: plugins/clizipplugin/cliplugin.cpp:181
 #, kde-format
 msgid "Extraction failed due to unsupported compression method (%1)."
 msgstr ""
 "L'extraction a échoué à cause d'une méthode de compression non prise en "
 "charge (%1)."
 
-#: plugins/clizipplugin/cliplugin.cpp:197
+#: plugins/clizipplugin/cliplugin.cpp:186
 #, kde-format
 msgid "Extraction failed due to unsupported encryption method."
 msgstr ""
 "L'extraction a échoué à cause d'une méthode de chiffrement non prise en "
 "charge."
 
-#: plugins/clizipplugin/cliplugin.cpp:325
+#: plugins/clizipplugin/cliplugin.cpp:315
 #, kde-format
 msgctxt "referred to compression method"
 msgid "unknown"
 msgstr "Inconnu"
 
-#: plugins/libarchive/libarchiveplugin.cpp:289
+#: plugins/libarchive/libarchiveplugin.cpp:123
 #, kde-format
+msgctxt "@info"
 msgid ""
-"This archive contains archive entries with absolute paths, which are not "
-"supported by Ark."
+"The archive may be corrupt or has header-encryption, which is currently not "
+"supported."
 msgstr ""
-"Cette archive contient des éléments avec des emplacements absolus, qui ne "
-"sont pas pris en charge par Ark."
+"L'archive peut être corrompue ou possède un chiffrement d'en-tête, qui n'est "
+"pas actuellement pris en charge."
 
-#: plugins/libarchive/libarchiveplugin.cpp:414
+#: plugins/libarchive/libarchiveplugin.cpp:482
 #, kde-format
 msgctxt "@info"
 msgid "Fatal error, extraction aborted."
 msgstr "Erreur fatale, abandon de l'extraction."
 
-#: plugins/libarchive/libarchiveplugin.cpp:448
+#: plugins/libarchive/libarchiveplugin.cpp:508
+#, kde-format
+msgctxt "@info"
+msgid "Extraction of encrypted 7-zip entries is currently not supported."
+msgstr ""
+"L'extraction des entrées « 7zip » chiffrées n'est actuellement pas prise en "
+"charge."
+
+#: plugins/libarchive/libarchiveplugin.cpp:522
 #, kde-format
 msgid "The archive reader could not be initialized."
 msgstr "Impossible d'initialiser le lecteur d'archives."
 
-#: plugins/libarchive/libarchiveplugin.cpp:462
+#: plugins/libarchive/libarchiveplugin.cpp:544
 #, kde-format
 msgctxt "@info"
 msgid "Archive corrupted or insufficient permissions."
 msgstr "Archive corrompue ou permissions insuffisantes."
 
-#: plugins/libarchive/readwritelibarchiveplugin.cpp:228
+#: plugins/libarchive/readwritelibarchiveplugin.cpp:217
 #, kde-format
 msgctxt "@info"
 msgid "Failed to create a temporary file for writing data."
@@ -2089,157 +2254,220 @@ msgstr ""
 "Échec lors de la création d'un fichier temporaire pour l'écriture des "
 "données."
 
-#: plugins/libarchive/readwritelibarchiveplugin.cpp:234
+#: plugins/libarchive/readwritelibarchiveplugin.cpp:223
 #, kde-format
 msgid "The archive writer could not be initialized."
 msgstr "Impossible d'initialiser l'enregistreur d'archives."
 
-#: plugins/libarchive/readwritelibarchiveplugin.cpp:252
+#: plugins/libarchive/readwritelibarchiveplugin.cpp:240
 #, kde-format
 msgctxt "@info"
 msgid "Could not open the archive for writing entries."
 msgstr "Impossible d'ouvrir l'archive en écriture."
 
-#: plugins/libarchive/readwritelibarchiveplugin.cpp:299
+#: plugins/libarchive/readwritelibarchiveplugin.cpp:287
 #, kde-format
 msgid "The compression type '%1' is not supported by Ark."
 msgstr "Le type de compression « %1 » n'est pas pris en charge par Ark."
 
-#: plugins/libarchive/readwritelibarchiveplugin.cpp:308
-#: plugins/libarchive/readwritelibarchiveplugin.cpp:362
+#: plugins/libarchive/readwritelibarchiveplugin.cpp:294
+#: plugins/libarchive/readwritelibarchiveplugin.cpp:364
+#: plugins/libarchive/readwritelibarchiveplugin.cpp:376
 #, kde-format
 msgctxt "@info"
 msgid "Could not set the compression method."
 msgstr "Impossible de définir la méthode de compression."
 
-#: plugins/libarchive/readwritelibarchiveplugin.cpp:372
+#: plugins/libarchive/readwritelibarchiveplugin.cpp:399
 #, kde-format
 msgctxt "@info"
 msgid "Could not set the compression level."
 msgstr "Impossible de définir le niveau de compression."
 
-#: plugins/libarchive/readwritelibarchiveplugin.cpp:491
+#: plugins/libarchive/readwritelibarchiveplugin.cpp:516
 #, kde-format
 msgctxt "@info"
 msgid "Could not compress entry, operation aborted."
 msgstr "Impossible de compresser l'élément, abandon de l'opération."
 
-#: plugins/libarchive/readwritelibarchiveplugin.cpp:532
+#: plugins/libarchive/readwritelibarchiveplugin.cpp:559
 #, kde-format
 msgctxt "@info Error in a message box"
 msgid "Could not compress entry."
 msgstr "Impossible de compresser l'élément."
 
-#: plugins/libsinglefileplugin/singlefileplugin.cpp:72
-#, kde-kuit-format
-msgctxt "@info"
-msgid "Ark could not extract <filename>%1</filename>."
-msgstr "Ark n'a pas pu extraire <filename>%1</filename>."
-
-#: plugins/libsinglefileplugin/singlefileplugin.cpp:84
-#, kde-kuit-format
-msgctxt "@info"
-msgid "Ark could not open <filename>%1</filename> for extraction."
-msgstr "Ark ne peut pas ouvrir <filename>%1</filename> pour extraction."
-
-#: plugins/libsinglefileplugin/singlefileplugin.cpp:98
-#, kde-kuit-format
-msgctxt "@info"
-msgid ""
-"There was an error while reading <filename>%1</filename> during extraction."
-msgstr ""
-"Une erreur est survenue pendant l'extraction, lors de la lecture de "
-"<filename>%1</filename>."
-
-#: plugins/libzipplugin/libzipplugin.cpp:89
-#: plugins/libzipplugin/libzipplugin.cpp:131
-#: plugins/libzipplugin/libzipplugin.cpp:422
-#: plugins/libzipplugin/libzipplugin.cpp:471
-#: plugins/libzipplugin/libzipplugin.cpp:562
-#: plugins/libzipplugin/libzipplugin.cpp:829
-#: plugins/libzipplugin/libzipplugin.cpp:884
+#: plugins/libzipplugin/libzipplugin.cpp:198
+#: plugins/libzipplugin/libzipplugin.cpp:297
+#: plugins/libzipplugin/libzipplugin.cpp:589
+#: plugins/libzipplugin/libzipplugin.cpp:637
+#: plugins/libzipplugin/libzipplugin.cpp:1001
+#: plugins/libzipplugin/libzipplugin.cpp:1055
 #, kde-kuit-format
 msgid "Failed to open archive: %1"
 msgstr "Impossible d'ouvrir l'archive : %1"
 
-#: plugins/libzipplugin/libzipplugin.cpp:187
-#: plugins/libzipplugin/libzipplugin.cpp:455
-#: plugins/libzipplugin/libzipplugin.cpp:487
-#: plugins/libzipplugin/libzipplugin.cpp:864
-#: plugins/libzipplugin/libzipplugin.cpp:951
+#: plugins/libzipplugin/libzipplugin.cpp:350
+#: plugins/libzipplugin/libzipplugin.cpp:621
+#: plugins/libzipplugin/libzipplugin.cpp:653
+#: plugins/libzipplugin/libzipplugin.cpp:1035
+#: plugins/libzipplugin/libzipplugin.cpp:1124
 #, kde-kuit-format
 msgid "Failed to write archive."
 msgstr "Impossible d'écrire dans l'archive."
 
-#: plugins/libzipplugin/libzipplugin.cpp:232
-#: plugins/libzipplugin/libzipplugin.cpp:921
+#: plugins/libzipplugin/libzipplugin.cpp:399
+#: plugins/libzipplugin/libzipplugin.cpp:1091
 #, kde-kuit-format
 msgid "Failed to add entry: %1"
 msgstr "Impossible d'ajouter l'entrée : %1"
 
-#: plugins/libzipplugin/libzipplugin.cpp:287
+#: plugins/libzipplugin/libzipplugin.cpp:454
 #, kde-kuit-format
 msgid "Failed to set compression options for entry: %1"
 msgstr "Impossible de définir les options de compression pour l'entrée : %1"
 
-#: plugins/libzipplugin/libzipplugin.cpp:392
-#: plugins/libzipplugin/libzipplugin.cpp:783
-#: plugins/libzipplugin/libzipplugin.cpp:930
+#: plugins/libzipplugin/libzipplugin.cpp:559
+#: plugins/libzipplugin/libzipplugin.cpp:935
+#: plugins/libzipplugin/libzipplugin.cpp:1100
 #, kde-kuit-format
 msgid "Failed to read metadata for entry: %1"
 msgstr "Impossible de lire les métadonnées pour l'entrée : %1"
 
-#: plugins/libzipplugin/libzipplugin.cpp:436
-#: plugins/libzipplugin/libzipplugin.cpp:441
+#: plugins/libzipplugin/libzipplugin.cpp:602
+#: plugins/libzipplugin/libzipplugin.cpp:607
 #, kde-kuit-format
 msgid "Failed to delete entry: %1"
 msgstr "Impossible de supprimer l'entrée : %1"
 
-#: plugins/libzipplugin/libzipplugin.cpp:666
+#: plugins/libzipplugin/libzipplugin.cpp:820
 #, kde-kuit-format
 msgid "Failed to create directory: %1"
 msgstr "Impossible de créer le dossier : %1"
 
-#: plugins/libzipplugin/libzipplugin.cpp:739
+#: plugins/libzipplugin/libzipplugin.cpp:891
 #, kde-kuit-format
 msgid "Failed to open '%1':<nl/>%2"
 msgstr "Impossible d'ouvrir « %1 » :<nl/>%2"
 
-#: plugins/libzipplugin/libzipplugin.cpp:747
+#: plugins/libzipplugin/libzipplugin.cpp:899
 #, kde-kuit-format
 msgid "Failed to open file for writing: %1"
 msgstr "Impossible d'ouvrir le fichier en l'écriture : %1"
 
-#: plugins/libzipplugin/libzipplugin.cpp:760
+#: plugins/libzipplugin/libzipplugin.cpp:912
 #, kde-kuit-format
 msgid "Failed to read data for entry: %1"
 msgstr "Impossible de lire les données pour l'entrée : %1"
 
-#: plugins/libzipplugin/libzipplugin.cpp:765
+#: plugins/libzipplugin/libzipplugin.cpp:917
 #, kde-kuit-format
 msgid "Failed to write data for entry: %1"
 msgstr "Impossible d'écrire les données pour l'entrée : %1"
 
-#: plugins/libzipplugin/libzipplugin.cpp:775
+#: plugins/libzipplugin/libzipplugin.cpp:927
 #, kde-kuit-format
 msgid "Failed to locate entry: %1"
 msgstr "Impossible de trouver l'entrée : %1"
 
-#: plugins/libzipplugin/libzipplugin.cpp:843
-#: plugins/libzipplugin/libzipplugin.cpp:849
+#: plugins/libzipplugin/libzipplugin.cpp:1014
+#: plugins/libzipplugin/libzipplugin.cpp:1020
 #, kde-kuit-format
 msgid "Failed to move entry: %1"
 msgstr "Impossible de déplacer l'entrée : %1"
 
-#: plugins/libzipplugin/libzipplugin.cpp:907
+#: plugins/libzipplugin/libzipplugin.cpp:1077
 #, kde-kuit-format
 msgid "Failed to copy entry: %1"
 msgstr "Impossible de copier l'entrée : %1"
 
-#: plugins/libzipplugin/libzipplugin.cpp:937
+#: plugins/libzipplugin/libzipplugin.cpp:1107
 #, kde-kuit-format
 msgid "Failed to set metadata for entry: %1"
 msgstr "Impossible de définir les métadonnées pour l'entrée : %1"
+
+#~ msgctxt ""
+#~ "@action:inmenu Part of Compress submenu in Dolphin context menu, %1 "
+#~ "filename"
+#~ msgid "Here as \"%1\""
+#~ msgstr "Ici comme « %1 »"
+
+#~ msgctxt "@action:inmenu Part of Extract submenu in Dolphin context menu"
+#~ msgid "Extract archive to..."
+#~ msgstr "Extraire l'archive vers..."
+
+#~ msgctxt "@action:inmenu Part of Extract submenu in Dolphin context menu"
+#~ msgid "Extract archive here"
+#~ msgstr "Extraire l'archive ici"
+
+#~ msgctxt "@action:inmenu Part of Extract submenu in Dolphin context menu"
+#~ msgid "Extract archive here, autodetect subfolder"
+#~ msgstr "Extraire l'archive ici, détecter le sous-dossier"
+
+#~ msgid "Form"
+#~ msgstr "Formulaire"
+
+#~ msgid "Create New Archive..."
+#~ msgstr "Créer une nouvelle archive..."
+
+#~ msgctxt "@info"
+#~ msgid "Ark could not extract <filename>%1</filename>."
+#~ msgstr "Ark n'a pas pu extraire <filename>%1</filename>."
+
+#~ msgctxt "@info"
+#~ msgid "Ark could not open <filename>%1</filename> for extraction."
+#~ msgstr "Ark ne peut pas ouvrir <filename>%1</filename> pour extraction."
+
+#~ msgctxt "@info"
+#~ msgid ""
+#~ "There was an error while reading <filename>%1</filename> during "
+#~ "extraction."
+#~ msgstr ""
+#~ "Une erreur est survenue pendant l'extraction, lors de la lecture de "
+#~ "<filename>%1</filename>."
+
+#~ msgid ""
+#~ "Internal config version of Ark, mainly used to determine whether an "
+#~ "updated version of Ark is running, so as to migrate config entries that "
+#~ "were removed/renamed ...etc"
+#~ msgstr ""
+#~ "Version interne de la configuration d'Ark, principalement utilisée pour "
+#~ "déterminer si une version mise à jour d'Ark est en cours d'exécution. "
+#~ "Cela permet de migrer les entrées de configuration ayant été supprimées / "
+#~ "renommées, etc."
+
+#~ msgctxt "open a file with external program"
+#~ msgid "&Open"
+#~ msgstr "&Ouvrir"
+
+#~ msgctxt "@info:tooltip"
+#~ msgid "Click to open the selected file with the associated application"
+#~ msgstr ""
+#~ "Cliquez pour ouvrir le fichier sélectionné avec l'application associée"
+
+#~ msgctxt "Uncompressed size of a file inside an archive"
+#~ msgid "Size"
+#~ msgstr "Taille"
+
+#~ msgctxt "@action:inmenu Part of Compress submenu in Dolphin context menu"
+#~ msgid "Here (as TAR.GZ)"
+#~ msgstr "Ici (en tar.gz)"
+
+#~ msgctxt ""
+#~ "@action:inmenu Part of Compress submenu in Dolphin context menu, %1 "
+#~ "filename"
+#~ msgid "Here (to \"%1.tar.gz\")"
+#~ msgstr "Ici (Vers « %1.tar.gz »)"
+
+#~ msgctxt "@action:inmenu Part of Compress submenu in Dolphin context menu"
+#~ msgid "Here (as ZIP)"
+#~ msgstr "Ici (en zip)"
+
+#~ msgid ""
+#~ "This archive contains archive entries with absolute paths, which are not "
+#~ "supported by Ark."
+#~ msgstr ""
+#~ "Cette archive contient des éléments avec des emplacements absolus, qui ne "
+#~ "sont pas pris en charge par Ark."
 
 #~ msgctxt "action, to open an archive"
 #~ msgid "Open"
@@ -2537,10 +2765,6 @@ msgstr "Impossible de définir les métadonnées pour l'entrée : %1"
 #~ "Impossible de trouver le fichier <filename>%1</filename> dans l'archive"
 
 #~ msgctxt "@info"
-#~ msgid "Error creating directory <filename>%1</filename>"
-#~ msgstr "Erreur lors de la création du dossier <filename>%1</filename>"
-
-#~ msgctxt "@info"
 #~ msgid "Could not open the archive <filename>%1</filename> for writing."
 #~ msgstr "Impossible d'ouvrir l'archive <filename>%1</filename> en écriture."
 
@@ -2671,9 +2895,6 @@ msgstr "Impossible de définir les métadonnées pour l'entrée : %1"
 #~ msgid "Unable to open the file '%1', libarchive cannot handle it."
 #~ msgstr ""
 #~ "Impossible d'ouvrir le fichier « %1 », libarchive ne peut pas le gérer."
-
-#~ msgid "Recent folders"
-#~ msgstr "Dossiers récents"
 
 #~ msgid "Operation finished."
 #~ msgstr "L'opération est terminée."

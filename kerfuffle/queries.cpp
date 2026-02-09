@@ -1,42 +1,23 @@
 /*
- * ark -- archiver for the KDE project
- *
- * Copyright (C) 2008-2009 Harald Hvaal <haraldhv@stud.ntnu.no>
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES ( INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION ) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * ( INCLUDING NEGLIGENCE OR OTHERWISE ) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+    SPDX-FileCopyrightText: 2008-2009 Harald Hvaal <haraldhv@stud.ntnu.no>
+
+    SPDX-License-Identifier: BSD-2-Clause
+*/
 
 #include "queries.h"
 #include "ark_debug.h"
 
+#include <KIO/RenameDialog>
 #include <KLocalizedString>
 #include <KMessageBox>
 #include <KPasswordDialog>
-#include <KIO/RenameDialog>
+#include <KPasswordLineEdit>
 
 #include <QApplication>
 #include <QDir>
 #include <QMessageBox>
 #include <QPointer>
+#include <QPushButton>
 #include <QUrl>
 
 namespace Kerfuffle
@@ -47,13 +28,13 @@ Query::Query()
 
 QVariant Query::response() const
 {
-    return m_data.value(QStringLiteral( "response" ));
+    return m_data.value(QStringLiteral("response"));
 }
 
 void Query::waitForResponse()
 {
     QMutexLocker locker(&m_responseMutex);
-    //if there is no response set yet, wait
+    // if there is no response set yet, wait
     if (!m_data.contains(QLatin1String("response"))) {
         m_responseCondition.wait(&m_responseMutex);
     }
@@ -61,13 +42,13 @@ void Query::waitForResponse()
 
 void Query::setResponse(const QVariant &response)
 {
-    m_data[QStringLiteral( "response" )] = response;
+    m_data[QStringLiteral("response")] = response;
     m_responseCondition.wakeAll();
 }
 
-OverwriteQuery::OverwriteQuery(const QString &filename) :
-        m_noRenameMode(false),
-        m_multiMode(true)
+OverwriteQuery::OverwriteQuery(const QString &filename)
+    : m_noRenameMode(false)
+    , m_multiMode(true)
 {
     m_data[QStringLiteral("filename")] = filename;
 }
@@ -86,15 +67,10 @@ void OverwriteQuery::execute()
         options = options | KIO::RenameDialog_MultipleItems;
     }
 
-    QUrl sourceUrl = QUrl::fromLocalFile(QDir::cleanPath(m_data.value(QStringLiteral("filename")).toString()));
     QUrl destUrl = QUrl::fromLocalFile(QDir::cleanPath(m_data.value(QStringLiteral("filename")).toString()));
+    const QUrl sourceUrl = QUrl(QStringLiteral("ark://%1").arg(destUrl.fileName()));
 
-    QPointer<KIO::RenameDialog> dialog = new KIO::RenameDialog(
-        nullptr,
-        i18nc("@title:window", "File Already Exists"),
-        sourceUrl,
-        destUrl,
-        options);
+    QPointer<KIO::RenameDialog> dialog = new KIO::RenameDialog(nullptr, i18nc("@title:window", "File Already Exists"), sourceUrl, destUrl, options);
     dialog.data()->exec();
 
     m_data[QStringLiteral("newFilename")] = dialog.data()->newDestUrl().toDisplayString(QUrl::PreferLocalFile);
@@ -108,35 +84,35 @@ void OverwriteQuery::execute()
 
 bool OverwriteQuery::responseCancelled()
 {
-    return m_data.value(QStringLiteral( "response" )).toInt() == KIO::Result_Cancel;
+    return m_data.value(QStringLiteral("response")).toInt() == KIO::Result_Cancel;
 }
 bool OverwriteQuery::responseOverwriteAll()
 {
-    return m_data.value(QStringLiteral( "response" )).toInt() == KIO::Result_OverwriteAll;
+    return m_data.value(QStringLiteral("response")).toInt() == KIO::Result_OverwriteAll;
 }
 bool OverwriteQuery::responseOverwrite()
 {
-    return m_data.value(QStringLiteral( "response" )).toInt() == KIO::Result_Overwrite;
+    return m_data.value(QStringLiteral("response")).toInt() == KIO::Result_Overwrite;
 }
 
 bool OverwriteQuery::responseRename()
 {
-    return m_data.value(QStringLiteral( "response" )).toInt() == KIO::Result_Rename;
+    return m_data.value(QStringLiteral("response")).toInt() == KIO::Result_Rename;
 }
 
 bool OverwriteQuery::responseSkip()
 {
-    return m_data.value(QStringLiteral( "response" )).toInt() == KIO::Result_Skip;
+    return m_data.value(QStringLiteral("response")).toInt() == KIO::Result_Skip;
 }
 
 bool OverwriteQuery::responseAutoSkip()
 {
-    return m_data.value(QStringLiteral( "response" )).toInt() == KIO::Result_AutoSkip;
+    return m_data.value(QStringLiteral("response")).toInt() == KIO::Result_AutoSkip;
 }
 
 QString OverwriteQuery::newFilename()
 {
-    return m_data.value(QStringLiteral( "newFilename" )).toString();
+    return m_data.value(QStringLiteral("newFilename")).toString();
 }
 
 void OverwriteQuery::setNoRenameMode(bool enableNoRenameMode)
@@ -159,22 +135,38 @@ bool OverwriteQuery::multiMode()
     return m_multiMode;
 }
 
-PasswordNeededQuery::PasswordNeededQuery(const QString& archiveFilename, bool incorrectTryAgain)
+PasswordNeededQuery::PasswordNeededQuery(const QString &archiveFilename, bool incorrectTryAgain)
 {
-    m_data[QStringLiteral( "archiveFilename" )] = archiveFilename;
-    m_data[QStringLiteral( "incorrectTryAgain" )] = incorrectTryAgain;
+    m_data[QStringLiteral("archiveFilename")] = archiveFilename;
+    m_data[QStringLiteral("incorrectTryAgain")] = incorrectTryAgain;
 }
 
 void PasswordNeededQuery::execute()
 {
-    qCDebug(ARK) << "Executing password prompt";
+    qCDebug(ARK_LOG) << "Executing password prompt";
 
     // If we are being called from the KPart, the cursor is probably Qt::WaitCursor
     // at the moment (#231974)
     QApplication::setOverrideCursor(QCursor(Qt::ArrowCursor));
 
     QPointer<KPasswordDialog> dlg = new KPasswordDialog;
-    dlg.data()->setPrompt(xi18nc("@info", "The archive <filename>%1</filename> is password protected. Please enter the password.",
+
+    // Disabling Ok button on dialog open
+    dlg.data()->buttonBox()->button(QDialogButtonBox::Ok)->setEnabled(false);
+
+    auto linePassword = dlg.data()->findChild<KPasswordLineEdit *>(QStringLiteral("passEdit"));
+
+    // If password is non empty, enable submit button
+    QObject::connect(linePassword->lineEdit(), &QLineEdit::textChanged, linePassword->lineEdit(), [=] {
+        if (linePassword->lineEdit()->text().isEmpty()) {
+            dlg.data()->buttonBox()->button(QDialogButtonBox::Ok)->setEnabled(false);
+        } else {
+            dlg.data()->buttonBox()->button(QDialogButtonBox::Ok)->setEnabled(true);
+        }
+    });
+
+    dlg.data()->setPrompt(xi18nc("@info",
+                                 "The archive <filename>%1</filename> is password protected. Please enter the password.",
                                  m_data.value(QStringLiteral("archiveFilename")).toString()));
 
     if (m_data.value(QStringLiteral("incorrectTryAgain")).toBool()) {
@@ -194,38 +186,40 @@ void PasswordNeededQuery::execute()
 
 QString PasswordNeededQuery::password()
 {
-    return m_data.value(QStringLiteral( "password" )).toString();
+    return m_data.value(QStringLiteral("password")).toString();
 }
 
 bool PasswordNeededQuery::responseCancelled()
 {
-    return !m_data.value(QStringLiteral( "response" )).toBool();
+    return !m_data.value(QStringLiteral("response")).toBool();
 }
 
-LoadCorruptQuery::LoadCorruptQuery(const QString& archiveFilename)
+LoadCorruptQuery::LoadCorruptQuery(const QString &archiveFilename)
 {
     m_data[QStringLiteral("archiveFilename")] = archiveFilename;
 }
 
 void LoadCorruptQuery::execute()
 {
-    qCDebug(ARK) << "Executing prompt";
+    qCDebug(ARK_LOG) << "Executing prompt";
     QApplication::setOverrideCursor(QCursor(Qt::ArrowCursor));
 
-    setResponse(KMessageBox::warningYesNo(nullptr,
-                                          xi18nc("@info", "The archive you're trying to open is corrupt.<nl/>"
-                                                 "Some files may be missing or damaged."),
-                                          i18nc("@title:window", "Corrupt archive"),
-                                          KGuiItem(i18nc("@action:button", "Open as Read-Only")),
-                                          KGuiItem(i18nc("@action:button", "Don't Open"))));
+    setResponse(KMessageBox::warningTwoActions(nullptr,
+                                               xi18nc("@info",
+                                                      "The archive you're trying to open is corrupt.<nl/>"
+                                                      "Some files may be missing or damaged."),
+                                               i18nc("@title:window", "Corrupt archive"),
+                                               KGuiItem(i18nc("@action:button", "Open as Read-Only")),
+                                               KGuiItem(i18nc("@action:button", "Don't Open"))));
     QApplication::restoreOverrideCursor();
 }
 
-bool LoadCorruptQuery::responseYes() {
-    return (m_data.value(QStringLiteral("response")).toInt() == KMessageBox::Yes);
+bool LoadCorruptQuery::responseYes()
+{
+    return (m_data.value(QStringLiteral("response")).toInt() == KMessageBox::PrimaryAction);
 }
 
-ContinueExtractionQuery::ContinueExtractionQuery(const QString& error, const QString& archiveEntry)
+ContinueExtractionQuery::ContinueExtractionQuery(const QString &error, const QString &archiveEntry)
     : m_chkDontAskAgain(i18n("Don't ask again."))
 {
     m_data[QStringLiteral("error")] = error;
@@ -234,7 +228,7 @@ ContinueExtractionQuery::ContinueExtractionQuery(const QString& error, const QSt
 
 void ContinueExtractionQuery::execute()
 {
-    qCDebug(ARK) << "Executing prompt";
+    qCDebug(ARK_LOG) << "Executing prompt";
     QApplication::setOverrideCursor(QCursor(Qt::ArrowCursor));
 
     QMessageBox box(QMessageBox::Warning,
@@ -242,19 +236,22 @@ void ContinueExtractionQuery::execute()
                     xi18n("Extraction of the entry:<nl/>"
                           "    <filename>%1</filename><nl/>"
                           "failed with the error message:<nl/>    %2<nl/><nl/>"
-                          "Do you want to continue extraction?<nl/>", m_data.value(QStringLiteral("archiveEntry")).toString(),
+                          "Do you want to continue extraction?<nl/>",
+                          m_data.value(QStringLiteral("archiveEntry")).toString(),
                           m_data.value(QStringLiteral("error")).toString()),
-                    QMessageBox::Yes|QMessageBox::Cancel);
+                    QMessageBox::Yes | QMessageBox::Cancel);
     box.setCheckBox(&m_chkDontAskAgain);
     setResponse(box.exec());
     QApplication::restoreOverrideCursor();
 }
 
-bool ContinueExtractionQuery::responseCancelled() {
+bool ContinueExtractionQuery::responseCancelled()
+{
     return (m_data.value(QStringLiteral("response")).toInt() == QMessageBox::Cancel);
 }
 
-bool ContinueExtractionQuery::dontAskAgain() {
+bool ContinueExtractionQuery::dontAskAgain()
+{
     return m_chkDontAskAgain.isChecked();
 }
 

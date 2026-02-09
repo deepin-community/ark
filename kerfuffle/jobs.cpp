@@ -1,30 +1,11 @@
 /*
- * Copyright (c) 2007 Henrique Pinto <henrique.pinto@kdemail.net>
- * Copyright (c) 2008-2009 Harald Hvaal <haraldhv@stud.ntnu.no>
- * Copyright (c) 2009-2012 Raphael Kubo da Costa <rakuco@FreeBSD.org>
- * Copyright (c) 2016 Vladyslav Batyrenko <mvlabat@gmail.com>
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES ( INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION ) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * ( INCLUDING NEGLIGENCE OR OTHERWISE ) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+    SPDX-FileCopyrightText: 2007 Henrique Pinto <henrique.pinto@kdemail.net>
+    SPDX-FileCopyrightText: 2008-2009 Harald Hvaal <haraldhv@stud.ntnu.no>
+    SPDX-FileCopyrightText: 2009-2012 Raphael Kubo da Costa <rakuco@FreeBSD.org>
+    SPDX-FileCopyrightText: 2016 Vladyslav Batyrenko <mvlabat@gmail.com>
+
+    SPDX-License-Identifier: BSD-2-Clause
+*/
 
 #include "jobs.h"
 #include "ark_debug.h"
@@ -32,6 +13,7 @@
 #include <QDir>
 #include <QDirIterator>
 #include <QFileInfo>
+#include <QStorageInfo>
 #include <QThread>
 #include <QTimer>
 #include <QUrl>
@@ -41,7 +23,6 @@
 
 namespace Kerfuffle
 {
-
 class Job::Private : public QThread
 {
     Q_OBJECT
@@ -75,11 +56,13 @@ Job::Job(Archive *archive, ReadOnlyArchiveInterface *interface)
 
 Job::Job(Archive *archive)
     : Job(archive, nullptr)
-{}
+{
+}
 
 Job::Job(ReadOnlyArchiveInterface *interface)
     : Job(nullptr, interface)
-{}
+{
+}
 
 Job::~Job()
 {
@@ -131,7 +114,7 @@ void Job::start()
 
     // We have an archive but it's not valid, nothing to do.
     if (archive() && !archive()->isValid()) {
-        QTimer::singleShot(0, this, [=]() {
+        QTimer::singleShot(0, this, [this]() {
             onFinished(false);
         });
         return;
@@ -156,7 +139,7 @@ void Job::connectToArchiveInterfaceSignals()
     connect(archiveInterface(), &ReadOnlyArchiveInterface::finished, this, &Job::onFinished);
     connect(archiveInterface(), &ReadOnlyArchiveInterface::userQuery, this, &Job::onUserQuery);
 
-    auto readWriteInterface = qobject_cast<ReadWriteArchiveInterface*>(archiveInterface());
+    auto readWriteInterface = qobject_cast<ReadWriteArchiveInterface *>(archiveInterface());
     if (readWriteInterface) {
         connect(readWriteInterface, &ReadWriteArchiveInterface::entryRemoved, this, &Job::onEntryRemoved);
     }
@@ -164,15 +147,15 @@ void Job::connectToArchiveInterfaceSignals()
 
 void Job::onCancelled()
 {
-    qCDebug(ARK) << "Cancelled emitted";
+    qCDebug(ARK_LOG) << "Cancelled emitted";
     setError(KJob::KilledJobError);
 }
 
-void Job::onError(const QString & message, const QString & details, int errorCode)
+void Job::onError(const QString &message, const QString &details, int errorCode)
 {
     Q_UNUSED(details)
 
-    qCDebug(ARK) << "Error emitted:" << errorCode << "-" << message;
+    qCDebug(ARK_LOG) << "Error emitted:" << errorCode << "-" << message;
     setError(errorCode);
     setErrorText(message);
 }
@@ -180,9 +163,12 @@ void Job::onError(const QString & message, const QString & details, int errorCod
 void Job::onEntry(Archive::Entry *entry)
 {
     const QString entryFullPath = entry->fullPath();
-    if (QDir::cleanPath(entryFullPath).contains(QLatin1String("../"))) {
-        qCWarning(ARK) << "Possibly malicious archive. Detected entry that could lead to a directory traversal attack:" << entryFullPath;
-        onError(i18n("Could not load the archive because it contains ill-formed entries and might be a malicious archive."), QString(), Kerfuffle::PossiblyMaliciousArchiveError);
+    const QString cleanEntryFullPath = QDir::cleanPath(entryFullPath);
+    if (cleanEntryFullPath.startsWith(QLatin1String("../")) || cleanEntryFullPath.contains(QLatin1String("/../"))) {
+        qCWarning(ARK_LOG) << "Possibly malicious archive. Detected entry that could lead to a directory traversal attack:" << entryFullPath;
+        onError(i18n("Could not load the archive because it contains ill-formed entries and might be a malicious archive."),
+                QString(),
+                Kerfuffle::PossiblyMaliciousArchiveError);
         onFinished(false);
         return;
     }
@@ -192,22 +178,22 @@ void Job::onEntry(Archive::Entry *entry)
 
 void Job::onProgress(double value)
 {
-    setPercent(static_cast<unsigned long>(100.0*value));
+    setPercent(static_cast<unsigned long>(100.0 * value));
 }
 
-void Job::onInfo(const QString& info)
+void Job::onInfo(const QString &info)
 {
     Q_EMIT infoMessage(this, info);
 }
 
-void Job::onEntryRemoved(const QString & path)
+void Job::onEntryRemoved(const QString &path)
 {
     Q_EMIT entryRemoved(path);
 }
 
 void Job::onFinished(bool result)
 {
-    qCDebug(ARK) << "Job finished, result:" << result << ", time:" << jobTimer.elapsed() << "ms";
+    qCDebug(ARK_LOG) << "Job finished, result:" << result << ", time:" << jobTimer.elapsed() << "ms";
 
     if (archive() && !archive()->isValid()) {
         setError(KJob::UserDefinedError);
@@ -221,7 +207,7 @@ void Job::onFinished(bool result)
 void Job::onUserQuery(Query *query)
 {
     if (archiveInterface()->waitForFinishedSignal()) {
-        qCWarning(ARK) << "Plugins run from the main thread should call directly query->execute()";
+        qCWarning(ARK_LOG) << "Plugins run from the main thread should call directly query->execute()";
     }
 
     Q_EMIT userQuery(query);
@@ -235,7 +221,7 @@ bool Job::doKill()
     }
 
     if (d->isRunning()) {
-        qCDebug(ARK) << "Requesting graceful thread interruption, will abort in one second otherwise.";
+        qCDebug(ARK_LOG) << "Requesting graceful thread interruption, will abort in one second otherwise.";
         d->requestInterruption();
         d->wait(1000);
     }
@@ -251,17 +237,21 @@ LoadJob::LoadJob(Archive *archive, ReadOnlyArchiveInterface *interface)
     , m_dirCount(0)
     , m_filesCount(0)
 {
-    qCDebug(ARK) << "Created job instance";
+    // Don't show "finished" notification when finished
+    setProperty("transientProgressReporting", true);
+    qCDebug(ARK_LOG) << "Created job instance";
     connect(this, &LoadJob::newEntry, this, &LoadJob::onNewEntry);
 }
 
 LoadJob::LoadJob(Archive *archive)
     : LoadJob(archive, nullptr)
-{}
+{
+}
 
 LoadJob::LoadJob(ReadOnlyArchiveInterface *interface)
     : LoadJob(nullptr, interface)
-{}
+{
+}
 
 void LoadJob::doWork()
 {
@@ -273,7 +263,7 @@ void LoadJob::doWork()
     if (!archiveInterface()->waitForFinishedSignal()) {
         // onFinished() needs to be called after onNewEntry(), because the former reads members set in the latter.
         // So we need to put it in the event queue, just like the single-thread case does by emitting finished().
-        QTimer::singleShot(0, this, [=]() {
+        QTimer::singleShot(0, this, [this, ret]() {
             onFinished(ret);
         });
     }
@@ -287,7 +277,7 @@ void LoadJob::onFinished(bool result)
         const auto name = subfolderName().isEmpty() ? archive()->completeBaseName() : subfolderName();
         archive()->setProperty("subfolderName", name);
         if (isPasswordProtected()) {
-            archive()->setProperty("encryptionType",  archive()->password().isEmpty() ? Archive::Encrypted : Archive::HeaderEncrypted);
+            archive()->setProperty("encryptionType", archive()->password().isEmpty() ? Archive::Encrypted : Archive::HeaderEncrypted);
         }
     }
 
@@ -315,7 +305,7 @@ bool LoadJob::isSingleFolderArchive() const
 
 void LoadJob::onNewEntry(const Archive::Entry *entry)
 {
-    m_extractedFilesSize += entry->property("size").toLongLong();
+    m_extractedFilesSize += entry->isSparse() ? entry->sparseSize() : entry->property("size").toLongLong();
     m_isPasswordProtected |= entry->property("isPasswordProtected").toBool();
 
     if (entry->isDir()) {
@@ -362,7 +352,7 @@ BatchExtractJob::BatchExtractJob(LoadJob *loadJob, const QString &destination, b
     , m_autoSubfolder(autoSubfolder)
     , m_preservePaths(preservePaths)
 {
-    qCDebug(ARK) << "Created job instance";
+    qCDebug(ARK_LOG) << "Created job instance";
 }
 
 void BatchExtractJob::doWork()
@@ -393,14 +383,14 @@ bool BatchExtractJob::doKill()
 void BatchExtractJob::slotLoadingProgress(double progress)
 {
     // Progress from LoadJob counts only for 50% of the BatchExtractJob's duration.
-    m_lastPercentage = static_cast<unsigned long>(50.0*progress);
+    m_lastPercentage = static_cast<unsigned long>(50.0 * progress);
     setPercent(m_lastPercentage);
 }
 
 void BatchExtractJob::slotExtractProgress(double progress)
 {
     // The 2nd 50% of the BatchExtractJob's duration comes from the ExtractJob.
-    setPercent(m_lastPercentage + static_cast<unsigned long>(50.0*progress));
+    setPercent(m_lastPercentage + static_cast<unsigned long>(50.0 * progress));
 }
 
 void BatchExtractJob::slotLoadingFinished(KJob *job)
@@ -408,6 +398,16 @@ void BatchExtractJob::slotLoadingFinished(KJob *job)
     if (job->error()) {
         // Forward errors as well.
         onError(job->errorString(), QString(), job->error());
+        onFinished(false);
+        return;
+    }
+
+    // Block extraction if there's no space on the device.
+    // Probably we need to take into account a small delta too,
+    // so, free space + 1% just for the sake of it.
+    QStorageInfo destinationStorage(m_destination);
+    if (m_loadJob->extractedFilesSize() * 1.01 > destinationStorage.bytesAvailable()) {
+        onError(xi18n("No space available on device <filename>%1</filename>", m_destination), QString(), Kerfuffle::DestinationNotWritableError);
         onFinished(false);
         return;
     }
@@ -437,8 +437,7 @@ void BatchExtractJob::slotLoadingFinished(KJob *job)
 
 void BatchExtractJob::setupDestination()
 {
-    const bool isSingleFolderRPM = (archive()->isSingleFolder() &&
-                                   (archive()->mimeType().name() == QLatin1String("application/x-rpm")));
+    const bool isSingleFolderRPM = (archive()->isSingleFolder() && (archive()->mimeType().name() == QLatin1String("application/x-rpm")));
 
     if (m_autoSubfolder && (archive()->hasMultipleTopLevelEntries() || isSingleFolderRPM)) {
         const QDir d(m_destination);
@@ -447,26 +446,32 @@ void BatchExtractJob::setupDestination()
         // Special case for single folder RPM archives.
         // We don't want the autodetected folder to have a meaningless "usr" name.
         if (isSingleFolderRPM && subfolderName == QLatin1String("usr")) {
-            qCDebug(ARK) << "Detected single folder RPM archive. Using archive basename as subfolder name";
+            qCDebug(ARK_LOG) << "Detected single folder RPM archive. Using archive basename as subfolder name";
             subfolderName = QFileInfo(archive()->fileName()).completeBaseName();
         }
 
         if (d.exists(subfolderName)) {
-            subfolderName = KFileUtils::suggestName(QUrl::fromUserInput(m_destination, QString(), QUrl::AssumeLocalFile), subfolderName);
+            subfolderName = KFileUtils::suggestName(QUrl::fromUserInput(m_destination, QDir::currentPath(), QUrl::AssumeLocalFile), subfolderName);
         }
 
         d.mkdir(subfolderName);
 
-        m_destination += QLatin1Char( '/' ) + subfolderName;
+        m_destination += QLatin1Char('/') + subfolderName;
     }
 }
 
-CreateJob::CreateJob(Archive *archive, const QVector<Archive::Entry*> &entries, const CompressionOptions &options)
+CreateJob::CreateJob(Archive *archive, const QList<Archive::Entry *> &entries, const CompressionOptions &options)
     : Job(archive)
     , m_entries(entries)
     , m_options(options)
 {
-    qCDebug(ARK) << "Created job instance";
+    qCDebug(ARK_LOG) << "Created job instance";
+    setTotalAmount(Files, 1);
+}
+
+CreateJob::~CreateJob()
+{
+    delete m_addJob;
 }
 
 void CreateJob::enableEncryption(const QString &password, bool encryptHeader)
@@ -487,12 +492,14 @@ void CreateJob::doWork()
 
     if (m_addJob) {
         connect(m_addJob, &KJob::result, this, &CreateJob::emitResult);
-        // as autoDelete doesn't work for jobs outside of a QEventLoop
-        connect(m_addJob, &KJob::finished, this, [this] {delete m_addJob;});
-        // Forward description signal from AddJob, we need to change the first argument ('this' needs to be a CreateJob).
-        connect(m_addJob, &KJob::description, this, [=](KJob *, const QString &title, const QPair<QString,QString> &field1, const QPair<QString,QString> &) {
-            Q_EMIT description(this, title, field1);
-        });
+        // Forward description signal from AddJob, we need to change the first
+        // argument ('this' needs to be a CreateJob).
+        connect(m_addJob,
+                &KJob::description,
+                this,
+                [this](KJob *, const QString &title, const QPair<QString, QString> &field1, const QPair<QString, QString> &) {
+                    Q_EMIT description(this, title, field1);
+                });
 
         m_addJob->start();
     } else {
@@ -502,43 +509,80 @@ void CreateJob::doWork()
 
 bool CreateJob::doKill()
 {
-    return m_addJob && m_addJob->kill();
+    bool killed = false;
+    if (m_addJob) {
+        killed = m_addJob->kill();
+
+        if (killed) {
+            // remove leftover archive if needed
+            auto archiveFile = QFile(archive()->fileName());
+            if (archiveFile.exists()) {
+                archiveFile.remove();
+            }
+        }
+    }
+
+    return killed;
 }
 
-ExtractJob::ExtractJob(const QVector<Archive::Entry*> &entries, const QString &destinationDir, ExtractionOptions options, ReadOnlyArchiveInterface *interface)
+ExtractJob::ExtractJob(const QList<Archive::Entry *> &entries, const QString &destinationDir, ExtractionOptions options, ReadOnlyArchiveInterface *interface)
     : Job(interface)
     , m_entries(entries)
     , m_destinationDir(destinationDir)
     , m_options(options)
 {
-    qCDebug(ARK) << "Created job instance";
+    qCDebug(ARK_LOG) << "Created job instance";
     // Magic property that tells the job tracker the job's destination
     setProperty("destUrl", QUrl::fromLocalFile(destinationDir).toString());
 }
 
 void ExtractJob::doWork()
 {
+    const bool extractingAll = m_entries.empty();
+
     QString desc;
-    if (m_entries.count() == 0) {
+    if (extractingAll) {
         desc = i18n("Extracting all files");
     } else {
         desc = i18np("Extracting one file", "Extracting %1 files", m_entries.count());
     }
-    Q_EMIT description(this, desc, qMakePair(i18n("Archive"), archiveInterface()->filename()), qMakePair(i18nc("extraction folder", "Destination"), m_destinationDir));
+    Q_EMIT description(this,
+                       desc,
+                       qMakePair(i18n("Archive"), archiveInterface()->filename()),
+                       qMakePair(i18nc("extraction folder", "Destination"), m_destinationDir));
 
     QFileInfo destDirInfo(m_destinationDir);
     if (destDirInfo.isDir() && (!destDirInfo.isWritable() || !destDirInfo.isExecutable())) {
-        onError(xi18n("Could not write to destination <filename>%1</filename>.<nl/>Check whether you have sufficient permissions.", m_destinationDir), QString(), Kerfuffle::DestinationNotWritableError);
+        onError(xi18n("Could not write to destination <filename>%1</filename>.<nl/>Check whether you have sufficient permissions.", m_destinationDir),
+                QString(),
+                Kerfuffle::DestinationNotWritableError);
         onFinished(false);
         return;
     }
 
     connectToArchiveInterfaceSignals();
 
-    qCDebug(ARK) << "Starting extraction with" << m_entries.count() << "selected files."
-             << m_entries
-             << "Destination dir:" << m_destinationDir
-             << "Options:" << m_options;
+    qCDebug(ARK_LOG) << "Starting extraction with" << m_entries.count() << "selected files." << m_entries << "Destination dir:" << m_destinationDir
+                     << "Options:" << m_options;
+
+    qulonglong totalUncompressedSize = 0;
+    if (extractingAll) {
+        totalUncompressedSize = archiveInterface()->unpackedSize();
+    } else {
+        for (Archive::Entry *entry : qAsConst(m_entries)) {
+            if (!entry->isDir()) {
+                totalUncompressedSize += entry->isSparse() ? entry->sparseSize() : entry->size();
+            }
+        }
+    }
+
+    QStorageInfo destinationStorage(m_destinationDir);
+
+    if (totalUncompressedSize > static_cast<qulonglong>(destinationStorage.bytesAvailable())) {
+        onError(xi18n("No space available on device <filename>%1</filename>", m_destinationDir), QString(), Kerfuffle::DestinationNotWritableError);
+        onFinished(false);
+        return;
+    }
 
     bool ret = archiveInterface()->extractFiles(m_entries, m_destinationDir, m_options);
 
@@ -565,9 +609,22 @@ TempExtractJob::TempExtractJob(Archive::Entry *entry, bool passwordProtectedHint
     m_tmpExtractDir = new QTemporaryDir();
 }
 
+Archive::Entry *TempExtractJob::entry() const
+{
+    return m_entry;
+}
+
 QString TempExtractJob::validatedFilePath() const
 {
-    QString path = extractionDir() + QLatin1Char('/') + m_entry->fullPath();
+    QString path;
+    // For single-file archives the filepath of the extracted entry is the displayName and not the fullpath.
+    // TODO: find a better way to handle this.
+    // Should the ReadOnlyArchiveInterface tell us which is the actual filepath of the entry that it has extracted?
+    if (m_entry->displayName() != m_entry->name()) {
+        path = extractionDir() + QLatin1Char('/') + m_entry->displayName();
+    } else {
+        path = extractionDir() + QLatin1Char('/') + m_entry->fullPath();
+    }
 
     // Make sure a maliciously crafted archive with parent folders named ".." do
     // not cause the previewed file path to be located outside the temporary
@@ -600,7 +657,7 @@ void TempExtractJob::doWork()
 
     connectToArchiveInterfaceSignals();
 
-    qCDebug(ARK) << "Extracting:" << m_entry;
+    qCDebug(ARK_LOG) << "Extracting:" << m_entry;
 
     bool ret = archiveInterface()->extractFiles({m_entry}, extractionDir(), extractionOptions());
 
@@ -617,28 +674,31 @@ QString TempExtractJob::extractionDir() const
 PreviewJob::PreviewJob(Archive::Entry *entry, bool passwordProtectedHint, ReadOnlyArchiveInterface *interface)
     : TempExtractJob(entry, passwordProtectedHint, interface)
 {
-    qCDebug(ARK) << "Created job instance";
+    qCDebug(ARK_LOG) << "Created job instance";
 }
 
 OpenJob::OpenJob(Archive::Entry *entry, bool passwordProtectedHint, ReadOnlyArchiveInterface *interface)
     : TempExtractJob(entry, passwordProtectedHint, interface)
 {
-    qCDebug(ARK) << "Created job instance";
+    qCDebug(ARK_LOG) << "Created job instance";
 }
 
 OpenWithJob::OpenWithJob(Archive::Entry *entry, bool passwordProtectedHint, ReadOnlyArchiveInterface *interface)
     : OpenJob(entry, passwordProtectedHint, interface)
 {
-    qCDebug(ARK) << "Created job instance";
+    qCDebug(ARK_LOG) << "Created job instance";
 }
 
-AddJob::AddJob(const QVector<Archive::Entry*> &entries, const Archive::Entry *destination, const CompressionOptions& options, ReadWriteArchiveInterface *interface)
+AddJob::AddJob(const QList<Archive::Entry *> &entries,
+               const Archive::Entry *destination,
+               const CompressionOptions &options,
+               ReadWriteArchiveInterface *interface)
     : Job(interface)
     , m_entries(entries)
     , m_destination(destination)
     , m_options(options)
 {
-    qCDebug(ARK) << "Created job instance";
+    qCDebug(ARK_LOG) << "Created job instance";
 }
 
 void AddJob::doWork()
@@ -647,7 +707,7 @@ void AddJob::doWork()
     const QString globalWorkDir = m_options.globalWorkDir();
     const QDir workDir = globalWorkDir.isEmpty() ? QDir::current() : QDir(globalWorkDir);
     if (!globalWorkDir.isEmpty()) {
-        qCDebug(ARK) << "GlobalWorkDir is set, changing dir to " << globalWorkDir;
+        qCDebug(ARK_LOG) << "GlobalWorkDir is set, changing dir to " << globalWorkDir;
         m_oldWorkingDir = QDir::currentPath();
         QDir::setCurrent(globalWorkDir);
     }
@@ -656,7 +716,7 @@ void AddJob::doWork()
     uint totalCount = 0;
     QElapsedTimer timer;
     timer.start();
-    for (const Archive::Entry* entry : qAsConst(m_entries)) {
+    for (const Archive::Entry *entry : std::as_const(m_entries)) {
         totalCount++;
         if (QFileInfo(entry->fullPath()).isDir()) {
             QDirIterator it(entry->fullPath(), QDir::AllEntries | QDir::Readable | QDir::Hidden | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
@@ -667,18 +727,17 @@ void AddJob::doWork()
         }
     }
 
-    qCDebug(ARK) << "Going to add" << totalCount << "entries, counted in" << timer.elapsed() << "ms";
+    qCDebug(ARK_LOG) << "Going to add" << totalCount << "entries, counted in" << timer.elapsed() << "ms";
 
     const QString desc = i18np("Compressing a file", "Compressing %1 files", totalCount);
     Q_EMIT description(this, desc, qMakePair(i18n("Archive"), archiveInterface()->filename()));
 
-    ReadWriteArchiveInterface *m_writeInterface =
-        qobject_cast<ReadWriteArchiveInterface*>(archiveInterface());
+    ReadWriteArchiveInterface *m_writeInterface = qobject_cast<ReadWriteArchiveInterface *>(archiveInterface());
 
     Q_ASSERT(m_writeInterface);
 
     // The file paths must be relative to GlobalWorkDir.
-    for (Archive::Entry *entry : qAsConst(m_entries)) {
+    for (Archive::Entry *entry : std::as_const(m_entries)) {
         // #191821: workDir must be used instead of QDir::current()
         //          so that symlinks aren't resolved automatically
         const QString &fullPath = entry->fullPath();
@@ -708,25 +767,24 @@ void AddJob::onFinished(bool result)
     Job::onFinished(result);
 }
 
-MoveJob::MoveJob(const QVector<Archive::Entry*> &entries, Archive::Entry *destination, const CompressionOptions& options , ReadWriteArchiveInterface *interface)
+MoveJob::MoveJob(const QList<Archive::Entry *> &entries, Archive::Entry *destination, const CompressionOptions &options, ReadWriteArchiveInterface *interface)
     : Job(interface)
     , m_finishedSignalsCount(0)
     , m_entries(entries)
     , m_destination(destination)
     , m_options(options)
 {
-    qCDebug(ARK) << "Created job instance";
+    qCDebug(ARK_LOG) << "Created job instance";
 }
 
 void MoveJob::doWork()
 {
-    qCDebug(ARK) << "Going to move" << m_entries.count() << "file(s)";
+    qCDebug(ARK_LOG) << "Going to move" << m_entries.count() << "file(s)";
 
     QString desc = i18np("Moving a file", "Moving %1 files", m_entries.count());
     Q_EMIT description(this, desc, qMakePair(i18n("Archive"), archiveInterface()->filename()));
 
-    ReadWriteArchiveInterface *m_writeInterface =
-        qobject_cast<ReadWriteArchiveInterface*>(archiveInterface());
+    ReadWriteArchiveInterface *m_writeInterface = qobject_cast<ReadWriteArchiveInterface *>(archiveInterface());
 
     Q_ASSERT(m_writeInterface);
 
@@ -746,25 +804,24 @@ void MoveJob::onFinished(bool result)
     }
 }
 
-CopyJob::CopyJob(const QVector<Archive::Entry*> &entries, Archive::Entry *destination, const CompressionOptions &options, ReadWriteArchiveInterface *interface)
+CopyJob::CopyJob(const QList<Archive::Entry *> &entries, Archive::Entry *destination, const CompressionOptions &options, ReadWriteArchiveInterface *interface)
     : Job(interface)
     , m_finishedSignalsCount(0)
     , m_entries(entries)
     , m_destination(destination)
     , m_options(options)
 {
-    qCDebug(ARK) << "Created job instance";
+    qCDebug(ARK_LOG) << "Created job instance";
 }
 
 void CopyJob::doWork()
 {
-    qCDebug(ARK) << "Going to copy" << m_entries.count() << "file(s)";
+    qCDebug(ARK_LOG) << "Going to copy" << m_entries.count() << "file(s)";
 
     QString desc = i18np("Copying a file", "Copying %1 files", m_entries.count());
     Q_EMIT description(this, desc, qMakePair(i18n("Archive"), archiveInterface()->filename()));
 
-    ReadWriteArchiveInterface *m_writeInterface =
-        qobject_cast<ReadWriteArchiveInterface*>(archiveInterface());
+    ReadWriteArchiveInterface *m_writeInterface = qobject_cast<ReadWriteArchiveInterface *>(archiveInterface());
 
     Q_ASSERT(m_writeInterface);
 
@@ -784,7 +841,7 @@ void CopyJob::onFinished(bool result)
     }
 }
 
-DeleteJob::DeleteJob(const QVector<Archive::Entry*> &entries, ReadWriteArchiveInterface *interface)
+DeleteJob::DeleteJob(const QList<Archive::Entry *> &entries, ReadWriteArchiveInterface *interface)
     : Job(interface)
     , m_entries(entries)
 {
@@ -795,8 +852,7 @@ void DeleteJob::doWork()
     QString desc = i18np("Deleting a file from the archive", "Deleting %1 files", m_entries.count());
     Q_EMIT description(this, desc, qMakePair(i18n("Archive"), archiveInterface()->filename()));
 
-    ReadWriteArchiveInterface *m_writeInterface =
-        qobject_cast<ReadWriteArchiveInterface*>(archiveInterface());
+    ReadWriteArchiveInterface *m_writeInterface = qobject_cast<ReadWriteArchiveInterface *>(archiveInterface());
 
     Q_ASSERT(m_writeInterface);
 
@@ -808,7 +864,7 @@ void DeleteJob::doWork()
     }
 }
 
-CommentJob::CommentJob(const QString& comment, ReadWriteArchiveInterface *interface)
+CommentJob::CommentJob(const QString &comment, ReadWriteArchiveInterface *interface)
     : Job(interface)
     , m_comment(comment)
 {
@@ -818,8 +874,7 @@ void CommentJob::doWork()
 {
     Q_EMIT description(this, i18n("Adding comment"));
 
-    ReadWriteArchiveInterface *m_writeInterface =
-        qobject_cast<ReadWriteArchiveInterface*>(archiveInterface());
+    ReadWriteArchiveInterface *m_writeInterface = qobject_cast<ReadWriteArchiveInterface *>(archiveInterface());
 
     Q_ASSERT(m_writeInterface);
 
@@ -839,7 +894,7 @@ TestJob::TestJob(ReadOnlyArchiveInterface *interface)
 
 void TestJob::doWork()
 {
-    qCDebug(ARK) << "Job started";
+    qCDebug(ARK_LOG) << "Job started";
 
     Q_EMIT description(this, i18n("Testing archive"), qMakePair(i18n("Archive"), archiveInterface()->filename()));
 
@@ -866,3 +921,4 @@ bool TestJob::testSucceeded()
 } // namespace Kerfuffle
 
 #include "jobs.moc"
+#include "moc_jobs.cpp"

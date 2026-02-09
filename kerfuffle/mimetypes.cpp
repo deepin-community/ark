@@ -1,30 +1,12 @@
 /*
- * Copyright (c) 2016 Ragnar Thomsen <rthomsen6@gmail.com>
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES ( INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION ) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * ( INCLUDING NEGLIGENCE OR OTHERWISE ) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+    SPDX-FileCopyrightText: 2016 Ragnar Thomsen <rthomsen6@gmail.com>
+
+    SPDX-License-Identifier: BSD-2-Clause
+*/
 
 #include "mimetypes.h"
 #include "ark_debug.h"
+#include "pluginmanager.h"
 
 #include <QFileInfo>
 #include <QMimeDatabase>
@@ -33,53 +15,53 @@
 
 namespace Kerfuffle
 {
-
-QMimeType determineMimeType(const QString& filename)
+QMimeType determineMimeType(const QString &filename, MimePreference mp)
 {
     QMimeDatabase db;
 
     QFileInfo fileinfo(filename);
-    QString inputFile = filename;
 
     // #328815: since detection-by-content does not work for compressed tar archives (see below why)
-    // we cannot rely on it when the archive extension is wrong; we need to validate by hand.
-    if (fileinfo.completeSuffix().toLower().remove(QRegularExpression(QStringLiteral("[^a-z\\.]"))).contains(QLatin1String("tar."))) {
-        inputFile.chop(fileinfo.completeSuffix().length());
-        QString cleanExtension(fileinfo.completeSuffix().toLower());
-
-        // tar.bz2 and tar.lz4 need special treatment since they contain numbers.
-        bool isBZ2 = false;
-        bool isLZ4 = false;
-        if (fileinfo.completeSuffix().contains(QLatin1String("bz2"), Qt::CaseInsensitive)) {
-            cleanExtension.remove(QStringLiteral("bz2"));
-            isBZ2 = true;
+    // we cannot rely on it when the archive extension is wrong; we need to validate by hand:
+    // we look for the best match between the filename's complete suffix and all the suffixes
+    // of the mimetypes supported by the libarchive plugin.
+    QString validatedFilename = filename;
+    static QRegularExpression nonAlphaRegex(QStringLiteral("[^a-z\\.]"));
+    const QString originalSuffix(fileinfo.completeSuffix().toLower());
+    QString strippedSuffix = originalSuffix;
+    strippedSuffix.remove(nonAlphaRegex);
+    if (strippedSuffix.contains(QLatin1String("tar."))) {
+        Kerfuffle::PluginManager pluginManager;
+        const Plugin *libarchivePlugin = pluginManager.pluginById(QLatin1String("kerfuffle_libarchive"));
+        if (libarchivePlugin) {
+            QString bestSuffixMatch;
+            const QStringList libarchiveMimeTypes = libarchivePlugin->metaData().mimeTypes();
+            for (const QString &mimeName : libarchiveMimeTypes) {
+                const QStringList mimeSuffixes = db.mimeTypeForName(mimeName).suffixes();
+                for (const QString &suffix : mimeSuffixes) {
+                    const QString candidateSuffix = suffix.toLower();
+                    QString tempSuffixMatch;
+                    if (originalSuffix.contains(candidateSuffix)) {
+                        tempSuffixMatch = candidateSuffix;
+                    } else if (strippedSuffix.contains(candidateSuffix)) {
+                        tempSuffixMatch = candidateSuffix;
+                    }
+                    // We are only interested in the longest match
+                    // (e.g. foo.tar.lz4 matches 'tar', 'tar.lz' and 'tar.lz4' suffixes)
+                    if (tempSuffixMatch.length() > bestSuffixMatch.length()) {
+                        bestSuffixMatch = tempSuffixMatch;
+                    }
+                }
+            }
+            if (!bestSuffixMatch.isEmpty()) {
+                validatedFilename.chop(originalSuffix.length());
+                validatedFilename += bestSuffixMatch;
+                qCDebug(ARK_LOG) << "Validated filename of compressed tar" << filename << "into filename" << validatedFilename;
+            }
         }
-        if (fileinfo.completeSuffix().contains(QLatin1String("lz4"), Qt::CaseInsensitive)) {
-            cleanExtension.remove(QStringLiteral("lz4"));
-            isLZ4 = true;
-        }
-
-        // We remove non-alpha chars from the filename extension, but not periods.
-        // If the filename is e.g. "foo.tar.gz.1", we get the "foo.tar.gz." string,
-        // so we need to manually drop the last period character from it.
-        cleanExtension.remove(QRegularExpression(QStringLiteral("[^a-z\\.]")));
-        if (cleanExtension.endsWith(QLatin1Char('.'))) {
-            cleanExtension.chop(1);
-        }
-
-        // Re-add extension for tar.bz2 and tar.lz4.
-        if (isBZ2) {
-            cleanExtension.append(QStringLiteral(".bz2"));
-        }
-        if (isLZ4) {
-            cleanExtension.append(QStringLiteral(".lz4"));
-        }
-
-        inputFile += cleanExtension;
-        qCDebug(ARK) << "Validated filename of compressed tar" << filename << "into filename" << inputFile;
     }
 
-    QMimeType mimeFromExtension = db.mimeTypeForFile(inputFile, QMimeDatabase::MatchExtension);
+    QMimeType mimeFromExtension = db.mimeTypeForFile(validatedFilename, QMimeDatabase::MatchExtension);
     QMimeType mimeFromContent = db.mimeTypeForFile(filename, QMimeDatabase::MatchContent);
 
     // mimeFromContent will be "application/octet-stream" when file is
@@ -91,46 +73,38 @@ QMimeType determineMimeType(const QString& filename)
     // Compressed tar-archives are detected as single compressed files when
     // detecting by content. The following code fixes detection of tar.gz, tar.bz2, tar.xz,
     // tar.lzo, tar.lz, tar.lrz and tar.zst.
-    if ((mimeFromExtension.inherits(QStringLiteral("application/x-compressed-tar")) &&
-         mimeFromContent == db.mimeTypeForName(QStringLiteral("application/gzip"))) ||
-        (mimeFromExtension.inherits(QStringLiteral("application/x-bzip-compressed-tar")) &&
-         mimeFromContent == db.mimeTypeForName(QStringLiteral("application/x-bzip"))) ||
-        (mimeFromExtension.inherits(QStringLiteral("application/x-xz-compressed-tar")) &&
-         mimeFromContent == db.mimeTypeForName(QStringLiteral("application/x-xz"))) ||
-        (mimeFromExtension.inherits(QStringLiteral("application/x-tarz")) &&
-         mimeFromContent == db.mimeTypeForName(QStringLiteral("application/x-compress"))) ||
-        (mimeFromExtension.inherits(QStringLiteral("application/x-tzo")) &&
-         mimeFromContent == db.mimeTypeForName(QStringLiteral("application/x-lzop"))) ||
-        (mimeFromExtension.inherits(QStringLiteral("application/x-lzip-compressed-tar")) &&
-         mimeFromContent == db.mimeTypeForName(QStringLiteral("application/x-lzip"))) ||
-        (mimeFromExtension.inherits(QStringLiteral("application/x-lrzip-compressed-tar")) &&
-         mimeFromContent == db.mimeTypeForName(QStringLiteral("application/x-lrzip"))) ||
-        (mimeFromExtension.inherits(QStringLiteral("application/x-lz4-compressed-tar")) &&
-         mimeFromContent == db.mimeTypeForName(QStringLiteral("application/x-lz4"))) ||
-        (mimeFromExtension.inherits(QStringLiteral("application/x-zstd-compressed-tar")) &&
-         mimeFromContent == db.mimeTypeForName(QStringLiteral("application/zstd")))) {
+    if ((mimeFromExtension.inherits(QStringLiteral("application/x-compressed-tar"))
+         && mimeFromContent == db.mimeTypeForName(QStringLiteral("application/gzip")))
+        || (mimeFromExtension.inherits(QStringLiteral("application/x-bzip-compressed-tar"))
+            && mimeFromContent == db.mimeTypeForName(QStringLiteral("application/x-bzip")))
+        || (mimeFromExtension.inherits(QStringLiteral("application/x-bzip2-compressed-tar"))
+            && mimeFromContent == db.mimeTypeForName(QStringLiteral("application/x-bzip2")))
+        || (mimeFromExtension.inherits(QStringLiteral("application/x-xz-compressed-tar"))
+            && mimeFromContent == db.mimeTypeForName(QStringLiteral("application/x-xz")))
+        || (mimeFromExtension.inherits(QStringLiteral("application/x-tarz")) && mimeFromContent == db.mimeTypeForName(QStringLiteral("application/x-compress")))
+        || (mimeFromExtension.inherits(QStringLiteral("application/x-tzo")) && mimeFromContent == db.mimeTypeForName(QStringLiteral("application/x-lzop")))
+        || (mimeFromExtension.inherits(QStringLiteral("application/x-lzip-compressed-tar"))
+            && mimeFromContent == db.mimeTypeForName(QStringLiteral("application/x-lzip")))
+        || (mimeFromExtension.inherits(QStringLiteral("application/x-lrzip-compressed-tar"))
+            && mimeFromContent == db.mimeTypeForName(QStringLiteral("application/x-lrzip")))
+        || (mimeFromExtension.inherits(QStringLiteral("application/x-lz4-compressed-tar"))
+            && mimeFromContent == db.mimeTypeForName(QStringLiteral("application/x-lz4")))
+        || (mimeFromExtension.inherits(QStringLiteral("application/x-zstd-compressed-tar"))
+            && mimeFromContent == db.mimeTypeForName(QStringLiteral("application/zstd")))) {
         return mimeFromExtension;
     }
 
     if (mimeFromExtension != mimeFromContent) {
-
         if (mimeFromContent.isDefault()) {
-            qCWarning(ARK) << "Could not detect mimetype from content."
-                           << "Using extension-based mimetype:" << mimeFromExtension.name();
+            qCWarning(ARK_LOG) << "Could not detect mimetype from content. Using extension-based mimetype:" << mimeFromExtension.name();
             return mimeFromExtension;
         }
 
-        // #354344: ISO files are currently wrongly detected-by-content.
-        if (mimeFromExtension.inherits(QStringLiteral("application/x-cd-image"))) {
-            return mimeFromExtension;
-        }
-
-        qCDebug(ARK) << "Mimetype for filename extension (" << mimeFromExtension.name()
-                       << ") did not match mimetype for content (" << mimeFromContent.name()
-                       << "). Using content-based mimetype.";
+        qCDebug(ARK_LOG) << "Mimetype for filename extension (" << mimeFromExtension.name() << ") did not match mimetype for content ("
+                         << mimeFromContent.name() << "). Using content-based mimetype.";
     }
 
-    return mimeFromContent;
+    return mp == PreferExtensionMime ? mimeFromExtension : mimeFromContent;
 }
 
 } // namespace Kerfuffle

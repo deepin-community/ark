@@ -1,27 +1,8 @@
 /*
- * Copyright (c) 2016 Vladyslav Batyrenko <mvlabat@gmail.com>
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES ( INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION ) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * ( INCLUDING NEGLIGENCE OR OTHERWISE ) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+    SPDX-FileCopyrightText: 2016 Vladyslav Batyrenko <mvlabat@gmail.com>
+
+    SPDX-License-Identifier: BSD-2-Clause
+*/
 
 #include "archiveentry.h"
 
@@ -29,17 +10,20 @@
 
 #include "util.h"
 
-namespace Kerfuffle {
+namespace Kerfuffle
+{
 Archive::Entry::Entry(QObject *parent, const QString &fullPath, const QString &rootNode)
     : QObject(parent)
     , rootNode(rootNode)
     , compressedSizeIsSet(true)
-    , m_parent(qobject_cast<Entry*>(parent))
+    , m_parent(qobject_cast<Entry *>(parent))
     , m_size(0)
     , m_compressedSize(0)
+    , m_sparseSize(0)
     , m_isDirectory(false)
     , m_isExecutable(false)
     , m_isPasswordProtected(false)
+    , m_isSparse(false)
 {
     if (!fullPath.isEmpty())
         setFullPath(fullPath);
@@ -47,6 +31,21 @@ Archive::Entry::Entry(QObject *parent, const QString &fullPath, const QString &r
 
 Archive::Entry::~Entry()
 {
+}
+
+qulonglong Archive::Entry::size() const
+{
+    return m_size;
+}
+
+qulonglong Archive::Entry::sparseSize() const
+{
+    return m_sparseSize;
+}
+
+bool Archive::Entry::isSparse() const
+{
+    return m_isSparse;
 }
 
 void Archive::Entry::copyMetaData(const Archive::Entry *sourceEntry)
@@ -57,6 +56,7 @@ void Archive::Entry::copyMetaData(const Archive::Entry *sourceEntry)
     setProperty("group", sourceEntry->property("group"));
     setProperty("size", sourceEntry->property("size"));
     setProperty("compressedSize", sourceEntry->property("compressedSize"));
+    setProperty("sparseSize", sourceEntry->property("sparseSize"));
     setProperty("link", sourceEntry->property("link"));
     setProperty("ratio", sourceEntry->property("ratio"));
     setProperty("CRC", sourceEntry->property("CRC"));
@@ -68,13 +68,14 @@ void Archive::Entry::copyMetaData(const Archive::Entry *sourceEntry)
     setProperty("isPasswordProtected", sourceEntry->property("isPasswordProtected"));
 }
 
-QVector<Archive::Entry*> Archive::Entry::entries()
+QList<Archive::Entry *> Archive::Entry::entries()
 {
     Q_ASSERT(isDir());
     return m_entries;
 }
 
-const QVector<Archive::Entry*> Archive::Entry::entries() const {
+const QList<Archive::Entry *> Archive::Entry::entries() const
+{
     Q_ASSERT(isDir());
     return m_entries;
 }
@@ -114,7 +115,6 @@ void Archive::Entry::setFullPath(const QString &fullPath)
     m_fullPath = fullPath;
 
     m_name = Kerfuffle::Util::lastPathSegment(m_fullPath);
-
 }
 
 QString Archive::Entry::fullPath(PathFormat format) const
@@ -126,6 +126,15 @@ QString Archive::Entry::fullPath(PathFormat format) const
     }
 }
 
+QString Archive::Entry::displayName() const
+{
+    if (m_displayName.isEmpty()) {
+        return m_name;
+    }
+
+    return m_displayName;
+}
+
 QString Archive::Entry::name() const
 {
     return m_name;
@@ -134,6 +143,11 @@ QString Archive::Entry::name() const
 QStringView Archive::Entry::nameView() const
 {
     return m_name;
+}
+
+void Archive::Entry::setDisplayName(const QString &displayName)
+{
+    m_displayName = displayName;
 }
 
 void Archive::Entry::setIsDirectory(const bool isDirectory)
@@ -159,14 +173,14 @@ bool Archive::Entry::isExecutable() const
 int Archive::Entry::row() const
 {
     if (getParent()) {
-        return getParent()->entries().indexOf(const_cast<Archive::Entry*>(this));
+        return getParent()->entries().indexOf(const_cast<Archive::Entry *>(this));
     }
     return 0;
 }
 
 Archive::Entry *Archive::Entry::find(QStringView name) const
 {
-    for (Entry *entry : qAsConst(m_entries)) {
+    for (Entry *entry : std::as_const(m_entries)) {
         if (entry && (entry->nameView() == name)) {
             return entry;
         }
@@ -216,7 +230,7 @@ QIcon Archive::Entry::icon() const
             static QIcon directoryIcon = QIcon::fromTheme(db.mimeTypeForName(QStringLiteral("inode/directory")).iconName());
             m_icon = directoryIcon;
         } else {
-            m_icon = QIcon::fromTheme(db.mimeTypeForFile(m_name, QMimeDatabase::MatchMode::MatchExtension).iconName());
+            m_icon = QIcon::fromTheme(db.mimeTypeForFile(displayName(), QMimeDatabase::MatchMode::MatchExtension).iconName());
         }
     }
 
@@ -249,3 +263,5 @@ QDebug operator<<(QDebug d, const Kerfuffle::Archive::Entry *entry)
 }
 
 }
+
+#include "moc_archiveentry.cpp"

@@ -1,36 +1,21 @@
 /*
- * ark -- archiver for the KDE project
- *
- * Copyright (C) 2007 Henrique Pinto <henrique.pinto@kdemail.net>
- * Copyright (C) 2008-2009 Harald Hvaal <haraldhv@stud.ntnu.no>
- * Copyright (C) 2009 Raphael Kubo da Costa <rakuco@FreeBSD.org>
- * Copyright (c) 2016 Vladyslav Batyrenko <mvlabat@gmail.com>
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *
- */
+    SPDX-FileCopyrightText: 2007 Henrique Pinto <henrique.pinto@kdemail.net>
+    SPDX-FileCopyrightText: 2008-2009 Harald Hvaal <haraldhv@stud.ntnu.no>
+    SPDX-FileCopyrightText: 2009 Raphael Kubo da Costa <rakuco@FreeBSD.org>
+    SPDX-FileCopyrightText: 2016 Vladyslav Batyrenko <mvlabat@gmail.com>
+
+    SPDX-License-Identifier: GPL-2.0-or-later
+*/
 #ifndef PART_H
 #define PART_H
 
-#include "interface.h"
 #include "archiveentry.h"
+#include "interface.h"
 
+#include <KMessageWidget>
 #include <KParts/Part>
 #include <KParts/ReadWritePart>
 #include <KParts/StatusBarExtension>
-#include <KMessageWidget>
 
 #include <QModelIndex>
 #include <QTimer>
@@ -56,8 +41,7 @@ class QPushButton;
 
 namespace Ark
 {
-
-class Part: public KParts::ReadWritePart, public Interface
+class Part : public KParts::ReadWritePart, public Interface
 {
     Q_OBJECT
     Q_INTERFACES(Interface)
@@ -65,14 +49,13 @@ public:
     enum OpenFileMode {
         Preview,
         OpenFile,
-        OpenFileWith
+        OpenFileWith,
     };
 
     enum OverwriteBehaviour {
         ShowOverwriteDialog,
-        DoNotShowOverwriteDialog
+        DoNotShowOverwriteDialog,
     };
-
 
     Part(QWidget *parentWidget, QObject *parent, const KPluginMetaData &metaData, const QVariantList &);
     ~Part() override;
@@ -82,7 +65,9 @@ public:
 
     bool isBusy() const override;
     KConfigSkeleton *config() const override;
-    QList<Kerfuffle::SettingsPage*> settingsPages(QWidget *parent) const override;
+    QList<Kerfuffle::SettingsPage *> settingsPages(QWidget *parent) const override;
+    QWidget *infoPanel() const override;
+
     bool eventFilter(QObject *target, QEvent *event) override;
 
     /**
@@ -101,11 +86,11 @@ public:
      * Ask the user whether to overwrite @p targetFile, when creating a new archive with the same path.
      * @return True if the file has been successfully removed upon user's will. False otherwise.
      */
-    bool confirmAndDelete(const QString& targetFile);
+    bool confirmAndDelete(const QString &targetFile);
 
 public Q_SLOTS:
     // Extracts selected files to @p localPath when drag and drop'ing from Ark to e.g. Dolphin
-    void extractSelectedFilesTo(const QString& localPath);
+    void extractSelectedFilesTo(const QString &localPath);
 
 protected:
     void guiActivateEvent(KParts::GUIActivateEvent *event) override;
@@ -114,14 +99,14 @@ private Q_SLOTS:
     void slotCompleted();
     void slotLoadingStarted();
     void slotLoadingFinished(KJob *job);
-    void slotOpenExtractedEntry(KJob*);
-    void slotPreviewExtractedEntry(KJob* job);
+    void slotOpenExtractedEntry(KJob *);
+    void slotPreviewExtractedEntry(KJob *job);
     void slotOpenEntry(int mode);
-    void slotError(const QString& errorMessage, const QString& details);
+    void slotError(const QString &errorMessage, const QString &details);
     void slotExtractArchive();
     void slotShowExtractionDialog();
-    void slotExtractionDone(KJob*);
-    void slotQuickExtractFiles(QAction*);
+    void slotExtractionDone(KJob *);
+    void slotQuickExtractFiles(QAction *);
 
     /**
      * Creates and starts AddJob.
@@ -133,7 +118,10 @@ private Q_SLOTS:
      * watched file.
      * @param onOverwrite Whether to show a confirmation dialog when files will be overwritten
      */
-    void slotAddFiles(const QStringList &files, const Kerfuffle::Archive::Entry *destination, const QString &relPath, Ark::Part::OverwriteBehaviour onOverwrite = ShowOverwriteDialog);
+    void slotAddFiles(const QStringList &files,
+                      const Kerfuffle::Archive::Entry *destination,
+                      const QString &relPath,
+                      Ark::Part::OverwriteBehaviour onOverwrite = ShowOverwriteDialog);
     void slotDroppedFiles(const QStringList &files, const Kerfuffle::Archive::Entry *destination);
 
     /**
@@ -144,18 +132,18 @@ private Q_SLOTS:
      * the path has to contain a new filename too.
      * @param entriesWithoutChildren Entries count, excluding their children. For CopyJob 0 MUST be passed.
      */
-    void slotPasteFiles(QVector<Kerfuffle::Archive::Entry*> &files, Kerfuffle::Archive::Entry *destination, int entriesWithoutChildren);
+    void slotPasteFiles(QList<Kerfuffle::Archive::Entry *> &files, Kerfuffle::Archive::Entry *destination, int entriesWithoutChildren);
 
     void slotAddFiles();
     void slotCutFiles();
     void slotCopyFiles();
     void slotRenameFile(const QString &name);
     void slotPasteFiles();
-    void slotAddFilesDone(KJob*);
-    void slotPasteFilesDone(KJob*);
-    void slotTestingDone(KJob*);
+    void slotAddFilesDone(KJob *);
+    void slotPasteFilesDone(KJob *);
+    void slotTestingDone(KJob *);
     void slotDeleteFiles();
-    void slotDeleteFilesDone(KJob*);
+    void slotDeleteFilesDone(KJob *);
     void slotShowProperties();
     void slotShowContextMenu();
     void slotActivated(const QModelIndex &index);
@@ -167,14 +155,14 @@ private Q_SLOTS:
     void setBusyGui();
     void setReadyGui();
     void setFileNameFromArchive();
-    void slotResetFileChangeTimer(const QString& file);
-    void slotWatchedFileModified(const QString& file);
+    void slotResetFileChangeTimer(const QString &file);
+    void slotWatchedFileModified(const QString &file);
     void slotShowComment();
     void slotAddComment();
     void slotCommentChanged();
     void slotTestArchive();
     void slotShowFind();
-    void displayMsgWidget(KMessageWidget::MessageType type, const QString& msg);
+    void displayMsgWidget(KMessageWidget::MessageType type, const QString &msg);
     void searchEdited(const QString &text);
 
 Q_SIGNALS:
@@ -200,15 +188,15 @@ private:
     void setupView();
     void setupActions();
     QString detectSubfolder() const;
-    QVector<Kerfuffle::Archive::Entry*> filesForIndexes(const QModelIndexList& list) const;
-    QVector<Kerfuffle::Archive::Entry*> filesAndRootNodesForIndexes(const QModelIndexList& list) const;
+    QList<Kerfuffle::Archive::Entry *> filesForIndexes(const QModelIndexList &list) const;
+    QList<Kerfuffle::Archive::Entry *> filesAndRootNodesForIndexes(const QModelIndexList &list) const;
     QModelIndexList addChildren(const QModelIndexList &list) const;
     void registerJob(KJob *job);
     QModelIndexList getSelectedIndexes();
     void readCompressionOptions();
 
-    ArchiveModel         *m_model;
-    ArchiveView          *m_view;
+    ArchiveModel *m_model;
+    ArchiveView *m_view;
     QAction *m_previewAction;
     QAction *m_openFileAction;
     QAction *m_openFileWithAction;
@@ -226,21 +214,21 @@ private:
     QAction *m_testArchiveAction;
     QAction *m_searchAction;
     KToggleAction *m_showInfoPanelAction;
-    InfoPanel            *m_infoPanel;
-    QSplitter            *m_splitter;
-    QList<QTemporaryDir*>      m_tmpExtractDirList;
-    bool                  m_busy;
+    InfoPanel *m_infoPanel;
+    QSplitter *m_splitter;
+    QList<QTemporaryDir *> m_tmpExtractDirList;
+    bool m_busy;
 
     OpenFileMode m_openFileMode;
     QUrl m_lastUsedAddPath;
-    QVector<Kerfuffle::Archive::Entry*> m_jobTempEntries;
+    QList<Kerfuffle::Archive::Entry *> m_jobTempEntries;
     Kerfuffle::Archive::Entry *m_destination;
     QModelIndexList m_cutIndexes;
 
     QTimer m_watchedFileChangeTimer;
     QString m_lastChangedFilename;
 
-    KAbstractWidgetJobTracker  *m_jobTracker;
+    KAbstractWidgetJobTracker *m_jobTracker;
     KParts::StatusBarExtension *m_statusBarExtension;
     QVBoxLayout *m_vlayout;
     std::unique_ptr<QFileSystemWatcher> m_fileWatcher;

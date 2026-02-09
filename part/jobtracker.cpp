@@ -1,36 +1,21 @@
 /*
- * ark -- archiver for the KDE project
- *
- * Copyright (C) 2007 Henrique Pinto <henrique.pinto@kdemail.net>
- * Copyright (C) 2008 Harald Hvaal <haraldhv@stud.ntnu.no>
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *
- */
+    SPDX-FileCopyrightText: 2007 Henrique Pinto <henrique.pinto@kdemail.net>
+    SPDX-FileCopyrightText: 2008 Harald Hvaal <haraldhv@stud.ntnu.no>
+
+    SPDX-License-Identifier: GPL-2.0-or-later
+*/
 
 #include "jobtracker.h"
 #include "ark_debug.h"
 
 JobTrackerWidget::JobTrackerWidget(QWidget *parent)
-        : QFrame(parent)
+    : QFrame(parent)
 {
     setupUi(this);
 }
 
 JobTracker::JobTracker(QWidget *parent)
-        : KAbstractWidgetJobTracker(parent)
+    : KAbstractWidgetJobTracker(parent)
 {
     m_ui = new JobTrackerWidget(parent);
     resetUi();
@@ -45,7 +30,7 @@ JobTracker::~JobTracker()
     }
 }
 
-void JobTracker::description(KJob *job, const QString &title, const QPair< QString, QString > &f1, const QPair< QString, QString > &f2)
+void JobTracker::description(KJob *job, const QString &title, const QPair<QString, QString> &f1, const QPair<QString, QString> &f2)
 {
     Q_UNUSED(job)
     Q_UNUSED(f1)
@@ -54,19 +39,17 @@ void JobTracker::description(KJob *job, const QString &title, const QPair< QStri
     m_ui->descriptionLabel->show();
 }
 
-void JobTracker::infoMessage(KJob *job, const QString &plain, const QString &rich)
+void JobTracker::infoMessage(KJob *job, const QString &message)
 {
     Q_UNUSED(job)
-    Q_UNUSED(rich)
-    m_ui->informationLabel->setText(plain);
+    m_ui->informationLabel->setText(message);
     m_ui->informationLabel->show();
 }
 
-void JobTracker::warning(KJob *job, const QString &plain, const QString &rich)
+void JobTracker::warning(KJob *job, const QString &message)
 {
     Q_UNUSED(job)
-    Q_UNUSED(rich)
-    m_ui->informationLabel->setText(plain);
+    m_ui->informationLabel->setText(message);
 }
 
 void JobTracker::registerJob(KJob *job)
@@ -102,7 +85,9 @@ void JobTracker::resetUi()
     m_ui->progressBar->setMinimum(0);
 }
 
-QWidget* JobTracker::widget(KJob *)
+QWidget *JobTracker::widget(KJob *)
 {
     return m_ui;
 }
+
+#include "moc_jobtracker.cpp"

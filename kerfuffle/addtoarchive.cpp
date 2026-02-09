@@ -1,30 +1,9 @@
 /*
- * ark -- archiver for the KDE project
- *
- * Copyright (C) 2008 Harald Hvaal <haraldhv@stud.ntnu.no>
- * Copyright (C) 2009 Raphael Kubo da Costa <rakuco@FreeBSD.org>
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES ( INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION ) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * ( INCLUDING NEGLIGENCE OR OTHERWISE ) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+    SPDX-FileCopyrightText: 2008 Harald Hvaal <haraldhv@stud.ntnu.no>
+    SPDX-FileCopyrightText: 2009 Raphael Kubo da Costa <rakuco@FreeBSD.org>
+
+    SPDX-License-Identifier: BSD-2-Clause
+*/
 
 #include "addtoarchive.h"
 #include "archiveentry.h"
@@ -32,23 +11,24 @@
 #include "createdialog.h"
 #include "jobs.h"
 
-#include <KJobTrackerInterface>
 #include <KIO/JobTracker>
+#include <KJobTrackerInterface>
 #include <KLocalizedString>
 #include <KMessageBox>
 
-#include <QFileInfo>
+#include <KFileUtils>
 #include <QDir>
+#include <QFileInfo>
 #include <QMimeDatabase>
-#include <QTimer>
 #include <QPointer>
+#include <QTimer>
 
 namespace Kerfuffle
 {
 AddToArchive::AddToArchive(QObject *parent)
-        : KJob(parent)
-        , m_changeToFirstPath(false)
-        , m_enableHeaderEncryption(false)
+    : KJob(parent)
+    , m_changeToFirstPath(false)
+    , m_enableHeaderEncryption(false)
 {
 }
 
@@ -56,7 +36,7 @@ AddToArchive::~AddToArchive()
 {
 }
 
-void AddToArchive::setAutoFilenameSuffix(const QString& suffix)
+void AddToArchive::setAutoFilenameSuffix(const QString &suffix)
 {
     m_autoFilenameSuffix = suffix;
 }
@@ -71,7 +51,7 @@ void AddToArchive::setFilename(const QUrl &path)
     m_filename = path.toLocalFile();
 }
 
-void AddToArchive::setMimeType(const QString & mimeType)
+void AddToArchive::setMimeType(const QString &mimeType)
 {
     m_mimeType = mimeType;
 }
@@ -86,26 +66,25 @@ void AddToArchive::setHeaderEncryptionEnabled(bool enabled)
     m_enableHeaderEncryption = enabled;
 }
 
-bool AddToArchive::showAddDialog()
+bool AddToArchive::showAddDialog(QWidget *parentWidget)
 {
-    qCDebug(ARK) << "Opening add dialog";
+    qCDebug(ARK_LOG) << "Opening add dialog";
 
     if (m_filename.isEmpty()) {
-        m_filename = detectBaseName(m_entries);
+        m_filename = getFileNameForEntries(m_entries, QString());
     }
 
-    QPointer<Kerfuffle::CreateDialog> dialog = new Kerfuffle::CreateDialog(
-        nullptr, // parent
-        i18n("Compress to Archive"), // caption
-        QUrl::fromLocalFile(QFileInfo(m_filename).path())); // startDir
+    QPointer<Kerfuffle::CreateDialog> dialog = new Kerfuffle::CreateDialog(parentWidget, // parent
+                                                                           i18n("Compress to Archive"), // caption
+                                                                           QUrl::fromLocalFile(QFileInfo(m_filename).path())); // startDir
 
     dialog->setFileName(QFileInfo(m_filename).fileName());
 
     bool ret = dialog.data()->exec();
 
     if (ret) {
-        qCDebug(ARK) << "CreateDialog returned URL:" << dialog.data()->selectedUrl().toString();
-        qCDebug(ARK) << "CreateDialog returned mime:" << dialog.data()->currentMimeType().name();
+        qCDebug(ARK_LOG) << "CreateDialog returned URL:" << dialog.data()->selectedUrl().toString();
+        qCDebug(ARK_LOG) << "CreateDialog returned mime:" << dialog.data()->currentMimeType().name();
         setFilename(dialog.data()->selectedUrl());
         setMimeType(dialog.data()->currentMimeType().name());
         setPassword(dialog.data()->password());
@@ -137,7 +116,7 @@ bool AddToArchive::addInput(const QUrl &url)
 
 void AddToArchive::start()
 {
-    qCDebug(ARK) << "Starting job";
+    qCDebug(ARK_LOG) << "Starting job";
 
     QTimer::singleShot(0, this, &AddToArchive::slotStartJob);
 }
@@ -157,13 +136,15 @@ void AddToArchive::slotStartJob()
 
     if (m_filename.isEmpty()) {
         if (m_autoFilenameSuffix.isEmpty()) {
-            KMessageBox::error(nullptr, xi18n("You need to either supply a filename for the archive or a suffix (such as rar, tar.gz) with the <command>--autofilename</command> argument."));
+            KMessageBox::error(nullptr,
+                               xi18n("You need to either supply a filename for the archive or a suffix (such as rar, tar.gz) with the "
+                                     "<command>--autofilename</command> argument."));
             emitResult();
             return;
         }
 
         if (m_firstPath.isEmpty()) {
-            qCWarning(ARK) << "Weird, this should not happen. no firstpath defined. aborting";
+            qCWarning(ARK_LOG) << "Weird, this should not happen. no firstpath defined. aborting";
             emitResult();
             return;
         }
@@ -173,22 +154,25 @@ void AddToArchive::slotStartJob()
 
     if (m_changeToFirstPath) {
         if (m_firstPath.isEmpty()) {
-            qCWarning(ARK) << "Weird, this should not happen. no firstpath defined. aborting";
+            qCWarning(ARK_LOG) << "Weird, this should not happen. no firstpath defined. aborting";
             emitResult();
             return;
         }
 
         const QDir stripDir(m_firstPath);
 
-        for (Archive::Entry *entry : qAsConst(m_entries)) {
+        for (Archive::Entry *entry : std::as_const(m_entries)) {
             entry->setFullPath(stripDir.absoluteFilePath(entry->fullPath()));
         }
 
-        qCDebug(ARK) << "Setting GlobalWorkDir to " << stripDir.path();
+        qCDebug(ARK_LOG) << "Setting GlobalWorkDir to " << stripDir.path();
         m_options.setGlobalWorkDir(stripDir.path());
     }
 
     m_createJob = Archive::create(m_filename, m_mimeType, m_entries, m_options, this);
+
+    m_createJob->setProperty("immediateProgressReporting", m_immediateProgressReporting);
+    m_createJob->setProperty("destUrl", QUrl::fromLocalFile(m_filename));
 
     if (!m_password.isEmpty()) {
         m_createJob->enableEncryption(m_password, m_enableHeaderEncryption);
@@ -201,26 +185,16 @@ void AddToArchive::slotStartJob()
 
 void AddToArchive::detectFileName()
 {
-    const QString base = detectBaseName(m_entries);
-    const QString suffix = !m_autoFilenameSuffix.isEmpty() ? QLatin1Char( '.' ) + m_autoFilenameSuffix : QString();
+    const QString suffix = !m_autoFilenameSuffix.isEmpty() ? m_autoFilenameSuffix : QString();
+    const QString finalName = getFileNameForEntries(m_entries, suffix);
 
-    QString finalName = base + suffix;
-
-    //if file already exists, append a number to the base until it doesn't
-    //exist
-    int appendNumber = 0;
-    while (QFileInfo::exists(finalName)) {
-        ++appendNumber;
-        finalName = base + QLatin1Char( '_' ) + QString::number(appendNumber) + suffix;
-    }
-
-    qCDebug(ARK) << "Autoset filename to" << finalName;
+    qCDebug(ARK_LOG) << "Autoset filename to" << finalName;
     m_filename = finalName;
 }
 
 void AddToArchive::slotFinished(KJob *job)
 {
-    qCDebug(ARK) << "job finished";
+    qCDebug(ARK_LOG) << "job finished";
 
     if (job->error() && !job->errorString().isEmpty()) {
         KMessageBox::error(nullptr, job->errorString());
@@ -229,36 +203,72 @@ void AddToArchive::slotFinished(KJob *job)
     emitResult();
 }
 
-QString AddToArchive::detectBaseName(const QVector<Archive::Entry*> &entries) const
+QString findCommonPrefixForUrls(const QList<QUrl> &list)
 {
-    QFileInfo fileInfo = QFileInfo(entries.first()->fullPath());
-    QDir parentDir = fileInfo.dir();
-    QString base = parentDir.absolutePath() + QLatin1Char('/');
-
-    if (entries.size() > 1) {
-        if (!parentDir.isRoot()) {
-            // Use directory name for the new archive.
-            base += parentDir.dirName();
-        }
-    } else {
+    Q_ASSERT(!list.isEmpty());
+    QString prefix = list.front().fileName();
+    for (QList<QUrl>::const_iterator it = list.begin(); it != list.end(); ++it) {
+        QString fileName = it->fileName();
         // Strip filename of its extension, but only if present (see #362690).
-        if (!QMimeDatabase().mimeTypeForFile(fileInfo.fileName(), QMimeDatabase::MatchExtension).isDefault()) {
-            base += fileInfo.completeBaseName();
-        } else {
-            base += fileInfo.fileName();
+        // Use loops to handle cases like `*.tar.gz`.
+        while (!QMimeDatabase().mimeTypeForFile(fileName, QMimeDatabase::MatchExtension).isDefault()) {
+            const QString strippedName = QFileInfo(fileName).completeBaseName();
+            if (strippedName == fileName) {
+                break;
+            }
+            fileName = strippedName;
+        }
+
+        if (prefix.length() > fileName.length()) {
+            prefix.truncate(fileName.length());
+        }
+
+        for (int i = 0; i < prefix.length(); ++i) {
+            if (prefix.at(i) != fileName.at(i)) {
+                prefix.truncate(i);
+                break;
+            }
         }
     }
 
-    // Special case for compressed tar archives.
-    if (base.right(4).toUpper() == QLatin1String(".TAR")) {
-        base.chop(4);
-    }
-
-    if (base.endsWith(QLatin1Char('/'))) {
-        base.chop(1);
-    }
-
-    return base;
+    return prefix;
 }
 
+QString AddToArchive::getFileNameForUrls(const QList<QUrl> &urls, const QString &suffix)
+{
+    Q_ASSERT(!urls.isEmpty());
+
+    const QFileInfo fileInfo = QFileInfo(urls.constFirst().toLocalFile());
+    QString base = findCommonPrefixForUrls(urls);
+    if (urls.size() > 1 && base.length() < 5) {
+        base = i18nc("Default name of a newly-created multi-file archive", "Archive");
+    }
+
+    const QString path = fileInfo.absolutePath() + QStringLiteral("/");
+
+    if (suffix.isEmpty()) {
+        return path + base;
+    }
+    QString finalName = base + QLatin1Char('.') + suffix;
+    if (QFileInfo::exists(path + finalName)) {
+        finalName = KFileUtils::suggestName(QUrl::fromLocalFile(path), finalName);
+    }
+    return path + finalName;
 }
+
+QString AddToArchive::getFileNameForEntries(const QList<Archive::Entry *> &entries, const QString &suffix)
+{
+    QList<QUrl> urls;
+    for (const auto &entry : entries) {
+        urls.append(QUrl::fromLocalFile(entry->fullPath()));
+    }
+    return getFileNameForUrls(urls, suffix);
+}
+
+void AddToArchive::setImmediateProgressReporting(bool immediateProgressReporting)
+{
+    m_immediateProgressReporting = immediateProgressReporting;
+}
+}
+
+#include "moc_addtoarchive.cpp"

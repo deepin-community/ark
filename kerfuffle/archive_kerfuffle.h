@@ -1,38 +1,19 @@
 /*
- * Copyright (c) 2007 Henrique Pinto <henrique.pinto@kdemail.net>
- * Copyright (c) 2008 Harald Hvaal <haraldhv@stud.ntnu.no>
- * Copyright (c) 2011 Raphael Kubo da Costa <rakuco@FreeBSD.org>
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES ( INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION ) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * ( INCLUDING NEGLIGENCE OR OTHERWISE ) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+    SPDX-FileCopyrightText: 2007 Henrique Pinto <henrique.pinto@kdemail.net>
+    SPDX-FileCopyrightText: 2008 Harald Hvaal <haraldhv@stud.ntnu.no>
+    SPDX-FileCopyrightText: 2011 Raphael Kubo da Costa <rakuco@FreeBSD.org>
+
+    SPDX-License-Identifier: BSD-2-Clause
+*/
 
 #ifndef ARCHIVE_H
 #define ARCHIVE_H
 
 #include "kerfuffle_export.h"
+#include "metadatabackup.h"
 #include "options.h"
 
 #include <KJob>
-#include <kcoreaddons_version.h>
 
 #include <QHash>
 #include <QMimeType>
@@ -59,7 +40,7 @@ class ReadOnlyArchiveInterface;
 enum ArchiveError {
     NoError = 0,
     NoPlugin,
-    FailedPlugin
+    FailedPlugin,
 };
 
 class KERFUFFLE_EXPORT Archive : public QObject
@@ -89,12 +70,10 @@ class KERFUFFLE_EXPORT Archive : public QObject
     Q_PROPERTY(QStringList encryptionMethods MEMBER m_encryptionMethods)
 
 public:
-
-    enum EncryptionType
-    {
+    enum EncryptionType {
         Unencrypted,
         Encrypted,
-        HeaderEncrypted
+        HeaderEncrypted,
     };
     Q_ENUM(EncryptionType)
 
@@ -132,14 +111,19 @@ public:
      * @param preservePaths Whether the job will preserve paths.
      * @param parent The parent for the archive.
      */
-    static BatchExtractJob *batchExtract(const QString &fileName, const QString &destination, bool autoSubfolder, bool preservePaths, QObject *parent = nullptr);
+    static BatchExtractJob *
+    batchExtract(const QString &fileName, const QString &destination, bool autoSubfolder, bool preservePaths, QObject *parent = nullptr);
 
     /**
      * @return Job to create an archive for the given @p entries.
      * @param fileName The name of the new archive.
      * @param mimeType The mimetype of the new archive.
      */
-    static CreateJob* create(const QString &fileName, const QString &mimeType, const QVector<Archive::Entry*> &entries, const CompressionOptions& options, QObject *parent = nullptr);
+    static CreateJob *create(const QString &fileName,
+                             const QString &mimeType,
+                             const QList<Archive::Entry *> &entries,
+                             const CompressionOptions &options,
+                             QObject *parent = nullptr);
 
     /**
      * @return An empty archive with name @p fileName, mimetype @p mimeType and @p parent as parent.
@@ -150,30 +134,30 @@ public:
      * @return Job to load the archive @p fileName.
      * @param parent The parent of the archive that will be loaded.
      */
-    static LoadJob* load(const QString &fileName, QObject *parent = nullptr);
+    static LoadJob *load(const QString &fileName, QObject *parent = nullptr);
 
     /**
      * @return Job to load the archive @p fileName with mimetype @p mimeType.
      * @param parent The parent of the archive that will be loaded.
      */
-    static LoadJob* load(const QString &fileName, const QString &mimeType, QObject *parent = nullptr);
+    static LoadJob *load(const QString &fileName, const QString &mimeType, QObject *parent = nullptr);
 
     /**
      * @return Job to load the archive @p fileName by using @p plugin.
      * @param parent The parent of the archive that will be loaded.
      */
-    static LoadJob* load(const QString &fileName, Plugin *plugin, QObject *parent = nullptr);
+    static LoadJob *load(const QString &fileName, Plugin *plugin, QObject *parent = nullptr);
 
     ~Archive() override;
 
     ArchiveError error() const;
     bool isValid() const;
 
-    DeleteJob* deleteFiles(QVector<Archive::Entry*> &entries);
-    CommentJob* addComment(const QString &comment);
-    TestJob* testArchive();
+    DeleteJob *deleteFiles(QList<Archive::Entry *> &entries);
+    CommentJob *addComment(const QString &comment);
+    TestJob *testArchive();
 
-    AddJob* addFiles(const QVector<Archive::Entry*> &files, const Archive::Entry *destination, const CompressionOptions& options = CompressionOptions());
+    AddJob *addFiles(const QList<Archive::Entry *> &files, const Archive::Entry *destination, const CompressionOptions &options = CompressionOptions());
 
     /**
      * Renames or moves entries within the archive.
@@ -185,7 +169,7 @@ public:
      * Otherwise (if count is more than 1) it's moving, so destination must contain only targeted folder path
      * or be empty, if moving to the root.
      */
-    MoveJob* moveFiles(const QVector<Archive::Entry*> &files, Archive::Entry *destination, const CompressionOptions& options = CompressionOptions());
+    MoveJob *moveFiles(const QList<Archive::Entry *> &files, Archive::Entry *destination, const CompressionOptions &options = CompressionOptions());
 
     /**
      * Copies entries within the archive.
@@ -194,13 +178,13 @@ public:
      * @param destination Destination path. It must contain only targeted folder path or be empty,
      * if copying to the root.
      */
-    CopyJob* copyFiles(const QVector<Archive::Entry*> &files, Archive::Entry *destination, const CompressionOptions& options = CompressionOptions());
+    CopyJob *copyFiles(const QList<Archive::Entry *> &files, Archive::Entry *destination, const CompressionOptions &options = CompressionOptions());
 
-    ExtractJob* extractFiles(const QVector<Archive::Entry*> &files, const QString &destinationDir, ExtractionOptions options = ExtractionOptions());
+    ExtractJob *extractFiles(const QList<Archive::Entry *> &files, const QString &destinationDir, ExtractionOptions options = ExtractionOptions());
 
-    PreviewJob* preview(Archive::Entry *entry);
-    OpenJob* open(Archive::Entry *entry);
-    OpenWithJob* openWith(Archive::Entry *entry);
+    PreviewJob *preview(Archive::Entry *entry);
+    OpenJob *open(Archive::Entry *entry);
+    OpenWithJob *openWith(Archive::Entry *entry);
 
     /**
      * @param password The password to encrypt the archive with.
@@ -209,8 +193,8 @@ public:
     void encrypt(const QString &password, bool encryptHeader);
 
 private Q_SLOTS:
-    void onAddFinished(KJob*);
-    void onUserQuery(Kerfuffle::Query*);
+    void onAddFinished(KJob *);
+    void onUserQuery(Kerfuffle::Query *);
     void onCompressionMethodFound(const QString &method);
     void onEncryptionMethodFound(const QString &method);
 
@@ -227,7 +211,7 @@ private:
      * @return A valid archive if the plugin could be loaded, an invalid one otherwise (with the FailedPlugin error set).
      */
     static Archive *create(const QString &fileName, Plugin *plugin, QObject *parent = nullptr);
-    ReadOnlyArchiveInterface *m_iface;
+    ReadOnlyArchiveInterface *m_iface = nullptr;
     bool m_isReadOnly;
     bool m_isSingleFolder;
     bool m_isMultiVolume;
@@ -239,6 +223,19 @@ private:
     QMimeType m_mimeType;
     QStringList m_compressionMethods;
     QStringList m_encryptionMethods;
+
+    /**
+     * @brief The user metadata for this archive.
+     *
+     * We keep track of the user metadata for the archive so that we can restore
+     * it after the archive has been modified.
+     */
+    std::optional<MetadataBackup> m_userMetaData;
+
+    /**
+     * @brief Restore the user metadata for this archive.
+     */
+    void restoreUserMetadata();
 };
 
 } // namespace Kerfuffle

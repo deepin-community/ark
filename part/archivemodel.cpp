@@ -1,32 +1,17 @@
 /*
- * ark -- archiver for the KDE project
- *
- * Copyright (C) 2007 Henrique Pinto <henrique.pinto@kdemail.net>
- * Copyright (C) 2008-2009 Harald Hvaal <haraldhv@stud.ntnu.no>
- * Copyright (C) 2010-2012 Raphael Kubo da Costa <rakuco@FreeBSD.org>
- * Copyright (c) 2016 Vladyslav Batyrenko <mvlabat@gmail.com>
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *
- */
+    SPDX-FileCopyrightText: 2007 Henrique Pinto <henrique.pinto@kdemail.net>
+    SPDX-FileCopyrightText: 2008-2009 Harald Hvaal <haraldhv@stud.ntnu.no>
+    SPDX-FileCopyrightText: 2010-2012 Raphael Kubo da Costa <rakuco@FreeBSD.org>
+    SPDX-FileCopyrightText: 2016 Vladyslav Batyrenko <mvlabat@gmail.com>
+
+    SPDX-License-Identifier: GPL-2.0-or-later
+*/
 
 #include "archivemodel.h"
 #include "ark_debug.h"
 #include "jobs.h"
-#include "util.h"
 #include "qstringtokenizer.h"
+#include "util.h"
 
 #include <KIO/Global>
 #include <KLocalizedString>
@@ -55,18 +40,18 @@ ArchiveModel::ArchiveModel(const QString &dbusPathName, QObject *parent)
 
     // Mappings between column indexes and entry properties.
     m_propertiesMap = {
-        { FullPath, "fullPath" },
-        { Size, "size" },
-        { CompressedSize, "compressedSize" },
-        { Permissions, "permissions" },
-        { Owner, "owner" },
-        { Group, "group" },
-        { Ratio, "ratio" },
-        { CRC, "CRC" },
-        { BLAKE2, "BLAKE2" },
-        { Method, "method" },
-        { Version, "version" },
-        { Timestamp, "timestamp" },
+        {DisplayName, "displayName"},
+        {Size, "size"},
+        {CompressedSize, "compressedSize"},
+        {Permissions, "permissions"},
+        {Owner, "owner"},
+        {Group, "group"},
+        {Ratio, "ratio"},
+        {CRC, "CRC"},
+        {BLAKE2, "BLAKE2"},
+        {Method, "method"},
+        {Version, "version"},
+        {Timestamp, "timestamp"},
     };
 }
 
@@ -77,21 +62,16 @@ ArchiveModel::~ArchiveModel()
 QVariant ArchiveModel::data(const QModelIndex &index, int role) const
 {
     if (index.isValid()) {
-        Archive::Entry *entry = static_cast<Archive::Entry*>(index.internalPointer());
+        Archive::Entry *entry = static_cast<Archive::Entry *>(index.internalPointer());
         switch (role) {
         case Qt::DisplayRole: {
             // TODO: complete the columns.
             int column = m_showColumns.at(index.column());
             switch (column) {
-            case FullPath:
-                return entry->name();
+            case DisplayName:
+                return entry->displayName();
             case Size:
-                if (entry->isDir()) {
-                    uint dirs;
-                    uint files;
-                    entry->countChildren(dirs, files);
-                    return KIO::itemsSummaryString(dirs + files, files, dirs, 0, false);
-                } else if (!entry->property("link").toString().isEmpty()) {
+                if (!entry->property("link").toString().isEmpty()) {
                     return QVariant();
                 } else {
                     return KIO::convertSize(entry->property("size").toULongLong());
@@ -132,7 +112,7 @@ QVariant ArchiveModel::data(const QModelIndex &index, int role) const
         }
         case Qt::DecorationRole:
             if (index.column() == 0) {
-                Archive::Entry *e = static_cast<Archive::Entry*>(index.internalPointer());
+                Archive::Entry *e = static_cast<Archive::Entry *>(index.internalPointer());
                 QIcon::Mode mode = (filesToMove.contains(e->fullPath())) ? QIcon::Disabled : QIcon::Normal;
                 return e->icon().pixmap(QApplication::style()->pixelMetric(QStyle::PM_SmallIconSize), mode);
             }
@@ -151,10 +131,9 @@ QVariant ArchiveModel::data(const QModelIndex &index, int role) const
 
 Qt::ItemFlags ArchiveModel::flags(const QModelIndex &index) const
 {
-    Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index);
-
     if (index.isValid()) {
-        return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled | defaultFlags;
+        const auto itemFlags = Qt::ItemIsEnabled | Qt::ItemIsSelectable | QAbstractItemModel::flags(index);
+        return index.column() ? itemFlags : itemFlags | Qt::ItemIsDragEnabled;
     }
 
     return Qt::NoItemFlags;
@@ -164,20 +143,19 @@ QVariant ArchiveModel::headerData(int section, Qt::Orientation, int role) const
 {
     if (role == Qt::DisplayRole) {
         if (section >= m_showColumns.size()) {
-            qCDebug(ARK) << "WEIRD: showColumns.size = " << m_showColumns.size()
-            << " and section = " << section;
+            qCDebug(ARK_LOG) << "WEIRD: showColumns.size = " << m_showColumns.size() << " and section = " << section;
             return QVariant();
         }
 
         int columnId = m_showColumns.at(section);
 
         switch (columnId) {
-        case FullPath:
+        case DisplayName:
             return i18nc("Name of a file inside an archive", "Name");
         case Size:
-            return i18nc("Uncompressed size of a file inside an archive", "Size");
+            return i18nc("Uncompressed size of a file inside an archive", "Original Size");
         case CompressedSize:
-            return i18nc("Compressed size of a file inside an archive", "Compressed");
+            return i18nc("Compressed size of a file inside an archive", "Compressed Size");
         case Ratio:
             return i18nc("Compression rate of file", "Rate");
         case Owner:
@@ -207,15 +185,13 @@ QVariant ArchiveModel::headerData(int section, Qt::Orientation, int role) const
 QModelIndex ArchiveModel::index(int row, int column, const QModelIndex &parent) const
 {
     if (hasIndex(row, column, parent)) {
-        const Archive::Entry *parentEntry = parent.isValid()
-                                            ? static_cast<Archive::Entry*>(parent.internalPointer())
-                                            : m_rootEntry.data();
+        const Archive::Entry *parentEntry = parent.isValid() ? static_cast<Archive::Entry *>(parent.internalPointer()) : m_rootEntry.data();
 
         Q_ASSERT(parentEntry->isDir());
 
         const Archive::Entry *item = parentEntry->entries().value(row, nullptr);
         if (item != nullptr) {
-            return createIndex(row, column, const_cast<Archive::Entry*>(item));
+            return createIndex(row, column, const_cast<Archive::Entry *>(item));
         }
     }
 
@@ -225,7 +201,7 @@ QModelIndex ArchiveModel::index(int row, int column, const QModelIndex &parent) 
 QModelIndex ArchiveModel::parent(const QModelIndex &index) const
 {
     if (index.isValid()) {
-        Archive::Entry *item = static_cast<Archive::Entry*>(index.internalPointer());
+        Archive::Entry *item = static_cast<Archive::Entry *>(index.internalPointer());
         Q_ASSERT(item);
         if (item->getParent() && (item->getParent() != m_rootEntry.data())) {
             return createIndex(item->getParent()->row(), 0, item->getParent());
@@ -237,7 +213,7 @@ QModelIndex ArchiveModel::parent(const QModelIndex &index) const
 Archive::Entry *ArchiveModel::entryForIndex(const QModelIndex &index)
 {
     if (index.isValid()) {
-        Archive::Entry *item = static_cast<Archive::Entry*>(index.internalPointer());
+        Archive::Entry *item = static_cast<Archive::Entry *>(index.internalPointer());
         Q_ASSERT(item);
         return item;
     }
@@ -247,9 +223,7 @@ Archive::Entry *ArchiveModel::entryForIndex(const QModelIndex &index)
 int ArchiveModel::rowCount(const QModelIndex &parent) const
 {
     if (parent.column() <= 0) {
-        const Archive::Entry *parentEntry = parent.isValid()
-                                            ? static_cast<Archive::Entry*>(parent.internalPointer())
-                                            : m_rootEntry.data();
+        const Archive::Entry *parentEntry = parent.isValid() ? static_cast<Archive::Entry *>(parent.internalPointer()) : m_rootEntry.data();
 
         if (parentEntry && parentEntry->isDir()) {
             return parentEntry->entries().count();
@@ -274,13 +248,10 @@ QStringList ArchiveModel::mimeTypes() const
     QStringList types;
 
     // MIME types we accept for dragging (eg. Dolphin -> Ark).
-    types << QStringLiteral("text/uri-list")
-          << QStringLiteral("text/plain")
-          << QStringLiteral("text/x-moz-url");
+    types << QStringLiteral("text/uri-list") << QStringLiteral("text/plain") << QStringLiteral("text/x-moz-url");
 
     // MIME types we accept for dropping (eg. Ark -> Dolphin).
-    types << QStringLiteral("application/x-kde-ark-dndextract-service")
-          << QStringLiteral("application/x-kde-ark-dndextract-path");
+    types << QStringLiteral("application/x-kde-ark-dndextract-service") << QStringLiteral("application/x-kde-ark-dndextract-path");
 
     return types;
 }
@@ -290,10 +261,8 @@ QMimeData *ArchiveModel::mimeData(const QModelIndexList &indexes) const
     Q_UNUSED(indexes)
 
     QMimeData *mimeData = new QMimeData;
-    mimeData->setData(QStringLiteral("application/x-kde-ark-dndextract-service"),
-                      QDBusConnection::sessionBus().baseService().toUtf8());
-    mimeData->setData(QStringLiteral("application/x-kde-ark-dndextract-path"),
-                      m_dbusPathName.toUtf8());
+    mimeData->setData(QStringLiteral("application/x-kde-ark-dndextract-service"), QDBusConnection::sessionBus().baseService().toUtf8());
+    mimeData->setData(QStringLiteral("application/x-kde-ark-dndextract-path"), m_dbusPathName.toUtf8());
 
     return mimeData;
 }
@@ -306,9 +275,7 @@ bool ArchiveModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
         return false;
     }
 
-    if (archive()->isReadOnly() ||
-        (archive()->encryptionType() != Archive::Unencrypted &&
-         archive()->password().isEmpty())) {
+    if (archive()->isReadOnly() || (archive()->encryptionType() != Archive::Unencrypted && archive()->password().isEmpty())) {
         Q_EMIT messageWidget(KMessageWidget::Error, i18n("Adding files is not supported for this archive."));
         return false;
     }
@@ -338,14 +305,14 @@ bool ArchiveModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
 }
 
 // For a rationale, see bugs #194241, #241967 and #355839
-QString ArchiveModel::cleanFileName(const QString& fileName)
+QString ArchiveModel::cleanFileName(const QString &fileName)
 {
     // Skip entries with filename "/" or "//" or "."
     // "." is present in ISO files.
     static QRegularExpression pattern(QStringLiteral("/+|\\."));
     QRegularExpressionMatch match;
     if (fileName.contains(pattern, &match) && match.captured() == fileName) {
-        qCDebug(ARK) << "Skipping entry with filename" << fileName;
+        qCDebug(ARK_LOG) << "Skipping entry with filename" << fileName;
         return QString();
     } else if (fileName.startsWith(QLatin1String("./"))) {
         return fileName.mid(2);
@@ -388,9 +355,9 @@ Archive::Entry *ArchiveModel::parentFor(const Archive::Entry *entry, InsertBehav
             // and then delete the existing one (see ArchiveModel::newEntry).
             entry = new Archive::Entry(parent);
 
-            entry->setProperty("fullPath", (parent == m_rootEntry.data())
-                                           ? QString(piece + QLatin1Char('/'))
-                                           : QString(parent->fullPath(WithTrailingSlash) + piece + QLatin1Char('/')));
+            entry->setProperty("fullPath",
+                               (parent == m_rootEntry.data()) ? QString(piece + QLatin1Char('/'))
+                                                              : QString(parent->fullPath(WithTrailingSlash) + piece + QLatin1Char('/')));
             entry->setProperty("isDirectory", true);
             insertEntry(entry, behaviour);
         }
@@ -421,7 +388,7 @@ QModelIndex ArchiveModel::indexForEntry(Archive::Entry *entry)
     return QModelIndex();
 }
 
-void ArchiveModel::slotEntryRemoved(const QString & path)
+void ArchiveModel::slotEntryRemoved(const QString &path)
 {
     const QString entryFileName(cleanFileName(path));
     if (entryFileName.isEmpty()) {
@@ -458,7 +425,7 @@ void ArchiveModel::slotListEntry(Archive::Entry *entry)
 void ArchiveModel::newEntry(Archive::Entry *receivedEntry, InsertBehaviour behaviour)
 {
     if (receivedEntry->fullPath().isEmpty()) {
-        qCDebug(ARK) << "Weird, received empty entry (no filename) - skipping";
+        qCDebug(ARK_LOG) << "Weird, received empty entry (no filename) - skipping";
         return;
     }
 
@@ -470,7 +437,7 @@ void ArchiveModel::newEntry(Archive::Entry *receivedEntry, InsertBehaviour behav
         const auto size = receivedEntry->property("size").toULongLong();
         const auto compressedSize = receivedEntry->property("compressedSize").toULongLong();
         for (auto i = m_propertiesMap.begin(); i != m_propertiesMap.end(); ++i) {
-            // Singlefile plugin doesn't report the uncompressed size.
+            // libarchive plugin doesn't report the uncompressed size for "single-file" archives.
             if (i.key() == Size && size == 0 && compressedSize > 0) {
                 continue;
             }
@@ -504,10 +471,9 @@ void ArchiveModel::newEntry(Archive::Entry *receivedEntry, InsertBehaviour behav
 
     // For some archive formats (e.g. AppImage and RPM) paths of folders do not
     // contain a trailing slash, so we append it.
-    if (receivedEntry->property("isDirectory").toBool() &&
-        !receivedEntry->property("fullPath").toString().endsWith(QLatin1Char('/'))) {
+    if (receivedEntry->property("isDirectory").toBool() && !receivedEntry->property("fullPath").toString().endsWith(QLatin1Char('/'))) {
         receivedEntry->setProperty("fullPath", QString(receivedEntry->property("fullPath").toString() + QLatin1Char('/')));
-        qCDebug(ARK) << "Trailing slash appended to entry:" << receivedEntry->property("fullPath");
+        qCDebug(ARK_LOG) << "Trailing slash appended to entry:" << receivedEntry->property("fullPath");
     }
 
     // Skip already created entries.
@@ -540,10 +506,9 @@ void ArchiveModel::slotLoadingFinished(KJob *job)
     std::sort(m_showColumns.begin(), m_showColumns.end());
 
     if (!job->error()) {
+        qCDebug(ARK_LOG) << "Showing columns: " << m_showColumns;
 
-        qCDebug(ARK) << "Showing columns: " << m_showColumns;
-
-        m_archive.reset(qobject_cast<LoadJob*>(job)->archive());
+        m_archive.reset(qobject_cast<LoadJob *>(job)->archive());
 
         beginResetModel();
         endResetModel();
@@ -566,7 +531,7 @@ void ArchiveModel::insertEntry(Archive::Entry *entry, InsertBehaviour behaviour)
     }
 }
 
-Kerfuffle::Archive* ArchiveModel::archive() const
+Kerfuffle::Archive *ArchiveModel::archive() const
 {
     return m_archive.data();
 }
@@ -590,7 +555,7 @@ void ArchiveModel::createEmptyArchive(const QString &path, const QString &mimeTy
     m_archive.reset(Archive::createEmpty(path, mimeType, parent));
 }
 
-KJob *ArchiveModel::loadArchive(const QString &path, const QString &mimeType, QObject *parent)
+Kerfuffle::LoadJob *ArchiveModel::loadArchive(const QString &path, const QString &mimeType, QObject *parent)
 {
     reset();
 
@@ -604,13 +569,13 @@ KJob *ArchiveModel::loadArchive(const QString &path, const QString &mimeType, QO
     return loadJob;
 }
 
-ExtractJob* ArchiveModel::extractFile(Archive::Entry *file, const QString& destinationDir, Kerfuffle::ExtractionOptions options) const
+ExtractJob *ArchiveModel::extractFile(Archive::Entry *file, const QString &destinationDir, Kerfuffle::ExtractionOptions options) const
 {
-    QVector<Archive::Entry*> files({file});
+    QList<Archive::Entry *> files({file});
     return extractFiles(files, destinationDir, options);
 }
 
-ExtractJob* ArchiveModel::extractFiles(const QVector<Archive::Entry*>& files, const QString& destinationDir, Kerfuffle::ExtractionOptions options) const
+ExtractJob *ArchiveModel::extractFiles(const QList<Archive::Entry *> &files, const QString &destinationDir, Kerfuffle::ExtractionOptions options) const
 {
     Q_ASSERT(m_archive);
     ExtractJob *newJob = m_archive->extractFiles(files, destinationDir, options);
@@ -642,7 +607,7 @@ OpenWithJob *ArchiveModel::openWith(Archive::Entry *file) const
     return job;
 }
 
-AddJob* ArchiveModel::addFiles(QVector<Archive::Entry*> &entries, const Archive::Entry *destination, const CompressionOptions& options)
+AddJob *ArchiveModel::addFiles(QList<Archive::Entry *> &entries, const Archive::Entry *destination, const CompressionOptions &options)
 {
     if (!m_archive) {
         return nullptr;
@@ -653,13 +618,12 @@ AddJob* ArchiveModel::addFiles(QVector<Archive::Entry*> &entries, const Archive:
         connect(job, &AddJob::newEntry, this, &ArchiveModel::slotNewEntry);
         connect(job, &AddJob::userQuery, this, &ArchiveModel::slotUserQuery);
 
-
         return job;
     }
     return nullptr;
 }
 
-Kerfuffle::MoveJob *ArchiveModel::moveFiles(QVector<Archive::Entry*> &entries, Archive::Entry *destination, const CompressionOptions &options)
+Kerfuffle::MoveJob *ArchiveModel::moveFiles(QList<Archive::Entry *> &entries, Archive::Entry *destination, const CompressionOptions &options)
 {
     if (!m_archive) {
         return nullptr;
@@ -672,12 +636,11 @@ Kerfuffle::MoveJob *ArchiveModel::moveFiles(QVector<Archive::Entry*> &entries, A
         connect(job, &MoveJob::entryRemoved, this, &ArchiveModel::slotEntryRemoved);
         connect(job, &MoveJob::finished, this, &ArchiveModel::slotCleanupEmptyDirs);
 
-
         return job;
     }
     return nullptr;
 }
-Kerfuffle::CopyJob *ArchiveModel::copyFiles(QVector<Archive::Entry*> &entries, Archive::Entry *destination, const CompressionOptions &options)
+Kerfuffle::CopyJob *ArchiveModel::copyFiles(QList<Archive::Entry *> &entries, Archive::Entry *destination, const CompressionOptions &options)
 {
     if (!m_archive) {
         return nullptr;
@@ -688,13 +651,12 @@ Kerfuffle::CopyJob *ArchiveModel::copyFiles(QVector<Archive::Entry*> &entries, A
         connect(job, &CopyJob::newEntry, this, &ArchiveModel::slotNewEntry);
         connect(job, &CopyJob::userQuery, this, &ArchiveModel::slotUserQuery);
 
-
         return job;
     }
     return nullptr;
 }
 
-DeleteJob* ArchiveModel::deleteFiles(QVector<Archive::Entry*> entries)
+DeleteJob *ArchiveModel::deleteFiles(QList<Archive::Entry *> entries)
 {
     Q_ASSERT(m_archive);
     if (!m_archive->isReadOnly()) {
@@ -718,7 +680,7 @@ void ArchiveModel::encryptArchive(const QString &password, bool encryptHeader)
     m_archive->encrypt(password, encryptHeader);
 }
 
-bool ArchiveModel::conflictingEntries(QList<const Archive::Entry*> &conflictingEntries, const QStringList &entries, bool allowMerging) const
+bool ArchiveModel::conflictingEntries(QList<const Archive::Entry *> &conflictingEntries, const QStringList &entries, bool allowMerging) const
 {
     bool error = false;
 
@@ -737,7 +699,7 @@ bool ArchiveModel::conflictingEntries(QList<const Archive::Entry*> &conflictingE
     QString skippedDirPath;
 
     for (const QString &entry : entries) {
-        if (skippedDirPath.count() > 0 && entry.startsWith(skippedDirPath)) {
+        if (!skippedDirPath.isEmpty() && entry.startsWith(skippedDirPath)) {
             continue;
         } else {
             skippedDirPath.clear();
@@ -764,8 +726,7 @@ bool ArchiveModel::conflictingEntries(QList<const Archive::Entry*> &conflictingE
             } else {
                 if (isDir) {
                     lastDirEntry = archiveEntry;
-                }
-                else if (!error) {
+                } else if (!error) {
                     conflictingEntries << archiveEntry;
                 }
             }
@@ -789,9 +750,9 @@ bool ArchiveModel::hasDuplicatedEntries(const QStringList &entries)
     return false;
 }
 
-QMap<QString, Archive::Entry*> ArchiveModel::entryMap(const QVector<Archive::Entry*> &entries)
+QMap<QString, Archive::Entry *> ArchiveModel::entryMap(const QList<Archive::Entry *> &entries)
 {
-    QMap<QString, Archive::Entry*> map;
+    QMap<QString, Archive::Entry *> map;
     for (Archive::Entry *entry : entries) {
         map.insert(entry->fullPath(), entry);
     }
@@ -824,9 +785,9 @@ void ArchiveModel::slotCleanupEmptyDirs()
         }
     }
 
-    for (const QPersistentModelIndex& node : qAsConst(nodesToDelete)) {
-        Archive::Entry *rawEntry = static_cast<Archive::Entry*>(node.internalPointer());
-        qCDebug(ARK) << "Delete with parent entries " << rawEntry->getParent()->entries() << " and row " << rawEntry->row();
+    for (const QPersistentModelIndex &node : std::as_const(nodesToDelete)) {
+        Archive::Entry *rawEntry = static_cast<Archive::Entry *>(node.internalPointer());
+        qCDebug(ARK_LOG) << "Delete with parent entries " << rawEntry->getParent()->entries() << " and row " << rawEntry->row();
         beginRemoveRows(parent(node), rawEntry->row(), rawEntry->row());
         rawEntry->getParent()->removeEntryAt(rawEntry->row());
         endRemoveRows();
@@ -844,28 +805,30 @@ void ArchiveModel::countEntriesAndSize()
 
     m_numberOfFiles = 0;
     m_numberOfFolders = 0;
-    m_uncompressedSize = 0;
 
     QElapsedTimer timer;
     timer.start();
 
-    traverseAndCountDirNode(m_rootEntry.data());
+    traverseAndComputeDirSizes(m_rootEntry.data());
 
-    qCDebug(ARK) << "Time to count entries and size:" << timer.elapsed() << "ms";
+    qCDebug(ARK_LOG) << "Time to count entries and size:" << timer.elapsed() << "ms";
 }
 
-void ArchiveModel::traverseAndCountDirNode(Archive::Entry *dir)
+qulonglong ArchiveModel::traverseAndComputeDirSizes(Archive::Entry *dir)
 {
     const auto entries = dir->entries();
+    qulonglong uncompressedSize = 0;
     for (Archive::Entry *entry : entries) {
         if (entry->isDir()) {
-            traverseAndCountDirNode(entry);
             m_numberOfFolders++;
+            uncompressedSize += traverseAndComputeDirSizes(entry);
         } else {
             m_numberOfFiles++;
-            m_uncompressedSize += entry->property("size").toULongLong();
+            uncompressedSize += entry->property("size").toULongLong();
         }
     }
+    dir->setProperty("size", uncompressedSize);
+    return uncompressedSize;
 }
 
 qulonglong ArchiveModel::numberOfFiles() const
@@ -880,7 +843,7 @@ qulonglong ArchiveModel::numberOfFolders() const
 
 qulonglong ArchiveModel::uncompressedSize() const
 {
-    return m_uncompressedSize;
+    return m_rootEntry.data()->property("size").toULongLong();
 }
 
 QList<int> ArchiveModel::shownColumns() const
@@ -892,3 +855,5 @@ QMap<int, QByteArray> ArchiveModel::propertiesMap() const
 {
     return m_propertiesMap;
 }
+
+#include "moc_archivemodel.cpp"

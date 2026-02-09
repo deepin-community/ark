@@ -1,73 +1,63 @@
 /*
- * Copyright (c) 2017 Ragnar Thomsen <rthomsen6@gmail.com>
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES ( INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION ) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * ( INCLUDING NEGLIGENCE OR OTHERWISE ) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+    SPDX-FileCopyrightText: 2017 Ragnar Thomsen <rthomsen6@gmail.com>
+
+    SPDX-License-Identifier: BSD-2-Clause
+*/
 
 #ifndef LIBZIPPLUGIN_H
 #define LIBZIPPLUGIN_H
 
 #include "archiveinterface.h"
 
-
 #include <zip.h>
 
 using namespace Kerfuffle;
+
+class ZipSource;
 
 class LibzipPlugin : public ReadWriteArchiveInterface
 {
     Q_OBJECT
 
 public:
-    explicit LibzipPlugin(QObject *parent, const QVariantList& args);
+    explicit LibzipPlugin(QObject *parent, const QVariantList &args);
     ~LibzipPlugin() override;
 
     bool list() override;
     bool doKill() override;
-    bool extractFiles(const QVector<Archive::Entry*> &files, const QString& destinationDirectory, const ExtractionOptions& options) override;
+    bool extractFiles(const QList<Archive::Entry *> &files, const QString &destinationDirectory, const ExtractionOptions &options) override;
 
-    bool addFiles(const QVector<Archive::Entry*> &files, const Archive::Entry *destination, const CompressionOptions& options, uint numberOfEntriesToAdd = 0) override;
-    bool deleteFiles(const QVector<Archive::Entry*> &files) override;
-    bool moveFiles(const QVector<Archive::Entry*> &files, Archive::Entry *destination, const CompressionOptions &options) override;
-    bool copyFiles(const QVector<Archive::Entry*> &files, Archive::Entry *destination, const CompressionOptions &options) override;
-    bool addComment(const QString& comment) override;
+    bool addFiles(const QList<Archive::Entry *> &files,
+                  const Archive::Entry *destination,
+                  const CompressionOptions &options,
+                  uint numberOfEntriesToAdd = 0) override;
+    bool deleteFiles(const QList<Archive::Entry *> &files) override;
+    bool moveFiles(const QList<Archive::Entry *> &files, Archive::Entry *destination, const CompressionOptions &options) override;
+    bool copyFiles(const QList<Archive::Entry *> &files, Archive::Entry *destination, const CompressionOptions &options) override;
+    bool addComment(const QString &comment) override;
     bool testArchive() override;
     bool hasBatchExtractionProgress() const override;
 
+    bool isReadOnly() const override;
+    QString multiVolumeName() const override;
+
 private:
     bool extractEntry(zip_t *archive, const QString &entry, const QString &rootNode, const QString &destDir, bool preservePaths, bool removeRootNode);
-    bool writeEntry(zip_t *archive, const QString &entry, const Archive::Entry* destination, const CompressionOptions& options, bool isDir = false);
+    bool writeEntry(zip_t *archive, const QString &entry, const Archive::Entry *destination, const CompressionOptions &options, bool isDir = false);
     bool emitEntryForIndex(zip_t *archive, qlonglong index);
     void emitProgress(double percentage);
-    QString permissionsToString(mode_t perm);
-    QString fromUnixSeparator(const QString& path);
-    QString toUnixSeparator(const QString& path);
+    QString fromUnixSeparator(const QString &path);
+    QString toUnixSeparator(const QString &path);
     static void progressCallback(zip_t *, double progress, void *that);
+    static int cancelCallback(zip_t *, void *that);
 
-    QVector<Archive::Entry*> m_emittedEntries;
+    QList<Archive::Entry *> m_emittedEntries;
     bool m_overwriteAll;
     bool m_skipAll;
     bool m_listAfterAdd;
     bool m_backslashedZip;
+    QString m_multiVolumeName;
+    std::unique_ptr<ZipSource> m_zipSource;
 };
 
 #endif // LIBZIPPLUGIN_H
